@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="855d6318-cdbc-4b98-8ab8-bd6dcfea6bda" name="ratetube.ru" url="http://89.223.27.95/">
+        <fileTransfer host="89.223.27.95" port="22" privateKey="C:\Users\Антон\Documents\git.private.pass.ppk" rootFolder="/var/www/html" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
