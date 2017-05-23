@@ -19,6 +19,15 @@ use Yii;
 class Statistics extends \yii\db\ActiveRecord
 {
     /**
+     * Типы запросов по времени.
+     */
+    const QUERY_TIME_MINUTE = 'minute';
+    const QUERY_TIME_HOUR = 'hour';
+    const QUERY_TIME_DAY = 'day';
+    const QUERY_TIME_WEEK = 'week';
+    const QUERY_TIME_MONTH = 'month';
+
+    /**
      * @inheritdoc
      */
     public static function tableName()
