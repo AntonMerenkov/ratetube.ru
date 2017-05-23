@@ -54,9 +54,9 @@ class AgentController extends Controller
             throw $e;
         }
 
-        Yii::info("Получено новых видео: " . count(array_diff($oldVideos, array_map(function($item) {
+        Yii::info("Получено новых видео: " . count(array_diff(array_map(function($item) {
             return $item[ 'id' ];
-        }, $newVideoIds))) . ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        }, $newVideoIds), $oldVideos)) . ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
 
     /**
