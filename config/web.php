@@ -3,12 +3,13 @@
 $params = require(__DIR__ . '/params.php');
 
 $config = [
-    'id' => 'basic',
+    'id' => 'ratetube',
     'basePath' => dirname(__DIR__),
+    'language' => 'ru',
+    'sourceLanguage' => 'ru',
     'bootstrap' => ['log'],
     'components' => [
         'request' => [
-            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'XLVFEHM1hG6t52DMKUeBUJkVDDDXigN0',
         ],
         'cache' => [
@@ -38,14 +39,21 @@ $config = [
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
+            'enableStrictParsing' => false,
             'rules' => [
+                '' => 'site/index',
+                '<action:error>' => 'site/<action>',
+                'admin/<action:logout>' => 'site/<action>',
+                'admin' => 'site/login',
+                'admin/<controller>' => '<controller>/index',
+                'admin/<controller>/<action>' => '<controller>/<action>',
+                'admin/<controller>/<action>/<id:\d+>' => '<controller>/<action>',
             ],
         ],
-        */
+        'curl' => 'app\components\Curl',
     ],
     'params' => $params,
 ];
@@ -55,15 +63,13 @@ if (YII_ENV_DEV) {
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
-        // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['*'],
     ];
 
     $config['bootstrap'][] = 'gii';
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
-        // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['*'],
     ];
 }
 

@@ -113,3 +113,39 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+.list-group .list-view .empty {
+    padding: 15px;
+}
+
+.channels-create,
+.channels-update {
+    position: relative;
+}
+
+#channels-image {
+    position: absolute;
+    top: -5px;
+    right: 0;
+    width: 66px;
+    height: 66px;
+    background-position: center;
+    background-size: contain;
+}
+
+.channel-icon {
+    width: 24px;
+    height: 24px;
+    background-position: center;
+    background-size: contain;
+}
+
+a .channel-icon {
+    margin-right: 10px;
+    display: block;
+    float: left;
+}
+
+table tbody td {
+    vertical-align: middle !important;
+}

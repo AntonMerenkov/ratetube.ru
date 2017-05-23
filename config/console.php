@@ -18,9 +18,16 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['agent'],
+                    'logFile' =>  '@runtime/logs/agent.log',
+                    'logVars' => [],
+                ],
             ],
         ],
         'db' => $db,
+        'curl' => 'app\components\Curl',
     ],
     'params' => $params,
     /*
