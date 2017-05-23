@@ -38,6 +38,7 @@ AppAsset::register($this);
         'items' => Yii::$app->user->isGuest ? [
             ['label' => 'Войти', 'url' => ['/site/login']]
         ] : [
+            ['label' => 'Статистика', 'url' => ['/statistics/index']],
             ['label' => 'Каналы', 'url' => ['/channels/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')

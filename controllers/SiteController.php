@@ -70,12 +70,12 @@ class SiteController extends Controller
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->redirect(['/channels/index']);
+            return $this->redirect(['/statistics/index']);
         }
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->redirect(['/channels/index']);
+            return $this->redirect(['/statistics/index']);
         }
         return $this->render('login', [
             'model' => $model,
