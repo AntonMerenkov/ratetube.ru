@@ -141,6 +141,11 @@ class ChannelsController extends Controller
         return $this->redirect(['index']);
     }
 
+    /**
+     * Получение данных о канале по URL.
+     *
+     * @return string
+     */
     public function actionQueryData()
     {
         if ($_POST[ 'url' ] != '')

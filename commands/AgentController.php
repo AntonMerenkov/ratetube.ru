@@ -4,6 +4,7 @@ namespace app\commands;
 
 use app\models\Channels;
 use app\models\Profiling;
+use app\models\Statistics;
 use app\models\Videos;
 use yii\console\Controller;
 use Yii;
@@ -28,7 +29,7 @@ class AgentController extends Controller
         $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
         $oldVideos = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
-        $newVideoIds = Videos::findByChannelIds($channelsIds);
+        $newVideoIds = Videos::getByChannelIds($channelsIds);
 
         $transaction = Videos::getDb()->beginTransaction();
 
@@ -63,6 +64,40 @@ class AgentController extends Controller
      */
     public function actionUpdateStatistics()
     {
-        echo "stat";
+        $time = microtime(true);
+
+        $profiling = new Profiling();
+        $profiling->code = 'agent-update-statistics';
+        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
+
+        $videoIds = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
+        $videoStatistics = Statistics::getByVideoIds($videoIds);
+
+        $transaction = Videos::getDb()->beginTransaction();
+
+        try {
+            foreach ($videoStatistics as $videoId => $videoData) {
+                if (!in_array($videoId, $videoIds))
+                    continue;
+
+                $statistics = new Statistics();
+                $statistics->datetime = $profiling->datetime;
+                $statistics->video_id = array_search($videoId, $videoIds);
+                $statistics->views = $videoData[ 'viewCount' ];
+                $statistics->likes = $videoData[ 'likeCount' ];
+                $statistics->dislikes = $videoData[ 'dislikeCount' ];
+                $statistics->save();
+            }
+
+            $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+            $profiling->save();
+
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        Yii::info("Получена статистика для " . count($videoIds) . " видео, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
 }

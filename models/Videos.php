@@ -83,7 +83,7 @@ class Videos extends \yii\db\ActiveRecord
      * @param $channelIds
      * @return array
      */
-    public static function findByChannelIds($channelIds)
+    public static function getByChannelIds($channelIds)
     {
         $videoIds = [];
 
