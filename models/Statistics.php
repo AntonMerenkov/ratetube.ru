@@ -158,7 +158,7 @@ class Statistics extends \yii\db\ActiveRecord
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
             date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
 
-        $sql = "select SQL_CALC_FOUND_ROWS v.name, v.video_link, ls.views, (ls.views - ps.views) as views_diff, (ls.likes - ps.likes) as likes_diff, (ls.dislikes - ps.dislikes) as dislikes_diff 
+        $sql = "select SQL_CALC_FOUND_ROWS v.id, v.name, v.video_link, ls.views, (ls.views - ps.views) as views_diff, (ls.likes - ps.likes) as likes_diff, (ls.dislikes - ps.dislikes) as dislikes_diff 
                 from (
                   select s.*
                   from statistics s
@@ -183,8 +183,8 @@ class Statistics extends \yii\db\ActiveRecord
 
         $data = Yii::$app->db->cache(function ($db) use ($sql) {
             return [
-                'data' => Yii::$app->db->createCommand($sql)->queryAll() ,
-                'count' => Yii::$app->db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
+                'data' => $db->createCommand($sql)->queryAll() ,
+                'count' => $db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
             ];
         });
 

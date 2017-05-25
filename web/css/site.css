@@ -250,3 +250,12 @@ table tbody td {
     box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
     margin-top: -20px;
 }
+
+#news-table tr {
+    height: 32px;
+    max-height: 32px;
+    overflow: hidden;
+    background-color: #fff;
+    z-index: 10;
+    transition: all 0.4s;
+}

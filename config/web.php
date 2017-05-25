@@ -45,6 +45,7 @@ $config = [
             'enableStrictParsing' => false,
             'rules' => [
                 'category/<id:[\d\w-_]+>' => 'site/index',
+                'ajax/get-statistics' => 'site/ajax-get-statistics',
                 '' => 'site/index',
                 '<action:error>' => 'site/<action>',
                 'admin/<action:logout>' => 'site/<action>',

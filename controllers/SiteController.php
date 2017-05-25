@@ -6,6 +6,7 @@ use app\models\Categories;
 use app\models\Statistics;
 use Yii;
 use yii\filters\AccessControl;
+use yii\helpers\Json;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -61,7 +62,6 @@ class SiteController extends Controller
      */
     public function actionIndex($id = null, $page = 1)
     {
-        // TODO: пагинация
         // TODO: Ajax-обновление (прыгающее) каждые 10 сек
         // TODO: изменение временного интервала
 
@@ -74,6 +74,24 @@ class SiteController extends Controller
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData
         ]);
+    }
+
+    /**
+     * Получение статистики (AJAX).
+     *
+     * @param null $id
+     * @param int $page
+     * @return string
+     */
+    public function actionAjaxGetStatistics($id = null, $page = 1)
+    {
+        $categoryId = null;
+        if (!is_null($id))
+            $categoryId = Categories::findOne(['code' => $id])->id;
+
+        $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
+
+        return Json::encode($statisticsQueryData[ 'data' ]);
     }
 
     /**
