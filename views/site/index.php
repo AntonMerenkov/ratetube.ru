@@ -169,6 +169,7 @@ $this->registerJs($script);
     foreach (Statistics::$timeTypes as $id => $name)
         $statisticTypes[] = [
             'label' => $name,
+            'url' => ['/site/ajax-set-time', 'id' => $id],
             'options' => [
                 'data-id' => $id
             ],

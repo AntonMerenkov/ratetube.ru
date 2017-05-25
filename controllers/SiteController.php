@@ -62,9 +62,6 @@ class SiteController extends Controller
      */
     public function actionIndex($id = null, $page = 1)
     {
-        // TODO: Ajax-обновление (прыгающее) каждые 10 сек
-        // TODO: изменение временного интервала
-
         $categoryId = null;
         if (!is_null($id))
             $categoryId = Categories::findOne(['code' => $id])->id;
@@ -92,6 +89,20 @@ class SiteController extends Controller
         $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
 
         return Json::encode($statisticsQueryData[ 'data' ]);
+    }
+
+    /**
+     * Получение статистики (AJAX).
+     *
+     * @param null $id
+     * @return string
+     */
+    public function actionAjaxSetTime($id)
+    {
+        if (isset(Statistics::$timeTypes[ $id ]))
+            Yii::$app->session->set(Statistics::SESSION_KEY, $id);
+
+        return $this->redirect(Yii::$app->request->referrer);
     }
 
     /**
