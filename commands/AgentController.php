@@ -100,4 +100,30 @@ class AgentController extends Controller
 
         Yii::info("Получена статистика для " . count($videoIds) . " видео, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
+
+    /**
+     * Очистка старых значений статистики.
+     */
+    public function actionFlushStatistics()
+    {
+        $time = microtime(true);
+
+        $profiling = new Profiling();
+        $profiling->code = 'agent-flush-statistics';
+        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
+
+        // за 14 дней
+        $sql = "delete
+                from statistics
+                where datetime < '" . date('Y-m-d H:i:s', time() - 86400 * 14) . "'";
+
+        $oldCount = Yii::$app->db->createCommand("select count(*) from statistics")->queryScalar();
+        Yii::$app->db->createCommand($sql)->execute();
+        $newCount = Yii::$app->db->createCommand("select count(*) from statistics")->queryScalar();
+
+        $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+        $profiling->save();
+
+        Yii::info("Таблица статистики очищена, " . ($newCount - $oldCount) . " рядов удалено, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+    }
 }
