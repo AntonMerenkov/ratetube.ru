@@ -146,6 +146,38 @@ $this->title = 'RateTube';
                     ],
                 ],
             ]); ?>
+
+            <? if ($statisticsQueryData[ 'pagination' ][ 'pageCount' ] > 1) : ?>
+                <nav>
+                    <ul class="pagination">
+                        <?
+                        $pages = array_fill($statisticsQueryData[ 'pagination' ][ 'page' ] - 2, 5, 1) +
+                            array_fill(1, 5, 1) +
+                            array_fill($statisticsQueryData[ 'pagination' ][ 'pageCount' ] - 2, 3, 1);
+
+                        foreach ($pages as $key => $value)
+                            if ($key < 1 || $key > $statisticsQueryData[ 'pagination' ][ 'pageCount' ])
+                                unset($pages[ $key ]);
+
+                        ksort($pages);
+                        $pages = array_keys($pages);
+                        ?>
+
+                        <? for ($i = 0; $i <= count($pages) - 1; $i++) : ?>
+                            <li<? if ($statisticsQueryData[ 'pagination' ][ 'page' ] == $pages[ $i ]) : ?> class="active"<? endif; ?>>
+                                <a href="<?= Yii::$app->urlManager->createUrl([
+                                    "site/index" ,
+                                    "id" => Yii::$app->request->get('id', null),
+                                    "page" => $pages[ $i ]]) ?>"><?=$pages[ $i ] ?></a>
+                            </li>
+                            <? if (isset($pages[ $i + 1 ]) && $pages[ $i ] + 1 < $pages[ $i + 1 ]) : ?>
+                                <li class="disabled"><a href="#"><span aria-hidden="true">...</span></a></li>
+                            <? endif; ?>
+                        <? endfor; ?>
+                    </ul>
+                </nav>
+            <? endif; ?>
+
             <?php Pjax::end(); ?>
         </div>
         <div class="col-sm-2 hidden-xs hidden-sm">

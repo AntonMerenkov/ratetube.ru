@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Categories;
 use app\models\Statistics;
 use Yii;
 use yii\filters\AccessControl;
@@ -58,13 +59,17 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex($id = null)
+    public function actionIndex($id = null, $page = 1)
     {
-        // TODO: фильтр по категории
         // TODO: пагинация
-        // TODO: Ajax-обновление (прыгающее)
+        // TODO: Ajax-обновление (прыгающее) каждые 10 сек
+        // TODO: изменение временного интервала
 
-        $statisticsQueryData = Statistics::getStatistics();
+        $categoryId = null;
+        if (!is_null($id))
+            $categoryId = Categories::findOne(['code' => $id])->id;
+
+        $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
 
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData
