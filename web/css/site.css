@@ -149,3 +149,104 @@ a .channel-icon {
 table tbody td {
     vertical-align: middle !important;
 }
+
+.navbar-inverse {
+    background-color: #f0f2f4;
+    border-color: #e2e4e6;
+}
+
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-brand {
+    color: #333;
+}
+
+.navbar-inverse .navbar-brand:hover,
+.navbar-inverse .navbar-brand:focus {
+    color: #888;
+}
+
+.navbar-inverse .navbar-nav > li > a,
+.navbar-inverse .navbar-nav > li > a {
+    color: #333;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    color: #888;
+}
+
+.navbar-inverse .btn-link {
+    color: #333;
+}
+
+.navbar-inverse .btn-link:hover,
+.navbar-inverse .btn-link:focus {
+    color: #888;
+}
+
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+    background-color: #888;
+}
+
+.navbar-categories {
+    float: left;
+}
+
+.navbar-categories li {
+    display: inline-block;
+    text-align: center;
+}
+
+.navbar-categories li a {
+    padding-top: 10px;
+    padding-bottom: 9px;
+    font-size: 12px;
+    line-height: 1.1;
+}
+
+.navbar-categories li a::before {
+    content: "\e059";
+    font-size: 16px;
+    font-family: 'Glyphicons Halflings';
+    color: inherit;
+    display: block;
+}
+
+.navbar-time {
+    margin-left: 40px;
+    font-size: 12px;
+}
+
+.navbar-time li {
+    padding: 12px 3px;
+}
+
+.navbar-time li a {
+    padding: 3px 7px;
+}
+
+.navbar-inverse .navbar-time li a:hover,
+.navbar-inverse .navbar-time li a:focus,
+.navbar-inverse .navbar-time li.active a,
+.navbar-inverse .navbar-time li.active a:hover,
+.navbar-inverse .navbar-time li.active a:focus {
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 5px;
+    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 2px 2px 2px rgba(0, 0, 0, 0.15);
+}
+
+#table-block {
+    padding: 12px 10px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: none;
+    background-color: #fff;
+    -webkit-box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3);
+    margin-top: -20px;
+}

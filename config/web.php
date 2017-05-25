@@ -44,6 +44,7 @@ $config = [
             'showScriptName' => false,
             'enableStrictParsing' => false,
             'rules' => [
+                'category/<id:[\d\w-_]+>' => 'site/index',
                 '' => 'site/index',
                 '<action:error>' => 'site/<action>',
                 'admin/<action:logout>' => 'site/<action>',

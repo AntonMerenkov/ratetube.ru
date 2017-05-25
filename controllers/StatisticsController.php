@@ -64,22 +64,12 @@ class StatisticsController extends Controller
             'pagination' => false
         ]);
 
-        $sql = "select v.name, v.video_link, s.views
-from statistics s
-left join videos v on v.id = s.video_id
-where datetime < '" . date('Y-m-d H:i:s', round(time() / 10 - 5) * 10) . "'
-order by views DESC
-limit 0,50";
-
-        $sqlTime = microtime(true);
-        Yii::$app->db->createCommand($sql)->queryAll();
-        $sqlTime = microtime(true) - $sqlTime;
+        $statisticsQueryData = Statistics::getStatistics();
 
         return $this->render('index', [
             'videosDataProvider' => $videosDataProvider,
             'statisticsDataProvider' => $statisticsDataProvider,
-            'sql' => $sql,
-            'sqlTime' => $sqlTime,
+            'statisticsQueryData' => $statisticsQueryData,
         ]);
     }
 }

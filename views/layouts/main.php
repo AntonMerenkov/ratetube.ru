@@ -33,6 +33,13 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
+
+    if (isset($this->blocks['categories']))
+        echo $this->blocks['categories'];
+
+    if (isset($this->blocks['update-time']))
+        echo $this->blocks['update-time'];
+
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => Yii::$app->user->isGuest ? [

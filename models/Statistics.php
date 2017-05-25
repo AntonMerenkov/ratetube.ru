@@ -27,6 +27,25 @@ class Statistics extends \yii\db\ActiveRecord
     const QUERY_TIME_WEEK = 'week';
     const QUERY_TIME_MONTH = 'month';
 
+    public static $timeTypes = [
+        self::QUERY_TIME_MINUTE => 'за минуту',
+        self::QUERY_TIME_HOUR => 'за час',
+        self::QUERY_TIME_DAY => 'за день',
+        self::QUERY_TIME_WEEK => 'за неделю',
+        self::QUERY_TIME_MONTH => 'за месяц',
+    ];
+
+    public static $timeDiffs = [
+        self::QUERY_TIME_MINUTE => 60,
+        self::QUERY_TIME_HOUR => 3600,
+        self::QUERY_TIME_DAY => 86400,
+        self::QUERY_TIME_WEEK => 86400 * 7,
+        self::QUERY_TIME_MONTH => 86400 * 30,
+    ];
+
+    const SESSION_KEY = 'time-type';
+    const PAGINATION_ROW_COUNT = 50;
+
     /**
      * @inheritdoc
      */
@@ -122,5 +141,70 @@ class Statistics extends \yii\db\ActiveRecord
         }
 
         return $result;
+    }
+
+    /**
+     * Получение статистики по видео с постраничной разбивкой
+     *
+     * @param int $page
+     * @param array $filter
+     * @return array
+     */
+    public static function getStatistics($page = 1, $filter = [])
+    {
+        $timeType = Yii::$app->session->get(Statistics::SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+
+        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics')->queryScalar();
+        $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
+            date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
+
+        $sql = "select SQL_CALC_FOUND_ROWS v.name, v.video_link, ls.views, (ls.views - ps.views) as views_diff, (ls.likes - ps.likes) as likes_diff, (ls.dislikes - ps.dislikes) as dislikes_diff 
+                from (
+                  select s.*
+                  from statistics s
+                  where datetime = '" . $lastDate . "'
+                  order by views DESC
+                ) ls
+                left join (
+                  select s.*
+                  from statistics s
+                  where datetime = '" . $prevDate . "'
+                  order by views DESC
+                ) ps on ps.video_id = ls.video_id
+                left join videos v on v.id = ls.video_id
+                " . ($filter[ 'category_id' ] > 0 ? "left join channels c on c.id = v.channel_id
+                    where c.category_id = " . $filter[ 'category_id' ] : "") . "
+                order by views_diff desc, ls.views desc
+                limit " . (($page - 1) * Statistics::PAGINATION_ROW_COUNT) . ", " . Statistics::PAGINATION_ROW_COUNT;
+
+        $sql = implode("\n", array_map("trim", explode("\n", $sql)));
+
+        $time = microtime(true);
+
+        $data = Yii::$app->db->cache(function ($db) use ($sql) {
+            return [
+                'data' => Yii::$app->db->createCommand($sql)->queryAll() ,
+                'count' => Yii::$app->db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
+            ];
+        });
+
+        $time = microtime(true) - $time;
+
+        return [
+            'data' => $data[ 'data' ],
+            'pagination' => [
+                'count' => $data[ 'count' ],
+                'page' => $page,
+                'pageCount' => ceil($data[ 'count' ] / Statistics::PAGINATION_ROW_COUNT)
+            ],
+            'time' => [
+                'from' => date('d.m.Y H:i:s', strtotime($lastDate)),
+                'to' => date('d.m.Y H:i:s', strtotime($prevDate)),
+            ],
+            'db' => [
+                'query_time' => Yii::$app->formatter->asDecimal($time, 2),
+                'sql' => $sql
+            ]
+        ];
     }
 }

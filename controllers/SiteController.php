@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Statistics;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -57,13 +58,21 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($id = null)
     {
-        return $this->render('index');
+        // TODO: фильтр по категории
+        // TODO: пагинация
+        // TODO: Ajax-обновление (прыгающее)
+
+        $statisticsQueryData = Statistics::getStatistics();
+
+        return $this->render('index', [
+            'statisticsQueryData' => $statisticsQueryData
+        ]);
     }
 
     /**
-     * Login action.
+     * Вход в административную панель.
      *
      * @return string
      */
@@ -83,7 +92,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Logout action.
+     * Выход из административной панели.
      *
      * @return string
      */
