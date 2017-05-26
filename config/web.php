@@ -47,6 +47,7 @@ $config = [
                 'category/<id:[\d\w-_]+>' => 'site/index',
                 'ajax/get-statistics' => 'site/ajax-get-statistics',
                 'ajax/set-time/<id>' => 'site/ajax-set-time',
+                'ajax/set-sorting/<id>' => 'site/ajax-set-sorting',
                 '' => 'site/index',
                 '<action:error>' => 'site/<action>',
                 'admin/<action:logout>' => 'site/<action>',

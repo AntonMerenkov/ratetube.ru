@@ -173,7 +173,7 @@ $this->registerJs($script);
             'options' => [
                 'data-id' => $id
             ],
-            'active' => Yii::$app->session->get(Statistics::SESSION_KEY, Statistics::QUERY_TIME_HOUR) == $id
+            'active' => Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR) == $id
         ];
 
     echo Nav::widget([
@@ -242,13 +242,13 @@ $this->registerJs($script);
                     ],
                     [
                         'attribute' => 'views_diff',
-                        'header' => '<i class="glyphicon glyphicon-eye-open"></i>',
+                        'header' => Html::a('<i class="glyphicon glyphicon-eye-open"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_VIEWS]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'views_diff' ] > 0 ? '+' . $data[ 'views_diff' ] : '');
                         },
                         'headerOptions' => [
-                            'class' => 'text-center',
+                            'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS) == Statistics::SORT_TYPE_VIEWS ? ' text-success' : ''),
                             'style' => 'width: 40px; max-width: 40px;',
                         ],
                         'contentOptions' => [
@@ -258,13 +258,13 @@ $this->registerJs($script);
                     ],
                     [
                         'attribute' => 'likes_diff',
-                        'header' => '<i class="glyphicon glyphicon-hand-up"></i>',
+                        'header' => Html::a('<i class="glyphicon glyphicon-hand-up"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_LIKES]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'likes_diff' ] > 0 ? '+' . $data[ 'likes_diff' ] : '');
                         },
                         'headerOptions' => [
-                            'class' => 'text-center',
+                            'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS) == Statistics::SORT_TYPE_LIKES ? ' text-success' : ''),
                             'style' => 'width: 40px; max-width: 40px;',
                         ],
                         'contentOptions' => [
@@ -274,13 +274,13 @@ $this->registerJs($script);
                     ],
                     [
                         'attribute' => 'dislikes_diff',
-                        'header' => '<i class="glyphicon glyphicon-hand-down"></i>',
+                        'header' => Html::a('<i class="glyphicon glyphicon-hand-down"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_DISLIKES]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'dislikes_diff' ] > 0 ? '+' . $data[ 'dislikes_diff' ] : '');
                         },
                         'headerOptions' => [
-                            'class' => 'text-center',
+                            'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS) == Statistics::SORT_TYPE_DISLIKES ? ' text-success' : ''),
                             'style' => 'width: 40px; max-width: 40px;',
                         ],
                         'contentOptions' => [

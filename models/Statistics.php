@@ -43,7 +43,18 @@ class Statistics extends \yii\db\ActiveRecord
         self::QUERY_TIME_MONTH => 86400 * 30,
     ];
 
-    const SESSION_KEY = 'time-type';
+    const SORT_TYPE_VIEWS = 'views';
+    const SORT_TYPE_LIKES = 'likes';
+    const SORT_TYPE_DISLIKES = 'dislikes';
+
+    public static $sortingTypes = [
+        self::SORT_TYPE_VIEWS => 'Просмотры',
+        self::SORT_TYPE_LIKES => 'Лайки',
+        self::SORT_TYPE_DISLIKES => 'Дизлайки',
+    ];
+
+    const TIME_SESSION_KEY = 'time-type';
+    const SORT_SESSION_KEY = 'sort-type';
     const PAGINATION_ROW_COUNT = 50;
 
     /**
@@ -152,7 +163,8 @@ class Statistics extends \yii\db\ActiveRecord
      */
     public static function getStatistics($page = 1, $filter = [])
     {
-        $timeType = Yii::$app->session->get(Statistics::SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS);
 
         $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics')->queryScalar();
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
@@ -163,18 +175,18 @@ class Statistics extends \yii\db\ActiveRecord
                   select s.*
                   from statistics s
                   where datetime = '" . $lastDate . "'
-                  order by views DESC
+                  order by " . $sortType . " DESC
                 ) ls
                 left join (
                   select s.*
                   from statistics s
                   where datetime = '" . $prevDate . "'
-                  order by views DESC
+                  order by " . $sortType . " DESC
                 ) ps on ps.video_id = ls.video_id
                 left join videos v on v.id = ls.video_id
                 " . ($filter[ 'category_id' ] > 0 ? "left join channels c on c.id = v.channel_id
                     where c.category_id = " . $filter[ 'category_id' ] : "") . "
-                order by views_diff desc, ls.views desc
+                order by " . $sortType . "_diff desc, ls." . $sortType . " desc
                 limit " . (($page - 1) * Statistics::PAGINATION_ROW_COUNT) . ", " . Statistics::PAGINATION_ROW_COUNT;
 
         $sql = implode("\n", array_map("trim", explode("\n", $sql)));

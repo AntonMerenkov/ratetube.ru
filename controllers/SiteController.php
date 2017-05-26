@@ -92,7 +92,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Получение статистики (AJAX).
+     * Установка времени для вычисления разницы (AJAX).
      *
      * @param null $id
      * @return string
@@ -100,7 +100,21 @@ class SiteController extends Controller
     public function actionAjaxSetTime($id)
     {
         if (isset(Statistics::$timeTypes[ $id ]))
-            Yii::$app->session->set(Statistics::SESSION_KEY, $id);
+            Yii::$app->session->set(Statistics::TIME_SESSION_KEY, $id);
+
+        return $this->redirect(Yii::$app->request->referrer);
+    }
+
+    /**
+     * Установка типа сортировки (AJAX).
+     *
+     * @param null $id
+     * @return string
+     */
+    public function actionAjaxSetSorting($id)
+    {
+        if (isset(Statistics::$sortingTypes[ $id ]))
+            Yii::$app->session->set(Statistics::SORT_SESSION_KEY, $id);
 
         return $this->redirect(Yii::$app->request->referrer);
     }

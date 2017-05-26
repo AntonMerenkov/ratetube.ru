@@ -259,3 +259,17 @@ table tbody td {
     z-index: 10;
     transition: all 0.4s;
 }
+
+#news-table tbody td a {
+    color: #333;
+    font-weight: bold;
+}
+
+#news-table thead a {
+    color: #333;
+    text-decoration: underline;
+}
+
+#news-table thead .text-success a {
+    color: #3c763d;
+}
