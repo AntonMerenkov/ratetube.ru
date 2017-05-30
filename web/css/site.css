@@ -266,10 +266,21 @@ table tbody td {
 }
 
 #news-table thead a {
-    color: #333;
-    text-decoration: underline;
+    color: #aaa;
+    text-decoration: none;
 }
 
 #news-table thead .text-success a {
     color: #3c763d;
+}
+
+#news-table thead .text-success a::after {
+    content: "\e156";
+    font-family: "Glyphicons Halflings";
+    font-size: 14px;
+    display: inline-block;
+    margin-left: 5px;
+    position: relative;
+    top: 2px;
+    opacity: 0.5;
 }

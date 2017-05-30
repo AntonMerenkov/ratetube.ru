@@ -201,6 +201,22 @@ $this->registerJs($script);
                 "page" => $statisticsQueryData[ 'pagination' ][ 'page' ] == 1 ? null : $statisticsQueryData[ 'pagination' ][ 'page' ],
             ], ['class' => 'hidden', 'id' => 'refreshButton']) ?>
 
+            <style>
+                <?
+                if (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_VIEWS_DIFF)
+                    $colIndex = 2;
+                else if (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_LIKES_DIFF)
+                    $colIndex = 3;
+                else if (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_DISLIKES_DIFF)
+                    $colIndex = 4;
+                else
+                    $colIndex = 5;
+                ?>
+                #news-table tbody tr td:nth-child(<?=$colIndex ?>) {
+                    background-color: rgba(60, 118, 61, 0.1);
+                }
+            </style>
+
             <?
             $statisticsDataProvider = new ArrayDataProvider([
                 'allModels' => $statisticsQueryData[ 'data' ],
@@ -242,49 +258,49 @@ $this->registerJs($script);
                     ],
                     [
                         'attribute' => 'views_diff',
-                        'header' => Html::a('<i class="glyphicon glyphicon-eye-open"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_VIEWS_DIFF]),
+                        'header' => Html::a('+ <i class="glyphicon glyphicon-eye-open"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_VIEWS_DIFF]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'views_diff' ] > 0 ? '+' . $data[ 'views_diff' ] : '');
                         },
                         'headerOptions' => [
                             'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_VIEWS_DIFF ? ' text-success' : ''),
-                            'style' => 'width: 40px; max-width: 40px;',
+                            'style' => 'width: 60px; max-width: 60px;',
                         ],
                         'contentOptions' => [
-                            'style' => 'width: 40px; max-width: 40px; font-size: 12px;',
+                            'style' => 'width: 60px; max-width: 60px; font-size: 12px;',
                             'class' => 'text-center'
                         ]
                     ],
                     [
                         'attribute' => 'likes_diff',
-                        'header' => Html::a('<i class="glyphicon glyphicon-hand-up"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_LIKES_DIFF]),
+                        'header' => Html::a('+ <i class="glyphicon glyphicon-hand-up"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_LIKES_DIFF]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'likes_diff' ] > 0 ? '+' . $data[ 'likes_diff' ] : '');
                         },
                         'headerOptions' => [
                             'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_LIKES_DIFF ? ' text-success' : ''),
-                            'style' => 'width: 40px; max-width: 40px;',
+                            'style' => 'width: 60px; max-width: 60px;',
                         ],
                         'contentOptions' => [
-                            'style' => 'width: 40px; max-width: 40px; font-size: 12px;',
+                            'style' => 'width: 60px; max-width: 60px; font-size: 12px;',
                             'class' => 'text-center'
                         ]
                     ],
                     [
                         'attribute' => 'dislikes_diff',
-                        'header' => Html::a('<i class="glyphicon glyphicon-hand-down"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_DISLIKES_DIFF]),
+                        'header' => Html::a('+ <i class="glyphicon glyphicon-hand-down"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_DISLIKES_DIFF]),
                         'format' => 'raw',
                         'value' => function($data){
                             return ($data[ 'dislikes_diff' ] > 0 ? '+' . $data[ 'dislikes_diff' ] : '');
                         },
                         'headerOptions' => [
                             'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_DISLIKES_DIFF ? ' text-success' : ''),
-                            'style' => 'width: 40px; max-width: 40px;',
+                            'style' => 'width: 60px; max-width: 60px;',
                         ],
                         'contentOptions' => [
-                            'style' => 'width: 40px; max-width: 40px; font-size: 12px;',
+                            'style' => 'width: 60px; max-width: 60px; font-size: 12px;',
                             'class' => 'text-center'
                         ]
                     ],
@@ -297,10 +313,10 @@ $this->registerJs($script);
                         },
                         'headerOptions' => [
                             'class' => 'text-center' . (Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_VIEWS ? ' text-success' : ''),
-                            'style' => 'width: 60px; max-width: 60px;',
+                            'style' => 'width: 80px; max-width: 80px;',
                         ],
                         'contentOptions' => [
-                            'style' => 'width: 60px; max-width: 60px; font-size: 12px;',
+                            'style' => 'width: 80px; max-width: 80px; font-size: 12px;',
                             'class' => 'text-center'
                         ]
                     ],
