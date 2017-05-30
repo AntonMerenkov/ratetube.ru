@@ -28,7 +28,7 @@ class Statistics extends \yii\db\ActiveRecord
     const QUERY_TIME_MONTH = 'month';
 
     public static $timeTypes = [
-        self::QUERY_TIME_MINUTE => 'за минуту',
+        self::QUERY_TIME_MINUTE => 'за 10 минут',
         self::QUERY_TIME_HOUR => 'за час',
         self::QUERY_TIME_DAY => 'за день',
         self::QUERY_TIME_WEEK => 'за неделю',
@@ -36,21 +36,23 @@ class Statistics extends \yii\db\ActiveRecord
     ];
 
     public static $timeDiffs = [
-        self::QUERY_TIME_MINUTE => 60,
+        self::QUERY_TIME_MINUTE => 600,
         self::QUERY_TIME_HOUR => 3600,
         self::QUERY_TIME_DAY => 86400,
         self::QUERY_TIME_WEEK => 86400 * 7,
         self::QUERY_TIME_MONTH => 86400 * 30,
     ];
 
+    const SORT_TYPE_VIEWS_DIFF = 'views_diff';
+    const SORT_TYPE_LIKES_DIFF = 'likes_diff';
+    const SORT_TYPE_DISLIKES_DIFF = 'dislikes_diff';
     const SORT_TYPE_VIEWS = 'views';
-    const SORT_TYPE_LIKES = 'likes';
-    const SORT_TYPE_DISLIKES = 'dislikes';
 
     public static $sortingTypes = [
+        self::SORT_TYPE_VIEWS_DIFF => 'Просмотры',
+        self::SORT_TYPE_LIKES_DIFF => 'Лайки',
+        self::SORT_TYPE_DISLIKES_DIFF => 'Дизлайки',
         self::SORT_TYPE_VIEWS => 'Просмотры',
-        self::SORT_TYPE_LIKES => 'Лайки',
-        self::SORT_TYPE_DISLIKES => 'Дизлайки',
     ];
 
     const TIME_SESSION_KEY = 'time-type';
@@ -164,7 +166,7 @@ class Statistics extends \yii\db\ActiveRecord
     public static function getStatistics($page = 1, $filter = [])
     {
         $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
-        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS);
+        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
 
         $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics')->queryScalar();
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
@@ -175,30 +177,32 @@ class Statistics extends \yii\db\ActiveRecord
                   select s.*
                   from statistics s
                   where datetime = '" . $lastDate . "'
-                  order by " . $sortType . " DESC
+                  order by " . str_replace('_diff', '', $sortType) . " DESC
                 ) ls
                 left join (
                   select s.*
                   from statistics s
                   where datetime = '" . $prevDate . "'
-                  order by " . $sortType . " DESC
+                  order by " . str_replace('_diff', '', $sortType) . " DESC
                 ) ps on ps.video_id = ls.video_id
                 left join videos v on v.id = ls.video_id
                 " . ($filter[ 'category_id' ] > 0 ? "left join channels c on c.id = v.channel_id
                     where c.category_id = " . $filter[ 'category_id' ] : "") . "
-                order by " . $sortType . "_diff desc, ls." . $sortType . " desc
+                order by " . $sortType . " desc, ls." . str_replace('_diff', '', $sortType) . " desc
                 limit " . (($page - 1) * Statistics::PAGINATION_ROW_COUNT) . ", " . Statistics::PAGINATION_ROW_COUNT;
 
         $sql = implode("\n", array_map("trim", explode("\n", $sql)));
 
         $time = microtime(true);
 
-        $data = Yii::$app->db->cache(function ($db) use ($sql) {
+        $countCacheId = 'statistics-' . date('Y-m-d-H-i-s', strtotime($lastDate)) . '-' . (int) $filter[ 'category_id' ] . '-' . $sortType;
+
+        $data = Yii::$app->cache->getOrSet($countCacheId, function() use ($sql) {
             return [
-                'data' => $db->createCommand($sql)->queryAll() ,
-                'count' => $db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
+                'data' => Yii::$app->db->createCommand($sql)->queryAll(),
+                'count' => Yii::$app->db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
             ];
-        });
+        }, 600);
 
         $time = microtime(true) - $time;
 
