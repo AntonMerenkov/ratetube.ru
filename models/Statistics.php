@@ -172,46 +172,70 @@ class Statistics extends \yii\db\ActiveRecord
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
             date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
 
-        $sql = "select SQL_CALC_FOUND_ROWS v.id, v.name, v.video_link, ls.views, (ls.views - ps.views) as views_diff, (ls.likes - ps.likes) as likes_diff, (ls.dislikes - ps.dislikes) as dislikes_diff 
-                from (
-                  select s.*
-                  from statistics s
-                  where datetime = '" . $lastDate . "'
-                  order by " . str_replace('_diff', '', $sortType) . " DESC
-                ) ls
-                left join (
-                  select s.*
-                  from statistics s
-                  where datetime = '" . $prevDate . "'
-                  order by " . str_replace('_diff', '', $sortType) . " DESC
-                ) ps on ps.video_id = ls.video_id
-                left join videos v on v.id = ls.video_id
-                " . ($filter[ 'category_id' ] > 0 ? "left join channels c on c.id = v.channel_id
-                    where c.category_id = " . $filter[ 'category_id' ] : "") . "
-                order by " . $sortType . " desc, ls." . str_replace('_diff', '', $sortType) . " desc
-                limit " . (($page - 1) * Statistics::PAGINATION_ROW_COUNT) . ", " . Statistics::PAGINATION_ROW_COUNT;
-
-        $sql = implode("\n", array_map("trim", explode("\n", $sql)));
-
         $time = microtime(true);
 
         $cacheId = 'statistics-' . date('Y-m-d-H-i-s', strtotime($lastDate)) . '-' . (int) $filter[ 'category_id' ] . '-' . $sortType . '-' . $timeType;
 
-        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($sql) {
-            return [
-                'data' => Yii::$app->db->createCommand($sql)->queryAll(),
-                'count' => Yii::$app->db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
-            ];
+        // 3 отдельных запроса получаются быстрее единого
+        $videoSql = "SELECT v.id, v.name, v.video_link
+                      FROM videos v
+                      " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id
+                      WHERE c.category_id = " . $filter[ 'category_id' ] : "") . "
+                      ORDER BY v.id";
+        $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
+                        FROM statistics s
+                        WHERE datetime = '" . $lastDate . "' ORDER BY s.video_id";
+        $prevTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
+                        FROM statistics s
+                        WHERE datetime = '" . $prevDate . "' ORDER BY s.video_id";
+
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $lastTimeSql, $prevTimeSql, $sortType) {
+            $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
+            $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
+            $prevTimeData = Yii::$app->db->createCommand($prevTimeSql)->queryAll();
+
+            $videoData = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $videoData), $videoData);
+            $lastTimeData = array_combine(array_map(function($item) {
+                return $item[ 'video_id' ];
+            }, $lastTimeData), $lastTimeData);
+            $prevTimeData = array_combine(array_map(function($item) {
+                return $item[ 'video_id' ];
+            }, $prevTimeData), $prevTimeData);
+
+            foreach ($videoData as $id => $value) {
+                $videoData[ $id ][ 'views' ] = $lastTimeData[ $id ][ 'views' ];
+                $videoData[ $id ][ 'views_diff' ] = ($lastTimeData[ $id ][ 'views' ] > 0 && $prevTimeData[ $id ][ 'views' ] > 0 ?
+                    $lastTimeData[ $id ][ 'views' ] - $prevTimeData[ $id ][ 'views' ] : 0);
+                $videoData[ $id ][ 'likes_diff' ] = ($lastTimeData[ $id ][ 'likes' ] > 0 && $prevTimeData[ $id ][ 'likes' ] > 0 ?
+                    $lastTimeData[ $id ][ 'likes' ] - $prevTimeData[ $id ][ 'likes' ] : 0);
+                $videoData[ $id ][ 'dislikes_diff' ] = ($lastTimeData[ $id ][ 'dislikes' ] > 0 && $prevTimeData[ $id ][ 'dislikes' ] > 0 ?
+                    $lastTimeData[ $id ][ 'dislikes' ] - $prevTimeData[ $id ][ 'dislikes' ] : 0);
+            }
+
+            usort($videoData, function($a, $b) use ($sortType) {
+                if ($a[ $sortType ] != $b[ $sortType ])
+                    return $b[ $sortType ] - $a[ $sortType ];
+                else
+                    return $b[ 'views' ] - $a[ 'views' ];
+            });
+
+            return $videoData;
         }, 600);
 
         $time = microtime(true) - $time;
 
+        $count = count($data);
+        $data = array_chunk($data, Statistics::PAGINATION_ROW_COUNT);
+        $data = $data[ $page - 1 ];
+
         return [
-            'data' => $data[ 'data' ],
+            'data' => $data,
             'pagination' => [
-                'count' => $data[ 'count' ],
+                'count' => $count,
                 'page' => $page,
-                'pageCount' => ceil($data[ 'count' ] / Statistics::PAGINATION_ROW_COUNT)
+                'pageCount' => ceil($count / Statistics::PAGINATION_ROW_COUNT)
             ],
             'time' => [
                 'from' => date('d.m.Y H:i:s', strtotime($lastDate)),
@@ -219,7 +243,7 @@ class Statistics extends \yii\db\ActiveRecord
             ],
             'db' => [
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
-                'sql' => $sql
+                'sql' => $videoSql . "\n\n" . $lastTimeSql . "\n\n" . $prevTimeSql
             ]
         ];
     }
