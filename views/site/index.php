@@ -94,12 +94,13 @@ $(document).ready(function() {
                     if (oldIds.indexOf(newIds[ i ]) == -1) {
                         // добавляем новый элемент
                         $('#news-table').find('tbody').append($('<tr data-id="' + newData[ i ].id + '" class="warning" style="position: absolute; top: ' + positions[ i ] + 'px; left: 0px; right: 0px;">' +
-                            '<td style="min-width: 200px; width: 833px;">' +
+                            '<td style="min-width: 200px; width: 693px;">' +
                             '<a href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" target="_blank">' + newData[ i ].name + '</a>' +
                             '</td>' +
-                            '<td class="text-center" style="width: 40px; max-width: 40px; font-size: 12px;">' + (newData[ i ].views_diff > 0 ? '+' + newData[ i ].views_diff : "") + '</td>' +
-                            '<td class="text-center" style="width: 40px; max-width: 40px; font-size: 12px;">' + (newData[ i ].likes_diff > 0 ? '+' + newData[ i ].likes_diff : "") + '</td>' +
-                            '<td class="text-center" style="width: 40px; max-width: 40px; font-size: 12px;">' + (newData[ i ].dislikes_diff > 0 ? '+' + newData[ i ].dislikes_diff : "") + '</td>' +
+                            '<td class="text-center" style="width: 60px; max-width: 60px; font-size: 12px;">' + (newData[ i ].views_diff > 0 ? '+' + newData[ i ].views_diff : "") + '</td>' +
+                            '<td class="text-center" style="width: 60px; max-width: 60px; font-size: 12px;">' + (newData[ i ].likes_diff > 0 ? '+' + newData[ i ].likes_diff : "") + '</td>' +
+                            '<td class="text-center" style="width: 60px; max-width: 60px; font-size: 12px;">' + (newData[ i ].dislikes_diff > 0 ? '+' + newData[ i ].dislikes_diff : "") + '</td>' +
+                            '<td class="text-center" style="width: 80px; max-width: 80px; font-size: 12px;">' + (newData[ i ].likes > 0 ? '+' + newData[ i ].likes : "") + '</td>' +
                             '</tr>'));
                     } else {
                         // изменяем позицию элемента

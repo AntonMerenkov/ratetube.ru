@@ -88,6 +88,18 @@ class SiteController extends Controller
 
         $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
 
+        // для демо
+        /*for ($i = 1; $i <= rand(2, 4); $i++) {
+            $j = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
+            $k = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
+
+            if ($j != $k) {
+                $tmp = $statisticsQueryData[ 'data' ][ $j ];
+                $statisticsQueryData[ 'data' ][ $j ] = $statisticsQueryData[ 'data' ][ $k ];
+                $statisticsQueryData[ 'data' ][ $k ] = $tmp;
+            }
+        }*/
+
         return Json::encode($statisticsQueryData[ 'data' ]);
     }
 
