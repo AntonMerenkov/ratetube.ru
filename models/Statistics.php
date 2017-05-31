@@ -195,9 +195,9 @@ class Statistics extends \yii\db\ActiveRecord
 
         $time = microtime(true);
 
-        $countCacheId = 'statistics-' . date('Y-m-d-H-i-s', strtotime($lastDate)) . '-' . (int) $filter[ 'category_id' ] . '-' . $sortType;
+        $cacheId = 'statistics-' . date('Y-m-d-H-i-s', strtotime($lastDate)) . '-' . (int) $filter[ 'category_id' ] . '-' . $sortType . '-' . $timeType;
 
-        $data = Yii::$app->cache->getOrSet($countCacheId, function() use ($sql) {
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($sql) {
             return [
                 'data' => Yii::$app->db->createCommand($sql)->queryAll(),
                 'count' => Yii::$app->db->createCommand("SELECT FOUND_ROWS()")->queryScalar(),
