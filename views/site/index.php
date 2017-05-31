@@ -109,6 +109,44 @@ $(document).ready(function() {
                 }
             }
             
+            // устанавливаем новые значения статистики для существующих элементов
+            for (var i in newData) {
+                console.log(newData[ i ]);
+                var row = rows.filter('[data-id="' + newData[ i ].id + '"]');
+                
+                if (row.find('td').eq(1).text() != (newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff))
+                    row.find('td').eq(1).css({
+                        color: 'rgba(51, 51, 51, 0)',
+                        transition: 'none'
+                    }).text(newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff).animate({
+                        color: 'rgba(51, 51, 51, 1)'
+                    });
+                
+                if (row.find('td').eq(2).text() != (newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff))
+                    row.find('td').eq(2).css({
+                        color: 'rgba(51, 51, 51, 0)',
+                        transition: 'none'
+                    }).text(newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff).animate({
+                        color: 'rgba(51, 51, 51, 1)'
+                    });
+                
+                if (row.find('td').eq(3).text() != (newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff))
+                    row.find('td').eq(3).css({
+                        color: 'rgba(51, 51, 51, 0)',
+                        transition: 'none'
+                    }).text(newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff).animate({
+                        color: 'rgba(51, 51, 51, 1)'
+                    });
+                
+                if (row.find('td').eq(4).text() != (newData[ i ].likes == 0 ? '' : newData[ i ].likes))
+                    row.find('td').eq(4).css({
+                        color: 'rgba(51, 51, 51, 0)',
+                        transition: 'none'
+                    }).text(newData[ i ].likes == 0 ? '' : newData[ i ].likes).css({
+                        color: 'rgba(51, 51, 51, 1)'
+                    });
+            }
+            
             // статичная замена
             setTimeout(function() {
                 // удаляем невидимые элементы
