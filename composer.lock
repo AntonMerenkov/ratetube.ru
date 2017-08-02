@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5438861ad666f7367e7d9ae0e539b7d0",
+    "content-hash": "f8247cf166e195ccc23b371b95544355",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -87,6 +87,145 @@
             ]
         },
         {
+            "name": "bower-asset/jquery-cookie",
+            "version": "v1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/carhartl/jquery-cookie.git",
+                "reference": "7f88a4e631aba8a8c688fd8999ce6b9bcfd50718"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/carhartl/jquery-cookie/zipball/7f88a4e631aba8a8c688fd8999ce6b9bcfd50718",
+                "reference": "7f88a4e631aba8a8c688fd8999ce6b9bcfd50718",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.2"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": [
+                    "./jquery.cookie.js"
+                ],
+                "bower-asset-ignore": [
+                    "test",
+                    ".*",
+                    "*.json",
+                    "*.md",
+                    "*.txt",
+                    "Gruntfile.js"
+                ]
+            }
+        },
+        {
+            "name": "bower-asset/jquery-form",
+            "version": "v4.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jquery-form/form.git",
+                "reference": "c15a69251b36544cda48892c23e0dcec21fff838"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jquery-form/form/zipball/c15a69251b36544cda48892c23e0dcec21fff838",
+                "reference": "c15a69251b36544cda48892c23e0dcec21fff838",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.7"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": "src/jquery.form.js",
+                "bower-asset-ignore": [
+                    "README.md",
+                    "composer.json",
+                    "package.json"
+                ]
+            },
+            "license": [
+                "(MIT OR LGPL-3.0)"
+            ],
+            "description": "The jQuery Form Plugin allows you to easily and unobtrusively upgrade HTML forms to use AJAX.",
+            "keywords": [
+                "ajax",
+                "form",
+                "html-form",
+                "jquery",
+                "jquery-form",
+                "jquery-plugin",
+                "json",
+                "json-form"
+            ]
+        },
+        {
+            "name": "bower-asset/jquery-mousewheel",
+            "version": "3.1.13",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jquery/jquery-mousewheel.git",
+                "reference": "67289b6b2aa0066d7d78a5807f520387135ffb22"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jquery/jquery-mousewheel/zipball/67289b6b2aa0066d7d78a5807f520387135ffb22",
+                "reference": "67289b6b2aa0066d7d78a5807f520387135ffb22",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.2.2"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": "./jquery.mousewheel.js",
+                "bower-asset-ignore": [
+                    "*.json",
+                    "*.markdown",
+                    "*.txt",
+                    ".*",
+                    "!LICENSE.txt",
+                    "Gruntfile.js",
+                    "test"
+                ]
+            }
+        },
+        {
+            "name": "bower-asset/jquery.easing",
+            "version": "v1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jozefizso/bower-jquery-easing.git",
+                "reference": "7ddc8b25d24c78bbae8d00a3ae43bf3f274ec8b5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jozefizso/bower-jquery-easing/zipball/7ddc8b25d24c78bbae8d00a3ae43bf3f274ec8b5",
+                "reference": "7ddc8b25d24c78bbae8d00a3ae43bf3f274ec8b5",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.2.1"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": "js/jquery.easing.js",
+                "bower-asset-ignore": [
+                    "**/.*",
+                    "node_modules",
+                    "bower_components",
+                    "test",
+                    "tests"
+                ]
+            },
+            "description": "jQuery Easing plugin",
+            "keywords": [
+                "easing",
+                "jquery",
+                "jquery plugin"
+            ]
+        },
+        {
             "name": "bower-asset/jquery.inputmask",
             "version": "3.3.6",
             "source": {
@@ -143,6 +282,50 @@
                 "jquery",
                 "mask",
                 "plugins"
+            ]
+        },
+        {
+            "name": "bower-asset/jquery.scrollTo",
+            "version": "2.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/flesler/jquery.scrollTo.git",
+                "reference": "d33ae4515be21a76bb7907c94dd8a0ca0de7e49b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/flesler/jquery.scrollTo/zipball/d33ae4515be21a76bb7907c94dd8a0ca0de7e49b",
+                "reference": "d33ae4515be21a76bb7907c94dd8a0ca0de7e49b",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.8"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": [
+                    "./jquery.scrollTo.js"
+                ],
+                "bower-asset-ignore": [
+                    "**/.*",
+                    "demo",
+                    "tests",
+                    "CHANGELOG",
+                    "README.md",
+                    "composer.json",
+                    "package.json"
+                ]
+            },
+            "description": "Lightweight, cross-browser and highly customizable animated scrolling with jQuery",
+            "keywords": [
+                "anchors",
+                "animated",
+                "animation",
+                "browser",
+                "jquery",
+                "links",
+                "scroll",
+                "scrolling"
             ]
         },
         {
@@ -315,6 +498,100 @@
             "time": "2017-03-13T06:30:53+00:00"
         },
         {
+            "name": "khr/php-mcurl-client",
+            "version": "3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/KhristenkoYura/mcurl.git",
+                "reference": "894eb864a0410173264b95ea7c69f15bb9d2cbe1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/KhristenkoYura/mcurl/zipball/894eb864a0410173264b95ea7c69f15bb9d2cbe1",
+                "reference": "894eb864a0410173264b95ea7c69f15bb9d2cbe1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MCurl\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Khristenko Yura",
+                    "email": "khristenkoyura@gmail.com"
+                }
+            ],
+            "description": "wrap curl client (http client) for PHP 5.3; using php multi curl, parallel request and write asynchronous code",
+            "homepage": "http://github.com/khristenkoyura/mcurl",
+            "keywords": [
+                "async",
+                "client",
+                "curl",
+                "http",
+                "multi",
+                "parallel",
+                "php",
+                "requests",
+                "spider"
+            ],
+            "time": "2016-06-08T07:34:09+00:00"
+        },
+        {
+            "name": "sjaakp/yii2-gcharts",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sjaakp/yii2-gcharts.git",
+                "reference": "695335f4ac197ea40f0e399b29777468c0fe3829"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sjaakp/yii2-gcharts/zipball/695335f4ac197ea40f0e399b29777468c0fe3829",
+                "reference": "695335f4ac197ea40f0e399b29777468c0fe3829",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "*"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "sjaakp\\gcharts\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sjaak Priester",
+                    "email": "sjaak@sjaakpriester.nl",
+                    "homepage": "http://sjaakpriester.nl"
+                }
+            ],
+            "description": "Google Charts the Yii 2.0 way",
+            "keywords": [
+                "charts",
+                "extension",
+                "visualization",
+                "widget",
+                "yii",
+                "yii2"
+            ],
+            "time": "2015-10-29T11:10:36+00:00"
+        },
+        {
             "name": "swiftmailer/swiftmailer",
             "version": "v5.4.8",
             "source": {
@@ -367,6 +644,78 @@
                 "mailer"
             ],
             "time": "2017-05-01T15:54:03+00:00"
+        },
+        {
+            "name": "thatsus/jquery-circle-progress",
+            "version": "v1.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thatsus/jquery-circle-progress.git",
+                "reference": "89f23029440e9cbbe773dfed0cf58b0488386b86"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thatsus/jquery-circle-progress/zipball/89f23029440e9cbbe773dfed0cf58b0488386b86",
+                "reference": "89f23029440e9cbbe773dfed0cf58b0488386b86",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "time": "2015-08-27T14:35:23+00:00"
+        },
+        {
+            "name": "uran1980/yii2-jquery-essential",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/uran1980/yii2-jquery-essential.git",
+                "reference": "b1e6d8d2f550bb95e7c8b1e61ef626cb06511be9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/uran1980/yii2-jquery-essential/zipball/b1e6d8d2f550bb95e7c8b1e61ef626cb06511be9",
+                "reference": "b1e6d8d2f550bb95e7c8b1e61ef626cb06511be9",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery-cookie": "*",
+                "bower-asset/jquery-form": "*",
+                "bower-asset/jquery-mousewheel": "*",
+                "bower-asset/jquery.easing": "*",
+                "bower-asset/jquery.scrollto": "*",
+                "yiisoft/yii2": "~2"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "uran1980\\yii\\assets\\jQueryEssential\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Yakovlev",
+                    "email": "uran1980@gmail.com",
+                    "homepage": "https://github.com/uran1980",
+                    "role": "Developer"
+                }
+            ],
+            "description": "An Yii2 jQuery Essential assets component.",
+            "homepage": "https://github.com/uran1980/yii2-jquery-essential",
+            "keywords": [
+                "assets",
+                "jQuery Cookie",
+                "jQuery Easing",
+                "jQuery Essential Plugins",
+                "jQuery MouseWheel",
+                "jQuery Scroll To",
+                "yii2",
+                "yii2-jquery-essential"
+            ],
+            "time": "2015-03-14T21:40:00+00:00"
         },
         {
             "name": "yiisoft/yii2",
@@ -3084,7 +3433,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "uran1980/yii2-jquery-essential": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
