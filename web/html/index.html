@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RateTube</title>
+
+    <meta name="viewport" content="width=device-width">
+
+    <script type="text/javascript" src="lib/jquery/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+    <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/share42/share42.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="lib/jquery-circle-progress/circle-progress.js"></script>
+    <link rel="stylesheet" href="lib/flexslider/flexslider.css">
+    <script type="text/javascript" src="lib/flexslider/jquery.flexslider-min.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-xs-6">
+                <a href="/" class="logo">
+                    <img src="img/logo.png">
+                </a>
+            </div>
+            <div class="col-md-8">
+                <div class="nav-block">
+                    <div id="categories">
+                        <nav>
+                            <ul>
+                                <li class="active"><a href="#">Игры</a></li>
+                                <li><a href="#">Приколы</a></li>
+                                <li><a href="#">Музыка</a></li>
+                                <li><a href="#">Стримы</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div id="tags">
+                        <nav>
+                            <ul>
+                                <li class="active"><a href="#">WOT</a></li>
+                                <li><a href="#">WOW</a></li>
+                                <li><a href="#">TESO</a></li>
+                                <li><a href="#">DOTA</a></li>
+                            </ul>
+                        </nav>
+
+                        <div id="search">
+                            <form>
+                                <input type="text" name="q" class="form-control" placeholder="Что вы хотите найти?">
+                                <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="refresh-block">
+                    <div id="refresh-progress"></div>
+                    <a href="#" id="refresh-control"></a>
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-6">
+                <div id="timeframes">
+                    <nav>
+                        <ul>
+                            <li class="active"><a href="#">10 минут</a></li>
+                            <li><a href="#">неделя</a></li>
+                            <li><a href="#">час</a></li>
+                            <li><a href="#">день</a></li>
+                            <li><a href="#">месяц</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<main>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="widget widget-top-channels">
+                    <div class="widget-header">Топ-10 блоггеров</div>
+
+                    <div class="channel-list">
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-1.png')"></div>
+                            <div class="info">
+                                <div class="name">Jove</div>
+                                <div class="description">Подписчиков: 2 755 625</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-2.png')"></div>
+                            <div class="info">
+                                <div class="name">Amway921WOT</div>
+                                <div class="description">Подписчиков: 1 576 672</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-3.png')"></div>
+                            <div class="info">
+                                <div class="name">PROТанки - моды...</div>
+                                <div class="description">Подписчиков: 832 056</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-4.png')"></div>
+                            <div class="info">
+                                <div class="name">WoT Fan - развле...</div>
+                                <div class="description">Подписчиков: 758 485</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-5.png')"></div>
+                            <div class="info">
+                                <div class="name">Vspishka в World ...</div>
+                                <div class="description">Подписчиков: 684 785</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-6.png')"></div>
+                            <div class="info">
+                                <div class="name">EviL GrannY | Worl...</div>
+                                <div class="description">Подписчиков: 620 194</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-7.png')"></div>
+                            <div class="info">
+                                <div class="name">DESERTOD TV</div>
+                                <div class="description">Подписчиков: 543 691</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-8.png')"></div>
+                            <div class="info">
+                                <div class="name">QuickyBaby</div>
+                                <div class="description">Подписчиков: 500 936</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-9.png')"></div>
+                            <div class="info">
+                                <div class="name">Murazor TV | World...</div>
+                                <div class="description">Подписчиков: 427 705</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-10.png')"></div>
+                            <div class="info">
+                                <div class="name">World of Tanks. О...</div>
+                                <div class="description">Подписчиков: 385 437</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="widget widget-transparent widget-ad">
+                    <a href="#">
+                        <img src="data/ad-left-1.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-2.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-3.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-4.png">
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-10">
+                <div id="channel-info" class="hidden">
+                    <div class="image" style="background-image: url('data/channel-big-1.png')"></div>
+                    <div class="info">
+                        <div class="name">Jove</div>
+                        <div class="description">2 308 видео | 2 755 625 подписчиков</div>
+                    </div>
+                </div>
+                <div id="search-info" class="hidden">
+                    <div class="summary">
+                        Найдено <span class="count">734 видео</span> по запросу: "<span class="query">world of tanks</span>"
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Что вы хотите найти?" value="world of tanks">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-search"></i> Найти</button>
+                        </span>
+                    </div>
+                </div>
+                <table id="news-table" class="table table-condensed">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="active"><a href="/ajax/set-sorting/views_diff">+ <i
+                                class="glyphicon glyphicon-eye-open"></i></a>
+                        </th>
+                        <th><a href="/ajax/set-sorting/likes_diff">+ <i class="glyphicon glyphicon-hand-up"></i></a>
+                        </th>
+                        <th><a href="/ajax/set-sorting/dislikes_diff">+ <i
+                                class="glyphicon glyphicon-hand-down"></i></a></th>
+                        <th><a href="/ajax/set-sorting/views"><i class="glyphicon glyphicon-eye-open"></i></a></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-id="8722" data-key="0">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-5.png')"></a>
+                                </div>
+
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Drp_3enFZRI"
+                                                                target="_blank">"МАМКИН СТРАЖНИК"
+                                    ДОКТОР ЧЛЕНС ► Heart's Medicine - Hospital Heat #8</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+18860</td>
+                        <td class="text-center">+1087</td>
+                        <td class="text-center">+12</td>
+                        <td class="text-center">
+                            100943
+                        </td>
+                    </tr>
+                    <tr class="active" data-id="8723" data-key="1">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=I5iFN9w9s4c" class="ad"
+                                                                target="_blank">ВЕСЁЛЫЕ КОЛЁСА
+                                    ВОЗВРАЩАЮТСЯ ► Happy Wheels #181</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+14028</td>
+                        <td class="text-center">+1544</td>
+                        <td class="text-center">+13</td>
+                        <td class="text-center">
+                            95973
+                        </td>
+                    </tr>
+                    <tr data-id="8724" data-key="2">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-5.png')"></a>
+                                </div>
+
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=IleVMk0C0mc"
+                                                                target="_blank">Churchill Gun Carrier
+                                    - Нашли на помойке - Гайд</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+13565</td>
+                        <td class="text-center">+593</td>
+                        <td class="text-center">+22</td>
+                        <td class="text-center">
+                            74467
+                        </td>
+                    </tr>
+                    <tr data-id="8716" data-key="3">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-4.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=dsYBcKXu0xg"
+                                                                target="_blank">Vevo - HOT THIS WEEK:
+                                    Jul. 21, 2017</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+11233</td>
+                        <td class="text-center">+68</td>
+                        <td class="text-center">+13</td>
+                        <td class="text-center">
+                            256249
+                        </td>
+                    </tr>
+                    <tr data-id="8700" data-key="4">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=chTBE_qH75I"
+                                                                target="_blank">У МЕНЯ ЕСТЬ НАСТОЯЩЕЕ
+                                    РУЖЬЁ ► FARPOINT #1</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+3454</td>
+                        <td class="text-center">+170</td>
+                        <td class="text-center">+7</td>
+                        <td class="text-center">
+                            404681
+                        </td>
+                    </tr>
+                    <tr data-id="8710" data-key="5" class="full">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Eg4R6CrKQfo"
+                                                                target="_blank">Джова принимают в
+                                    отряд Кактусов! ● PLAYERUNKNOWN'S BATTLEGROUNDS</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+2792</td>
+                        <td class="text-center">+75</td>
+                        <td class="text-center">+5</td>
+                        <td class="text-center">
+                            128631
+                        </td>
+                    </tr>
+                    <tr class="info-row">
+                        <td colspan="5">
+                            <div class="cell-content">
+                                <div class="image">
+                                    <a href="#">
+                                        <img src="data/video-1.png">
+                                    </a>
+                                </div>
+                                <div class="video-info">
+                                    <div class="channel-info">
+                                        <a href="#">
+                                            <div class="channel-image" style="background-image: url('data/channel-1.png')"></div>
+                                            <div class="channel-name">Jove</div>
+                                        </a>
+                                    </div>
+                                    <div class="name">
+                                        <a href="#">Джова принимают в
+                                        отряд Кактусов! ● PLAYERUNKNOWN'S BATTLEGROUNDS</a>
+                                    </div>
+                                    <div class="share42init"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-id="8707" data-key="6">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-6.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=IJBrola3u-8"
+                                                                target="_blank">КАЧАЕМ ТОЛЬКО ЛУЧШЕЕ!
+                                    ● Самые клёвые канистры в WoT</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+2606</td>
+                        <td class="text-center">+65</td>
+                        <td class="text-center">+8</td>
+                        <td class="text-center">
+                            119616
+                        </td>
+                    </tr>
+                    <tr class="active" data-id="8718" data-key="7">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=K18sUU5imyo"
+                                                                target="_blank">Розыгрыш iPhone 7
+                                    Plus и OnePlus 5!</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+2272</td>
+                        <td class="text-center">+123</td>
+                        <td class="text-center">+3</td>
+                        <td class="text-center">
+                            45483
+                        </td>
+                    </tr>
+                    <tr data-id="8697" data-key="8">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Fm-tnNzKAHY"
+                                                                target="_blank">Умер Честер
+                                    Беннингтон [LINKIN PARK]</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1992</td>
+                        <td class="text-center">+157</td>
+                        <td class="text-center">+18</td>
+                        <td class="text-center">
+                            247712
+                        </td>
+                    </tr>
+                    <tr data-id="8702" data-key="9">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=IXKPt4Pr17s"
+                                                                target="_blank">121 - Лучший бой в
+                                    истории</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1664</td>
+                        <td class="text-center">+145</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center">
+                            232141
+                        </td>
+                    </tr>
+                    <tr data-id="8661" data-key="10">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=LjMhBIX2yuo"
+                                                                target="_blank">СЛОУ-КУПЛИНОУ ►
+                                    Superhot VR #2</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1392</td>
+                        <td class="text-center">+62</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            385437
+                        </td>
+                    </tr>
+                    <tr data-id="8701" data-key="11">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-4.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=aqHFSgj23ZE"
+                                                                target="_blank">ПОЛЕ ЧУСЕКС ► Bio
+                                    Inc. Redemption #12</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1298</td>
+                        <td class="text-center">+58</td>
+                        <td class="text-center">+2</td>
+                        <td class="text-center">
+                            206455
+                        </td>
+                    </tr>
+                    <tr data-id="8645" data-key="12">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=kUidDKDYTFc"
+                                                                target="_blank">Разработчики сошли с
+                                    ума?! ● Первый прем-танк 10 уровня!</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1205</td>
+                        <td class="text-center">+25</td>
+                        <td class="text-center">+5</td>
+                        <td class="text-center">
+                            307441
+                        </td>
+                    </tr>
+                    <tr data-id="8660" data-key="13">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=6CHQg4AkhC8"
+                                                                target="_blank">ОПЯТЬ ЭТИ
+                                    МЕХАНИЧЕСКИЕ СВОЛОЧИ!!! ► The Joy of Creation: Story Mode</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1144</td>
+                        <td class="text-center">+66</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            346445
+                        </td>
+                    </tr>
+                    <tr data-id="8387" data-key="14">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=bjfSXAz5YQA"
+                                                                target="_blank">НОВЫЙ МОДПАК ДЖОВА
+                                    9.19.1 ● Сборка самых крутых модов WoT!</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+1043</td>
+                        <td class="text-center">+7</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            474862
+                        </td>
+                    </tr>
+                    <tr data-id="8725" data-key="15">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-10.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=wf116Jtr4B4"
+                                                                target="_blank">Metal Gear Rising:
+                                    Revengeance - [#7] Лифт в небо</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+999</td>
+                        <td class="text-center">+108</td>
+                        <td class="text-center">+3</td>
+                        <td class="text-center">
+                            3807
+                        </td>
+                    </tr>
+                    <tr data-id="8594" data-key="16">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=JhgGHtEjDag"
+                                                                target="_blank">ВКЛЮЧАЙ ФАНТАЗИЮ,
+                                    ШАЛУНИШКА ► Heart's Medicine - Hospital Heat #7</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+975</td>
+                        <td class="text-center">+28</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            460729
+                        </td>
+                    </tr>
+                    <tr data-id="8611" data-key="17">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=p-2DtqA8r-E"
+                                                                target="_blank">БОБКОЗАМЕНИТЕЛЬ ►
+                                    Surgeon Simulator VR: Meet The Medic</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+961</td>
+                        <td class="text-center">+30</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            488284
+                        </td>
+                    </tr>
+                    <tr data-id="8642" data-key="18">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=e_k9qOmENC4"
+                                                                target="_blank">Новинка! Стрим-Шоу
+                                    "Голубая Устрица" ● Урон не набил - на бутылку сел!</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+695</td>
+                        <td class="text-center">+24</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            197226
+                        </td>
+                    </tr>
+                    <tr data-id="8630" data-key="19">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=gvnL3yPyXm8"
+                                                                target="_blank">Стрим - Ведьмак 3:
+                                    Дикая Охота - Самое ламповое прохождение - Часть 1</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+637</td>
+                        <td class="text-center">+27</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            166455
+                        </td>
+                    </tr>
+                    <tr data-id="8339" data-key="20">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-7.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=gn7nYwGZFOI"
+                                                                target="_blank">Tiger 131 - Стоит ли
+                                    потеть? - Гайд</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+551</td>
+                        <td class="text-center">+8</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            552277
+                        </td>
+                    </tr>
+                    <tr data-id="2104" data-key="21">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=mgI_pH8TOVY"
+                                                                target="_blank">Dua Lipa - Be The One
+                                    (Official Video)</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+514</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            7756789
+                        </td>
+                    </tr>
+                    <tr data-id="8621" data-key="22">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-5.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=8RCR9mLcBaU"
+                                                                target="_blank">Обзор MacBook Pro
+                                    2017: Что-то не так...</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+492</td>
+                        <td class="text-center">+13</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            210334
+                        </td>
+                    </tr>
+                    <tr data-id="8592" data-key="23">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=cjf1J0-bYv8"
+                                                                target="_blank">T110E4 - Я от него
+                                    просто в шоке</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+465</td>
+                        <td class="text-center">+17</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            338182
+                        </td>
+                    </tr>
+                    <tr data-id="8632" data-key="24">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=a7Cd8iS_YDI"
+                                                                target="_blank">САМЫЙ ВНЕЗАПНЫЙ
+                                    СКРИМЕР ► Toybox</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+460</td>
+                        <td class="text-center">+29</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            303994
+                        </td>
+                    </tr>
+                    <tr data-id="8536" data-key="25">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=R7kVxdYsKYc"
+                                                                target="_blank">ЭТОМУ ГОРОДУ НУЖЕН
+                                    НОВЫЙ ГЕРОЙ! ► Batman: Arkham VR #1</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+436</td>
+                        <td class="text-center">+19</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            518060
+                        </td>
+                    </tr>
+                    <tr data-id="2100" data-key="26">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-5.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=F3hTW9e20d8"
+                                                                target="_blank">The Hanging Tree’
+                                    James Newton Howard ft. Jennifer Lawrence (Audio)</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+434</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            29159434
+                        </td>
+                    </tr>
+                    <tr data-id="6730" data-key="27">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-4.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=zNAmeiQcGLI"
+                                                                target="_blank">ПЕДРИАТИЧЕСКОЕ
+                                    ОТДЕЛЕНИЕ ► Heart's Medicine - Hospital Heat</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+427</td>
+                        <td class="text-center">+15</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            601135
+                        </td>
+                    </tr>
+                    <tr data-id="4228" data-key="28">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=3x9XFHitDC8"
+                                                                target="_blank">HAPPY WATER BOTTLE
+                                    FLIP CHALLENGE ► Happy Wheels #146</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+420</td>
+                        <td class="text-center">+12</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            631836
+                        </td>
+                    </tr>
+                    <tr data-id="8719" data-key="29">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=jO98njTo7io"
+                                                                target="_blank">Travis Scott - Travis
+                                    Scott's "Butterfly Effect" Footnotes</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+419</td>
+                        <td class="text-center">+8</td>
+                        <td class="text-center">+4</td>
+                        <td class="text-center">
+                            8416
+                        </td>
+                    </tr>
+                    <tr data-id="8618" data-key="30">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=rhUXhFdHN4Q"
+                                                                target="_blank">РАК 45% НАГНУЛ ВСЕХ
+                                    СТАТИСТОВ ● Вижу Впервые</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+401</td>
+                        <td class="text-center">+11</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            202379
+                        </td>
+                    </tr>
+                    <tr data-id="8143" data-key="31">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-4.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Bk3G0rndqi8"
+                                                                target="_blank">СОСЕДИ-ЗАСРАНЦЫ ►
+                                    Pipejob</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+386</td>
+                        <td class="text-center">+5</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            776930
+                        </td>
+                    </tr>
+                    <tr data-id="8714" data-key="32">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=qO1oTyCGL6w"
+                                                                target="_blank">«Дюнкерк» — отличный
+                                    фильм, который я не могу посоветовать никому</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+382</td>
+                        <td class="text-center">+21</td>
+                        <td class="text-center">+2</td>
+                        <td class="text-center">
+                            11990
+                        </td>
+                    </tr>
+                    <tr data-id="6210" data-key="33">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=2Zcp6Ze0WQE"
+                                                                target="_blank">ЛУЧШИЕ УРОВНИ 2017-го
+                                    ГОДА ► Happy Wheels #153</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+371</td>
+                        <td class="text-center">+9</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            657557
+                        </td>
+                    </tr>
+                    <tr data-id="8290" data-key="34">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-6.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Y8yeoSF9Yo0"
+                                                                target="_blank">КУПЛИНЭО ► Superhot
+                                    VR</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+368</td>
+                        <td class="text-center">+7</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            759741
+                        </td>
+                    </tr>
+                    <tr data-id="8676" data-key="35">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-7.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=gPIwWm8Oxpg"
+                                                                target="_blank">Как новичкам поднять
+                                    стату в 2017 году</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+367</td>
+                        <td class="text-center">+19</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            136558
+                        </td>
+                    </tr>
+                    <tr data-id="8704" data-key="36">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=Zd6QRtyytjc"
+                                                                target="_blank">PlayerUnknown's
+                                    Battlegrounds - Бригада Ада. Таких лохов вы еще не видели ! xD [Стрим]</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+359</td>
+                        <td class="text-center">+16</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            18446
+                        </td>
+                    </tr>
+                    <tr data-id="8629" data-key="37">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=uez1NmzLozw"
+                                                                target="_blank">Стрим - PUBG -
+                                    Киберкотлетный нагиб 8 - Топ-1 невозможен</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+355</td>
+                        <td class="text-center">+8</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            135606
+                        </td>
+                    </tr>
+                    <tr data-id="8662" data-key="38">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=W5cmd6gVUlM"
+                                                                target="_blank">Бомж со сковородой
+                                    разносит всех - 10 убийств соло. 10 KILLS</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+351</td>
+                        <td class="text-center">+27</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            102203
+                        </td>
+                    </tr>
+                    <tr data-id="2099" data-key="39">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-7.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=GuAtcpFQpMw"
+                                                                target="_blank">Sebastian Ingrosso,
+                                    Tommy Trash, John Martin - Reload</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+346</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            58524281
+                        </td>
+                    </tr>
+                    <tr data-id="5945" data-key="40">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-9.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=-2bwgoI8elQ"
+                                                                target="_blank">КУПЛИНОВ ПОЕХАЛ
+                                    ОТДЫХАТЬ</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+341</td>
+                        <td class="text-center">+13</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            995234
+                        </td>
+                    </tr>
+                    <tr data-id="8533" data-key="41">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=tLV15iG_Ysw"
+                                                                target="_blank">РАНЬШЕ БЫЛО ЛУЧШЕ ►
+                                    Happy Wheels #180</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+336</td>
+                        <td class="text-center">+16</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            286191
+                        </td>
+                    </tr>
+                    <tr data-id="8497" data-key="42">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=_D-lORrV-9Y"
+                                                                target="_blank">SZA - Dinner
+                                    Party</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+327</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            236361
+                        </td>
+                    </tr>
+                    <tr data-id="8595" data-key="43">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-7.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=tc1yk6w0nAs"
+                                                                target="_blank">МАЛО, НО НАПРЯЖНО ►
+                                    NOMED</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+312</td>
+                        <td class="text-center">+15</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            322354
+                        </td>
+                    </tr>
+                    <tr data-id="8713" data-key="44">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=4M2aFLKWovc"
+                                                                target="_blank">Descendants Cast -
+                                    :60 With</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+312</td>
+                        <td class="text-center">+8</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            14961
+                        </td>
+                    </tr>
+                    <tr data-id="8436" data-key="45">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-1.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=WwupA8_VgUw"
+                                                                target="_blank">КАК КУПЛИНОВ В НОВОМ
+                                    ЧЕЛОВЕКЕ-ПАУКЕ СНИМАЛСЯ</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+299</td>
+                        <td class="text-center">+14</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            671572
+                        </td>
+                    </tr>
+                    <tr data-id="8643" data-key="46">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-8.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=yH6xmexhcS4"
+                                                                target="_blank">ДУО СМЕРТИ И УГАРА:
+                                    Джов и Шиморо берут ТОП-1! ● PUBG</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+293</td>
+                        <td class="text-center">+6</td>
+                        <td class="text-center">+1</td>
+                        <td class="text-center">
+                            156008
+                        </td>
+                    </tr>
+                    <tr data-id="3385" data-key="47">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-10.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=TJoEnuR3D4M"
+                                                                target="_blank">ТАЕТ ЛЕД [World Of
+                                    Tanks Version]</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+277</td>
+                        <td class="text-center">+12</td>
+                        <td class="text-center">+2</td>
+                        <td class="text-center">
+                            1049733
+                        </td>
+                    </tr>
+                    <tr data-id="8356" data-key="48">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-3.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=i2mejEQzUV8"
+                                                                target="_blank">Пять способов унизить
+                                    Tiger 131</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+272</td>
+                        <td class="text-center">+5</td>
+                        <td class="text-center">+5</td>
+                        <td class="text-center">
+                            328049
+                        </td>
+                    </tr>
+                    <tr data-id="4182" data-key="49">
+                        <td style="min-width: 200px; width: 693px;">
+                            <div class="cell-table">
+                                <div class="cell-table-cell"><a href="#" class="channel-link"
+                                                                style="background-image: url('data/channel-2.png')"></a>
+                                </div>
+                                <div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=ta2sFMBkZLo"
+                                                                target="_blank">M46 Patton KR - Ну
+                                    вот опять - Гайд</a></div>
+                                <div class="cell-table-cell"><a href="#" class="info"></a></div>
+                            </div>
+                        </td>
+                        <td class="text-center">+264</td>
+                        <td class="text-center">+3</td>
+                        <td class="text-center"></td>
+                        <td class="text-center">
+                            346403
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <nav>
+                    <ul class="pagination">
+
+                        <li class="active">
+                            <a href="/">1</a>
+                        </li>
+                        <li>
+                            <a href="/?page=2">2</a>
+                        </li>
+                        <li>
+                            <a href="/?page=3">3</a>
+                        </li>
+                        <li>
+                            <a href="/?page=4">4</a>
+                        </li>
+                        <li>
+                            <a href="/?page=5">5</a>
+                        </li>
+                        <li class="disabled"><a href="#"><span aria-hidden="true">...</span></a></li>
+                        <li>
+                            <a href="/?page=174">174</a>
+                        </li>
+                        <li>
+                            <a href="/?page=175">175</a>
+                        </li>
+                        <li>
+                            <a href="/?page=176">176</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-lg-2">
+                <div class="widget widget-streaming">
+                    <div class="widget-header">В эфире</div>
+
+                    <div class="video-list">
+                        <div class="video-item">
+                            <a href="#" class="channel-name">Marakasi wot</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-1.png" class="image">
+                                <div class="name">НОВЫЙ АККАУНТ БЕЗ
+                                    ДОНАТА, НАБИРАЮ
+                                    РЕКРУТОВ! РАЗЫГРЫВАЮ
+                                    ГОЛДУ World of Tanks</div>
+                            </a>
+                        </div>
+
+                        <div class="video-item">
+                            <a href="#" class="channel-name">De3epTup</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-2.png" class="image">
+                                <div class="name">Арта Wot. В погоне за уроном:
+                                    Объект 261 и GWE E100.
+                                    Стрим танки.</div>
+                            </a>
+                        </div>
+
+                        <div class="video-item">
+                            <a href="#" class="channel-name">Game World</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-3.png" class="image">
+                                <div class="name">WOT Мастер на все топы.</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget widget-top-videos">
+                    <div class="widget-header">Топ-5 видео</div>
+
+                    <div class="flexslider">
+                        <div class="video-list">
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-1.png" class="image">
+                                </a>
+                            </div>
+
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-2.png" class="image">
+                                </a>
+                            </div>
+
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-3.png" class="image">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation">
+                        <a href="#" class="flex-prev"></a>
+                        <a href="#" class="flex-next"></a>
+                    </div>
+
+                    <div class="control-nav"></div>
+                </div>
+
+                <div class="widget widget-transparent widget-ad visible-lg-block">
+                    <a href="#">
+                        <img src="data/ad-right-1.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-right-2.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-right-3.png">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-xs-6">
+                <a href="/" class="logo">
+                    <img src="img/logo.png">
+                </a>
+            </div>
+            <div class="col-md-8">
+                <nav>
+                    <ul>
+                        <li><a href="#">Статистика</a></li>
+                        <li><a href="#">Сотрудничество</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-md-2 col-xs-6">
+                <div class="contact-list">
+                    <div class="contact-item phone">
+                        <a href="#">+7 (999) 123-45-67</a>
+                    </div>
+                    <div class="contact-item email">
+                        <a href="#">mail@ratetube.ru</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script type="text/javascript" src="js/scripts.js"></script>
+</body>
+</html>

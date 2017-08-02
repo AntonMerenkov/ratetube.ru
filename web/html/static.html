@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RateTube</title>
+
+    <meta name="viewport" content="width=device-width">
+
+    <script type="text/javascript" src="lib/jquery/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+    <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/share42/share42.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="lib/jquery-circle-progress/circle-progress.js"></script>
+    <link rel="stylesheet" href="lib/flexslider/flexslider.css">
+    <script type="text/javascript" src="lib/flexslider/jquery.flexslider-min.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-xs-6">
+                <a href="/" class="logo">
+                    <img src="img/logo.png">
+                </a>
+            </div>
+            <div class="col-md-8">
+                <div class="nav-block">
+                    <div id="categories">
+                        <nav>
+                            <ul>
+                                <li class="active"><a href="#">Игры</a></li>
+                                <li><a href="#">Приколы</a></li>
+                                <li><a href="#">Музыка</a></li>
+                                <li><a href="#">Стримы</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div id="tags">
+                        <nav>
+                            <ul>
+                                <li class="active"><a href="#">WOT</a></li>
+                                <li><a href="#">WOW</a></li>
+                                <li><a href="#">TESO</a></li>
+                                <li><a href="#">DOTA</a></li>
+                            </ul>
+                        </nav>
+
+                        <div id="search">
+                            <form>
+                                <input type="text" name="q" class="form-control" placeholder="Что вы хотите найти?">
+                                <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="refresh-block">
+                    <div id="refresh-progress"></div>
+                    <a href="#" id="refresh-control"></a>
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-6">
+                <div id="timeframes">
+                    <nav>
+                        <ul>
+                            <li class="active"><a href="#">10 минут</a></li>
+                            <li><a href="#">неделя</a></li>
+                            <li><a href="#">час</a></li>
+                            <li><a href="#">день</a></li>
+                            <li><a href="#">месяц</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<main>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="widget widget-top-channels">
+                    <div class="widget-header">Топ-10 блоггеров</div>
+
+                    <div class="channel-list">
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-1.png')"></div>
+                            <div class="info">
+                                <div class="name">Jove</div>
+                                <div class="description">Подписчиков: 2 755 625</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-2.png')"></div>
+                            <div class="info">
+                                <div class="name">Amway921WOT</div>
+                                <div class="description">Подписчиков: 1 576 672</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-3.png')"></div>
+                            <div class="info">
+                                <div class="name">PROТанки - моды...</div>
+                                <div class="description">Подписчиков: 832 056</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-4.png')"></div>
+                            <div class="info">
+                                <div class="name">WoT Fan - развле...</div>
+                                <div class="description">Подписчиков: 758 485</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-5.png')"></div>
+                            <div class="info">
+                                <div class="name">Vspishka в World ...</div>
+                                <div class="description">Подписчиков: 684 785</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-6.png')"></div>
+                            <div class="info">
+                                <div class="name">EviL GrannY | Worl...</div>
+                                <div class="description">Подписчиков: 620 194</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-7.png')"></div>
+                            <div class="info">
+                                <div class="name">DESERTOD TV</div>
+                                <div class="description">Подписчиков: 543 691</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-8.png')"></div>
+                            <div class="info">
+                                <div class="name">QuickyBaby</div>
+                                <div class="description">Подписчиков: 500 936</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-9.png')"></div>
+                            <div class="info">
+                                <div class="name">Murazor TV | World...</div>
+                                <div class="description">Подписчиков: 427 705</div>
+                            </div>
+                        </a>
+
+                        <a class="channel-item" href="#">
+                            <div class="image" style="background-image: url('data/channel-10.png')"></div>
+                            <div class="info">
+                                <div class="name">World of Tanks. О...</div>
+                                <div class="description">Подписчиков: 385 437</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="widget widget-transparent widget-ad">
+                    <a href="#">
+                        <img src="data/ad-left-1.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-2.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-3.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-left-4.png">
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-10">
+                <article>
+                    <h1>Сотрудничество</h1>
+
+                    <p>Думаете, текст «О нас» — это едва ли не единственное место на корпоративном сайте и в интернете
+                        в целом, где можно нахваливать себя, хвастаться, писать о своих достижениях, лучших качествах?
+                        Да кому они нужны, ваши качества. Все эти «мы», «наша компания», «стремимся заботиться»,
+                        «удовлетворяем индивидуально», «засыпаем и просыпаемся с мыслями о клиенте» и прочая ерунда
+                        никого не интересует. Клиентам наплевать на вашу динамично-профессиональную команду, особенно,
+                        когда они впервые попадают на сайт. Они интересуется своим бизнесом, своей выгодой, решением
+                        своих задач, своим молодым коллективом.</p>
+                    <p>Страница «О компании» не должна рассказывать о вашей компании. Посетитель должен найти здесь
+                        информацию о себе, о своих интересах и потребностях. Он должен узнать, как вы решите его
+                        проблемы и почему вы обязательно это сделаете. Создавая страницу «О нас», помните: на самом деле
+                        она называется «О вас». О них: любимых, желанных, лояльных, капризных, щедрых, экономных
+                        клиентах.</p>
+                    <p>Читайте также: 7 способов написать убойный вступительный абзац</p>
+                    <p>А теперь немного когнитивного диссонанса и шизофрении. Страница «О компании» должна рассказывать
+                        о вашей компании. Ну, как же без этого? Не ищите здесь противоречия и не спешите звать
+                        санитаров. Все просто: в первую очередь страница «О нас» должна рассказывать о клиенте и его
+                        интересах, а во вторую очередь о вашем бизнесе и динамичном профессионализме.</p>
+                    <p>Как это возможно на практике? Вы же наверняка писали что-то про креативный подход. Вот и
+                        включите креативность. В первую очередь говорите клиенту о нем. Потребитель должен быть фигурой,
+                        а вам придется остаться фоном, присутствовать между строк, рассказывать о себе делом, а не
+                        словом. Помните английскую поговорку о джентльменах? Так называются люди, которые никогда не
+                        употребляют слово «джентльмен». Держите это в уме: рассказывайте о своей компании, говоря о
+                        клиенте и его нуждах.</p>
+                    <p>Пошаговый алгоритм создания текста «О нас» описан ниже. Однако не считайте его догмой. Вы можете
+                        менять логику изложения и порядок смысловых блоков. Если вы удалите некоторые пункты и добавите
+                        собственные, ничего страшного не произойдет. Достаточно придерживаться принципов, описанных
+                        выше.</p>
+                </article>
+            </div>
+            <div class="col-lg-2">
+                <div class="widget widget-streaming">
+                    <div class="widget-header">В эфире</div>
+
+                    <div class="video-list">
+                        <div class="video-item">
+                            <a href="#" class="channel-name">Marakasi wot</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-1.png" class="image">
+                                <div class="name">НОВЫЙ АККАУНТ БЕЗ
+                                    ДОНАТА, НАБИРАЮ
+                                    РЕКРУТОВ! РАЗЫГРЫВАЮ
+                                    ГОЛДУ World of Tanks</div>
+                            </a>
+                        </div>
+
+                        <div class="video-item">
+                            <a href="#" class="channel-name">De3epTup</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-2.png" class="image">
+                                <div class="name">Арта Wot. В погоне за уроном:
+                                    Объект 261 и GWE E100.
+                                    Стрим танки.</div>
+                            </a>
+                        </div>
+
+                        <div class="video-item">
+                            <a href="#" class="channel-name">Game World</a>
+                            <a href="#" class="link">
+                                <img src="data/stream-3.png" class="image">
+                                <div class="name">WOT Мастер на все топы.</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget widget-top-videos">
+                    <div class="widget-header">Топ-5 видео</div>
+
+                    <div class="flexslider">
+                        <div class="video-list">
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-1.png" class="image">
+                                </a>
+                            </div>
+
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-2.png" class="image">
+                                </a>
+                            </div>
+
+                            <div class="video-item">
+                                <a href="#" class="link">
+                                    <img src="data/stream-3.png" class="image">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation">
+                        <a href="#" class="flex-prev"></a>
+                        <a href="#" class="flex-next"></a>
+                    </div>
+
+                    <div class="control-nav"></div>
+                </div>
+
+                <div class="widget widget-transparent widget-ad">
+                    <a href="#">
+                        <img src="data/ad-right-1.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-right-2.png">
+                    </a>
+                    <a href="#">
+                        <img src="data/ad-right-3.png">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 col-xs-6">
+                <a href="/" class="logo">
+                    <img src="img/logo.png">
+                </a>
+            </div>
+            <div class="col-md-8">
+                <nav>
+                    <ul>
+                        <li><a href="#">Статистика</a></li>
+                        <li><a href="#">Сотрудничество</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-md-2 col-xs-6">
+                <div class="contact-list">
+                    <div class="contact-item phone">
+                        <a href="#">+7 (999) 123-45-67</a>
+                    </div>
+                    <div class="contact-item email">
+                        <a href="#">mail@ratetube.ru</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script type="text/javascript" src="js/scripts.js"></script>
+</body>
+</html>
