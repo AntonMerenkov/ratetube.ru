@@ -3,6 +3,9 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
+
+// TODO: удалить таблицу statistics и сделать этот класс хэлпером
 
 /**
  * This is the model class for table "statistics".
@@ -27,6 +30,20 @@ class Statistics extends \yii\db\ActiveRecord
     const QUERY_TIME_WEEK = 'week';
     const QUERY_TIME_MONTH = 'month';
 
+    /**
+     * @var array Названия таблиц.
+     */
+    public static $tableModels = [
+        self::QUERY_TIME_MINUTE => 'StatisticsMinute',
+        self::QUERY_TIME_HOUR => 'StatisticsHour',
+        self::QUERY_TIME_DAY => 'StatisticsDay',
+        self::QUERY_TIME_WEEK => 'StatisticsWeek',
+        self::QUERY_TIME_MONTH => 'StatisticsMonth',
+    ];
+
+    /**
+     * @var array Названия временных интервалов.
+     */
     public static $timeTypes = [
         self::QUERY_TIME_MINUTE => 'за 10 минут',
         self::QUERY_TIME_HOUR => 'за час',
@@ -35,6 +52,9 @@ class Statistics extends \yii\db\ActiveRecord
         self::QUERY_TIME_MONTH => 'за месяц',
     ];
 
+    /**
+     * @var array Интервал между текущими и предыдущими данными.
+     */
     public static $timeDiffs = [
         self::QUERY_TIME_MINUTE => 600,
         self::QUERY_TIME_HOUR => 3600,
@@ -43,11 +63,28 @@ class Statistics extends \yii\db\ActiveRecord
         self::QUERY_TIME_MONTH => 86400 * 30,
     ];
 
+    /**
+     * @var array Интервал для добавления данных в БД.
+     */
+    public static $appendInterval = [
+        self::QUERY_TIME_MINUTE => 60,
+        self::QUERY_TIME_HOUR => 300,
+        self::QUERY_TIME_DAY => 1800,
+        self::QUERY_TIME_WEEK => 10800,
+        self::QUERY_TIME_MONTH => 43200,
+    ];
+
+    /**
+     * Типы сортировки.
+     */
     const SORT_TYPE_VIEWS_DIFF = 'views_diff';
     const SORT_TYPE_LIKES_DIFF = 'likes_diff';
     const SORT_TYPE_DISLIKES_DIFF = 'dislikes_diff';
     const SORT_TYPE_VIEWS = 'views';
 
+    /**
+     * @var array Названия типов сортировки.
+     */
     public static $sortingTypes = [
         self::SORT_TYPE_VIEWS_DIFF => 'Просмотры',
         self::SORT_TYPE_LIKES_DIFF => 'Лайки',
@@ -55,6 +92,9 @@ class Statistics extends \yii\db\ActiveRecord
         self::SORT_TYPE_VIEWS => 'Просмотры',
     ];
 
+    /**
+     * Константы для сохранения данных в сессиях.
+     */
     const TIME_SESSION_KEY = 'time-type';
     const SORT_SESSION_KEY = 'sort-type';
     const PAGINATION_ROW_COUNT = 50;
@@ -166,11 +206,16 @@ class Statistics extends \yii\db\ActiveRecord
     public static function getStatistics($page = 1, $filter = [])
     {
         $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
+        $tableName = $tableModel::tableName();
         $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
 
-        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics')->queryScalar();
-        $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from statistics where datetime <= "' .
+        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName)->queryScalar();
+        $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName . ' where datetime <= "' .
             date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
+
+        if (is_null($prevDate))
+            $prevDate = $lastDate;
 
         $time = microtime(true);
 
@@ -180,14 +225,13 @@ class Statistics extends \yii\db\ActiveRecord
         $videoSql = "SELECT v.id, v.name, v.video_link
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id
-                      WHERE c.category_id = " . $filter[ 'category_id' ] : "") . "
-                      ORDER BY v.id";
+                      WHERE c.category_id = " . $filter[ 'category_id' ] : "");
         $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
-                        FROM statistics s
-                        WHERE datetime = '" . $lastDate . "' ORDER BY s.video_id";
+                        FROM " . $tableName . " s
+                        WHERE datetime = '" . $lastDate . "'";
         $prevTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
-                        FROM statistics s
-                        WHERE datetime = '" . $prevDate . "' ORDER BY s.video_id";
+                        FROM " . $tableName . " s
+                        WHERE datetime = '" . $prevDate . "'";
 
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $lastTimeSql, $prevTimeSql, $sortType) {
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
@@ -246,5 +290,28 @@ class Statistics extends \yii\db\ActiveRecord
                 'sql' => $videoSql . "\n\n" . $lastTimeSql . "\n\n" . $prevTimeSql
             ]
         ];
+    }
+
+    /**
+     * Получение статистики по занимаемому месту на диске.
+     *
+     * @return array
+     */
+    public static function getTableSizeData()
+    {
+        $dsn = array_map(function($item) {
+            return explode('=', $item);
+        }, explode(';', Yii::$app->db->dsn));
+        $dsn = array_combine(array_map(function($item) {
+            return $item[ 0 ];
+        }, $dsn), array_map(function($item) {
+            return $item[ 1 ];
+        }, $dsn));
+
+        return ArrayHelper::map(Yii::$app->db->createCommand("select TABLE_NAME, TABLE_COMMENT, DATA_LENGTH, INDEX_LENGTH
+from information_schema.TABLES
+where TABLE_SCHEMA = '" . $dsn[ 'dbname' ] . "'")->queryAll(), 'TABLE_NAME', function($item) {
+            return $item;
+        });
     }
 }

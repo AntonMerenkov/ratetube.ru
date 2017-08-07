@@ -70,11 +70,14 @@ if (YII_ENV_DEV) {
         'allowedIPs' => ['*'],
     ];
 
-    $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => 'yii\gii\Module',
-        'allowedIPs' => ['*'],
-    ];
+    session_start();
+    if ($_SESSION[ '__id' ] > 0) {
+        $config['bootstrap'][] = 'gii';
+        $config['modules']['gii'] = [
+            'class' => 'yii\gii\Module',
+            'allowedIPs' => ['*'],
+        ];
+    }
 }
 
 return $config;

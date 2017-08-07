@@ -34,16 +34,21 @@ class AgentController extends Controller
         $transaction = Videos::getDb()->beginTransaction();
 
         try {
+            $values = [];
+
             foreach ($newVideoIds as $videoData) {
                 if (in_array($videoData[ 'id' ], $oldVideos))
                     continue;
 
-                $video = new Videos();
-                $video->name = mb_substr($videoData[ 'title' ], 0, 255);
-                $video->video_link = $videoData[ 'id' ];
-                $video->channel_id = array_search($videoData[ 'channel_id' ], $channelsIds);
-                $video->save();
+                $values[] = [
+                    'name' => mb_substr($videoData[ 'title' ], 0, 255),
+                    'video_link' => $videoData[ 'id' ],
+                    'channel_id' => array_search($videoData[ 'channel_id' ], $channelsIds),
+                ];
             }
+
+            if (!empty($values))
+                Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[ 0 ]), $values)->execute();
 
             $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
             $profiling->save();
@@ -73,20 +78,46 @@ class AgentController extends Controller
         $videoIds = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
         $videoStatistics = Statistics::getByVideoIds($videoIds);
 
-        $transaction = Videos::getDb()->beginTransaction();
+        $transaction = Yii::$app->db->beginTransaction();
 
         try {
-            foreach ($videoStatistics as $videoId => $videoData) {
-                if (!in_array($videoId, $videoIds))
+            // находим время последней записи статистики в каждую таблицу
+            $lastQueryTime = array_map(function($item) {
+                return 0;
+            }, Statistics::$tableModels);
+
+            foreach (array_keys($lastQueryTime) as $key) {
+                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+                $lastQueryTime[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
+            }
+
+            $addedIntervals = [];
+            foreach (array_keys($lastQueryTime) as $key) {
+                if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
                     continue;
 
-                $statistics = new Statistics();
-                $statistics->datetime = $profiling->datetime;
-                $statistics->video_id = array_search($videoId, $videoIds);
-                $statistics->views = $videoData[ 'viewCount' ];
-                $statistics->likes = $videoData[ 'likeCount' ];
-                $statistics->dislikes = $videoData[ 'dislikeCount' ];
-                $statistics->save();
+                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+
+                $values = [];
+
+                foreach ($videoStatistics as $videoId => $videoData) {
+                    if (!in_array($videoId, $videoIds))
+                        continue;
+
+                    $values[] = [
+                        'datetime' => date('Y-m-d H:i:s', strtotime($profiling->datetime)),
+                        'video_id' => array_search($videoId, $videoIds),
+                        'views' => $videoData[ 'viewCount' ],
+                        'likes' => $videoData[ 'likeCount' ],
+                        'dislikes' => $videoData[ 'dislikeCount' ],
+                    ];
+                }
+
+                if (!empty($values)) {
+                    $addedIntervals[] = strtoupper(substr($key, 0, 1));
+
+                    Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[ 0 ]), $values)->execute();
+                }
             }
 
             $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
@@ -98,7 +129,7 @@ class AgentController extends Controller
             throw $e;
         }
 
-        Yii::info("Получена статистика для " . count($videoIds) . " видео, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        Yii::info("Получена статистика для " . count($videoIds) . " видео, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек, интервалы: " . implode("", $addedIntervals), 'agent');
     }
 
     /**
@@ -112,18 +143,52 @@ class AgentController extends Controller
         $profiling->code = 'agent-flush-statistics';
         $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
 
-        // за 14 дней
-        $sql = "delete
-                from statistics
-                where datetime < '" . date('Y-m-d H:i:s', time() - 86400 * 14) . "'";
+        $minQueryDate = array_map(function($item) {
+            return 0;
+        }, Statistics::$tableModels);
 
-        $oldCount = Yii::$app->db->createCommand("select count(*) from statistics")->queryScalar();
-        Yii::$app->db->createCommand($sql)->execute();
-        $newCount = Yii::$app->db->createCommand("select count(*) from statistics")->queryScalar();
+        $statisticTables = [];
+        foreach (array_keys($minQueryDate) as $key) {
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+            $statisticTables[] = $tableModel::tableName();
+
+            $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
+            $minQueryDate[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' where datetime <= "' .
+                date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $key ]) . '"')->queryScalar();
+        }
+
+        if (count(array_filter($minQueryDate, function($item) {
+            return !is_null($item);
+        })) == 0)
+            return true;
+
+        $oldTableSize = array_sum(array_map(function($item) {
+            return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
+        }, array_filter(Statistics::getTableSizeData(), function($item) use ($statisticTables) {
+            return in_array($item[ 'TABLE_NAME' ], $statisticTables);
+        })));
+
+        $transaction = Yii::$app->db->beginTransaction();
+
+        foreach ($minQueryDate as $key => $date) {
+            if (is_null($date))
+                continue;
+
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+            Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() . ' where datetime < "' . $date . '"')->execute();
+        }
+
+        $newTableSize = array_sum(array_map(function($item) {
+            return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
+        }, array_filter(Statistics::getTableSizeData(), function($item) use ($statisticTables) {
+            return in_array($item[ 'TABLE_NAME' ], $statisticTables);
+        })));
 
         $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
         $profiling->save();
 
-        Yii::info("Таблица статистики очищена, " . ($newCount - $oldCount) . " рядов удалено, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        $transaction->commit();
+
+        Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
 }

@@ -50,26 +50,41 @@ class StatisticsController extends Controller
      */
     public function actionIndex()
     {
+        $videosData = Profiling::find()->where([
+            'code' => 'agent-update-videos'
+        ])->all();
+
+        $videosData = array_map(function($item) {
+            return $item[ 0 ];
+        }, array_chunk($videosData, floor(count($videosData) / 1000)));
+
         $videosDataProvider = new ActiveDataProvider([
-            'query' => Profiling::find()->where([
-                'code' => 'agent-update-videos'
-            ]),
+            'models' => $videosData,
             'pagination' => false
         ]);
 
+        $statisticsData = Profiling::find()->where([
+            'code' => 'agent-update-statistics'
+        ])->all();
+
+        $statisticsData = array_map(function($item) {
+            return $item[ 0 ];
+        }, array_chunk($statisticsData, floor(count($statisticsData) / 1000)));
+
         $statisticsDataProvider = new ActiveDataProvider([
-            'query' => Profiling::find()->where([
-                'code' => 'agent-update-statistics'
-            ]),
+            'models' => $statisticsData,
             'pagination' => false
         ]);
 
         $statisticsQueryData = Statistics::getStatistics();
 
+        $tableSizeData = Statistics::getTableSizeData();
+
         return $this->render('index', [
             'videosDataProvider' => $videosDataProvider,
             'statisticsDataProvider' => $statisticsDataProvider,
             'statisticsQueryData' => $statisticsQueryData,
+            'tableSizeData' => $tableSizeData,
         ]);
     }
 }
