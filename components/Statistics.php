@@ -36,11 +36,11 @@ class Statistics
      * @var array Названия временных интервалов.
      */
     public static $timeTypes = [
-        self::QUERY_TIME_MINUTE => 'за 10 минут',
-        self::QUERY_TIME_HOUR => 'за час',
-        self::QUERY_TIME_DAY => 'за день',
-        self::QUERY_TIME_WEEK => 'за неделю',
-        self::QUERY_TIME_MONTH => 'за месяц',
+        self::QUERY_TIME_MINUTE => '10 минут',
+        self::QUERY_TIME_WEEK => 'неделя',
+        self::QUERY_TIME_HOUR => 'час',
+        self::QUERY_TIME_DAY => 'день',
+        self::QUERY_TIME_MONTH => 'месяц',
     ];
 
     /**
@@ -146,13 +146,21 @@ class Statistics
 
         $time = microtime(true);
 
-        $cacheId = 'statistics-' . date('Y-m-d-H-i-s', strtotime($lastDate)) . '-' . (int) $filter[ 'category_id' ] . '-' . $sortType . '-' . $timeType;
+        $cacheId = 'statistics-' . implode('-', [
+                date('Y-m-d-H-i-s', strtotime($lastDate)),
+                (int) $filter[ 'category_id' ],
+                (int) $filter[ 'channel_id' ],
+                $sortType,
+                $timeType
+        ]);
 
-        // 3 отдельных запроса получаются быстрее единого
-        $videoSql = "SELECT v.id, v.name, v.video_link
+        // 4 отдельных запроса получаются быстрее единого
+        $videoSql = "SELECT v.id, v.name, v.video_link, v.channel_id
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id
-                      WHERE c.category_id = " . $filter[ 'category_id' ] : "");
+                      WHERE c.category_id = " . $filter[ 'category_id' ] :
+                        ($filter[ 'channel_id' ] > 0 ? "WHERE v.channel_id = " . $filter[ 'channel_id' ] : ""));
+        $channelSql = "SELECT c.id, c.name, c.url, c.image_url FROM channels c";
         $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
                         WHERE datetime = '" . $lastDate . "'";
@@ -164,14 +172,18 @@ class Statistics
         if (Yii::$app->controller->route == 'statistics/index')
             Yii::$app->cache->delete($cacheId);
 
-        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $lastTimeSql, $prevTimeSql, $sortType) {
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $sortType) {
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
+            $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
             $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
             $prevTimeData = Yii::$app->db->createCommand($prevTimeSql)->queryAll();
 
             $videoData = array_combine(array_map(function($item) {
                 return $item[ 'id' ];
             }, $videoData), $videoData);
+            $channelData = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $channelData), $channelData);
             $lastTimeData = array_combine(array_map(function($item) {
                 return $item[ 'video_id' ];
             }, $lastTimeData), $lastTimeData);
@@ -180,6 +192,9 @@ class Statistics
             }, $prevTimeData), $prevTimeData);
 
             foreach ($videoData as $id => $value) {
+                $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
+                unset($videoData[ $id ][ 'channel_id' ]);
+
                 $videoData[ $id ][ 'views' ] = $lastTimeData[ $id ][ 'views' ];
                 $videoData[ $id ][ 'views_diff' ] = ($lastTimeData[ $id ][ 'views' ] > 0 && $prevTimeData[ $id ][ 'views' ] > 0 ?
                     $lastTimeData[ $id ][ 'views' ] - $prevTimeData[ $id ][ 'views' ] : 0);
@@ -218,7 +233,7 @@ class Statistics
             ],
             'db' => [
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
-                'sql' => $videoSql . "\n\n" . $lastTimeSql . "\n\n" . $prevTimeSql
+                'sql' => $videoSql . "\n\n" . $channelSql . "\n\n" . $lastTimeSql . "\n\n" . $prevTimeSql
             ]
         ];
     }

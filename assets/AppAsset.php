@@ -19,9 +19,15 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
+        'lib/flexslider/flexslider.css',
         'css/site.css',
     ];
     public $js = [
+        'lib/jqueryui/jquery-ui.min.js',
+        'lib/flexslider/jquery.flexslider-min.js',
+        'lib/jquery-circle-progress/circle-progress.js',
+        'lib/share42/share42.js',
+        'js/scripts.js'
     ];
     public $depends = [
         'yii\web\YiiAsset',

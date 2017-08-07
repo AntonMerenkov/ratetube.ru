@@ -18,6 +18,8 @@ use yii\filters\VerbFilter;
  */
 class ChannelsController extends Controller
 {
+    public $layout = 'admin';
+
     /**
      * @inheritdoc
      */

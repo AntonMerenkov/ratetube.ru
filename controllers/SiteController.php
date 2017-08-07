@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\Categories;
 use app\components\Statistics;
+use app\models\Channels;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\Json;
@@ -56,17 +57,26 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
+     * Список видео со статистикой.
      *
+     * @param null $category_id
+     * @param null $channel_id
+     * @param null $query
+     * @param int $page
      * @return string
      */
-    public function actionIndex($id = null, $page = 1)
+    public function actionIndex($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
-        $categoryId = null;
-        if (!is_null($id))
-            $categoryId = Categories::findOne(['code' => $id])->id;
+        if (!is_null($category_id))
+            $category_id = Categories::findOne(['code' => $category_id])->id;
 
-        $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
+        if (!is_null($channel_id))
+            $channel_id = Channels::findOne(['id' => $channel_id])->id;
+
+        $statisticsQueryData = Statistics::getStatistics($page, [
+            'category_id' => $category_id,
+            'channel_id' => $channel_id,
+        ]);
 
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData
@@ -76,20 +86,28 @@ class SiteController extends Controller
     /**
      * Получение статистики (AJAX).
      *
-     * @param null $id
+     * @param null $category_id
+     * @param null $channel_id
+     * @param null $query
      * @param int $page
      * @return string
+     * @internal param null $id
      */
-    public function actionAjaxGetStatistics($id = null, $page = 1)
+    public function actionAjaxGetStatistics($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
-        $categoryId = null;
-        if (!is_null($id))
-            $categoryId = Categories::findOne(['code' => $id])->id;
+        if (!is_null($category_id))
+            $category_id = Categories::findOne(['code' => $category_id])->id;
 
-        $statisticsQueryData = Statistics::getStatistics($page, ['category_id' => $categoryId]);
+        if (!is_null($channel_id))
+            $channel_id = Channels::findOne(['id' => $channel_id])->id;
+
+        $statisticsQueryData = Statistics::getStatistics($page, [
+            'category_id' => $category_id,
+            'channel_id' => $channel_id,
+        ]);
 
         // для демо
-        /*for ($i = 1; $i <= rand(2, 4); $i++) {
+        for ($i = 1; $i <= rand(2, 4); $i++) {
             $j = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
             $k = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
 
@@ -98,7 +116,7 @@ class SiteController extends Controller
                 $statisticsQueryData[ 'data' ][ $j ] = $statisticsQueryData[ 'data' ][ $k ];
                 $statisticsQueryData[ 'data' ][ $k ] = $tmp;
             }
-        }*/
+        }
 
         return Json::encode($statisticsQueryData[ 'data' ]);
     }
@@ -138,6 +156,8 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
+        $this->layout = 'admin';
+
         if (!Yii::$app->user->isGuest) {
             return $this->redirect(['/statistics/index']);
         }

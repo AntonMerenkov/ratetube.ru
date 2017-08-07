@@ -20,6 +20,8 @@ use yii\filters\VerbFilter;
  */
 class StatisticsController extends Controller
 {
+    public $layout = 'admin';
+
     /**
      * @inheritdoc
      */
