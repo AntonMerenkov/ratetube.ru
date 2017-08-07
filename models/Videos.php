@@ -12,7 +12,6 @@ use Yii;
  * @property string $video_link
  * @property integer $channel_id
  *
- * @property Statistics[] $statistics
  * @property Channels $channel
  */
 class Videos extends \yii\db\ActiveRecord
@@ -50,14 +49,6 @@ class Videos extends \yii\db\ActiveRecord
             'video_link' => 'ID видео',
             'channel_id' => 'Channel ID',
         ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getStatistics()
-    {
-        return $this->hasMany(Statistics::className(), ['video_id' => 'id']);
     }
 
     /**

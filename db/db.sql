@@ -65,28 +65,7 @@ CREATE TABLE `profiling` (
   `duration` decimal(10,2) NOT NULL COMMENT 'Время выполнения',
   PRIMARY KEY (`id`),
   KEY `profiling_code_datetime_index` (`code`,`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=76406 DEFAULT CHARSET=utf8 COMMENT='Данные профайлинга';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `statistics`
---
-
-DROP TABLE IF EXISTS `statistics`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `statistics` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `datetime` datetime NOT NULL,
-  `views` int(11) DEFAULT NULL,
-  `likes` int(11) DEFAULT NULL,
-  `dislikes` int(11) DEFAULT NULL,
-  `video_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `statistics_videos_id_fk` (`video_id`),
-  KEY `statistics_datetime_video_id_index` (`datetime`,`video_id`),
-  CONSTRAINT `statistics_videos_id_fk` FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=323676723 DEFAULT CHARSET=utf8 COMMENT='Общая статистика (старая)';
+) ENGINE=InnoDB AUTO_INCREMENT=76442 DEFAULT CHARSET=utf8 COMMENT='Данные профайлинга';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -105,7 +84,7 @@ CREATE TABLE `statistics_day` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_day_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=27552 DEFAULT CHARSET=utf8 COMMENT='Статистика за день';
+) ENGINE=InnoDB AUTO_INCREMENT=55120 DEFAULT CHARSET=utf8 COMMENT='Статистика за день';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,7 +103,7 @@ CREATE TABLE `statistics_hour` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_hour_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=101008 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
+) ENGINE=InnoDB AUTO_INCREMENT=257225 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,7 +122,7 @@ CREATE TABLE `statistics_minute` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_minute_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=303038 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
+) ENGINE=InnoDB AUTO_INCREMENT=744122 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,7 +178,7 @@ CREATE TABLE `videos` (
   PRIMARY KEY (`id`),
   KEY `videos_channels_id_fk` (`channel_id`),
   CONSTRAINT `videos_channels_id_fk` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9226 DEFAULT CHARSET=utf8 COMMENT='Видео';
+) ENGINE=InnoDB AUTO_INCREMENT=9228 DEFAULT CHARSET=utf8 COMMENT='Видео';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -211,4 +190,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-07 12:47:38
+-- Dump completed on 2017-08-07 14:24:38

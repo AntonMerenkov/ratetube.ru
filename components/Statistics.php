@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models;
+namespace app\components;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -8,18 +8,9 @@ use yii\helpers\ArrayHelper;
 // TODO: удалить таблицу statistics и сделать этот класс хэлпером
 
 /**
- * This is the model class for table "statistics".
- *
- * @property integer $id
- * @property string $datetime
- * @property integer $views
- * @property integer $likes
- * @property integer $dislikes
- * @property integer $video_id
- *
- * @property Videos $video
+ * Класс для получения данных по статистике.
  */
-class Statistics extends \yii\db\ActiveRecord
+class Statistics
 {
     /**
      * Типы запросов по времени.
@@ -100,71 +91,6 @@ class Statistics extends \yii\db\ActiveRecord
     const PAGINATION_ROW_COUNT = 50;
 
     /**
-     * @inheritdoc
-     */
-    public static function tableName()
-    {
-        return 'statistics';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['datetime', 'video_id'], 'required'],
-            [['datetime'], 'safe'],
-            [['views', 'likes', 'dislikes', 'video_id'], 'integer'],
-            [['video_id'], 'exist', 'skipOnError' => true, 'targetClass' => Videos::className(), 'targetAttribute' => ['video_id' => 'id']],
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels()
-    {
-        return [
-            'id' => 'ID',
-            'datetime' => 'Datetime',
-            'views' => 'Views',
-            'likes' => 'Likes',
-            'dislikes' => 'Dislikes',
-            'video_id' => 'Video ID',
-        ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getVideo()
-    {
-        return $this->hasOne(Videos::className(), ['id' => 'video_id']);
-    }
-
-    /**
-     * @inheritdoc
-     * @return StatisticsQuery the active query used by this AR class.
-     */
-    public static function find()
-    {
-        return new StatisticsQuery(get_called_class());
-    }
-
-    /**
-     * Форматирование даты.
-     *
-     * @return bool
-     */
-    public function beforeValidate()
-    {
-        $this->datetime = date('Y-m-d H:i:s', strtotime($this->datetime));
-
-        return parent::beforeValidate();
-    }
-
-    /**
      * Получение статистики по видео при помощи Youtube API.
      *
      * @param $videoIds
@@ -205,6 +131,7 @@ class Statistics extends \yii\db\ActiveRecord
      */
     public static function getStatistics($page = 1, $filter = [])
     {
+        // выбираем нужную таблицу
         $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
         $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
         $tableName = $tableModel::tableName();
@@ -232,6 +159,10 @@ class Statistics extends \yii\db\ActiveRecord
         $prevTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
                         WHERE datetime = '" . $prevDate . "'";
+
+        // для демо-режима не использовать кэш
+        if (Yii::$app->controller->route == 'statistics/index')
+            Yii::$app->cache->delete($cacheId);
 
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $lastTimeSql, $prevTimeSql, $sortType) {
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();

@@ -5,7 +5,7 @@
 
 use app\assets\CircleProgressAsset;
 use app\models\Categories;
-use app\models\Statistics;
+use app\components\Statistics;
 use yii\bootstrap\Nav;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;

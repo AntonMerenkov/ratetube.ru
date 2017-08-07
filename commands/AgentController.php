@@ -4,7 +4,7 @@ namespace app\commands;
 
 use app\models\Channels;
 use app\models\Profiling;
-use app\models\Statistics;
+use app\components\Statistics;
 use app\models\Videos;
 use yii\console\Controller;
 use Yii;

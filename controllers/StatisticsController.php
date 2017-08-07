@@ -4,7 +4,7 @@ namespace app\controllers;
 
 use app\models\Categories;
 use app\models\Profiling;
-use app\models\Statistics;
+use app\components\Statistics;
 use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
