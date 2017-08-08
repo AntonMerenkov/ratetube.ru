@@ -7,6 +7,19 @@ $(function() {
             url: $('#refreshButton').attr('href'),
             dataType: 'json'
         }).success(function(newData) {
+            // меняем структуру согласно новым данным
+            var rows = $('#news-table').find('tbody tr');
+            var oldIds = $.makeArray(rows.map(function() {
+                return parseInt($(this).attr('data-id'));
+            }));
+            var newIds = newData.map(function(item) {
+                return parseInt(item.id);
+            });
+
+            // если данные не изменились - ничего не делаем
+            if (JSON.stringify(oldIds) == JSON.stringify(newIds))
+                return true;
+
             // превращаем верстку в абсолютную
             $('#news-table').css({
                 height: $('#news-table').height() + 'px',
@@ -24,15 +37,6 @@ $(function() {
                     left: 0,
                     right: 0
                 }).attr('data-top', positions[ index ]).find('td:first-child').css('width', firstColWidth + 'px');
-            });
-
-            // меняем структуру согласно новым данным
-            var rows = $('#news-table').find('tbody tr');
-            var oldIds = $.makeArray(rows.map(function() {
-                return parseInt($(this).attr('data-id'));
-            }));
-            var newIds = newData.map(function(item) {
-                return parseInt(item.id);
             });
 
             // анимация
