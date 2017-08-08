@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Categories;
+use app\models\Videos;
 use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
@@ -237,5 +238,19 @@ class ChannelsController extends Controller
         $this->findCategoryModel($id)->delete();
 
         return $this->redirect(['index']);
+    }
+
+    /**
+     * Восстановление неактуальных видео.
+     *
+     * @param $id
+     */
+    public function actionRestore($id)
+    {
+        $model = $this->findModel($id);
+
+        Videos::updateAll(['active' => 1], ['channel_id' => $id]);
+
+        $this->redirect(['index', 'id' => $model->category_id]);
     }
 }

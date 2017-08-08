@@ -78,6 +78,7 @@ class Channels extends \yii\db\ActiveRecord
             'flush_timeframe' => 'Период очистки',
             'flush_count' => 'Минимальное количество просмотров',
             'timeframeExist' => 'Особый критерий удаления',
+            'videos' => 'Видеозаписей',
         ];
     }
 

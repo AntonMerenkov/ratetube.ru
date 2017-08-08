@@ -5,8 +5,6 @@ namespace app\components;
 use Yii;
 use yii\helpers\ArrayHelper;
 
-// TODO: удалить таблицу statistics и сделать этот класс хэлпером
-
 /**
  * Класс для получения данных по статистике.
  */

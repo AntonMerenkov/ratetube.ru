@@ -203,9 +203,6 @@ class AgentController extends Controller
      */
     public function actionFlushVideos()
     {
-        // TODO: добавить в crontab
-        // TODO: экспортировать crontab
-
         $time = microtime(true);
 
         $profiling = new Profiling();

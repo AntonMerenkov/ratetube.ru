@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\ListView;
 use yii\widgets\Pjax;
-use app\models\Channels;
+use app\models\Videos;
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\ChannelsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -66,7 +66,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'attribute' => 'name',
                             'format' => 'raw',
-                            'value' => function($data){
+                            'value' => function($data) {
                                 return Html::a(
                                     Html::tag('div', '', [
                                         'class' => 'channel-icon',
@@ -84,6 +84,25 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                             'contentOptions' => [
                                 'style' => 'min-width: 200px;'
+                            ]
+                        ],
+                        [
+                            'attribute' => 'videos',
+                            'format' => 'raw',
+                            'value' => function($data) {
+                                $activeCount = Videos::find()->where(['channel_id' => $data->id])->active()->count();
+                                $allCount = Videos::find()->where(['channel_id' => $data->id])->count();
+
+                                return '<span class="text-success">' . $activeCount . '</span>' .
+                                    ($activeCount < $allCount ?
+                                        '<span class="text-muted"> / ' . $allCount . '</span>' .
+                                        '  (<a href="' . \yii\helpers\Url::to(['channels/restore', 'id' => $data->id]) . '" onclick="return confirm(\'Вы действительно хотите вернуть неактуальные видео?\')" class="text-danger"><i class="glyphicon glyphicon-repeat"></i> вернуть</a>)' : '');
+                            },
+                            'headerOptions' => [
+                                'class' => 'text-center'
+                            ],
+                            'contentOptions' => [
+                                'class' => 'text-center'
                             ]
                         ],
 
