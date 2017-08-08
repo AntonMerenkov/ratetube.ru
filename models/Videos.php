@@ -47,7 +47,7 @@ class Videos extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Наименование',
             'video_link' => 'ID видео',
-            'channel_id' => 'Channel ID',
+            'channel_id' => 'ID канала',
         ];
     }
 

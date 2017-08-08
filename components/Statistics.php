@@ -138,10 +138,12 @@ class Statistics
     public static function getStatistics($page = 1, $filter = [])
     {
         // выбираем нужную таблицу
-        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $timeType = isset($filter[ 'timeType' ]) ? $filter[ 'timeType' ] :
+            Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
         $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
         $tableName = $tableModel::tableName();
-        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
+        $sortType = isset($filter[ 'sortType' ]) ? $filter[ 'sortType' ] :
+            Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
 
         $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName)->queryScalar();
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName . ' where datetime <= "' .
@@ -224,15 +226,17 @@ class Statistics
         $time = microtime(true) - $time;
 
         $count = count($data);
-        $data = array_chunk($data, Statistics::PAGINATION_ROW_COUNT);
-        $data = $data[ $page - 1 ];
+        if (!$filter[ 'fullData' ]) {
+            $data = array_chunk($data, Statistics::PAGINATION_ROW_COUNT);
+            $data = $data[ $page - 1 ];
+        }
 
         return [
             'data' => $data,
             'pagination' => [
                 'count' => $count,
                 'page' => $page,
-                'pageCount' => ceil($count / Statistics::PAGINATION_ROW_COUNT)
+                'pageCount' => $filter[ 'fullData' ] ? 1 : ceil($count / Statistics::PAGINATION_ROW_COUNT)
             ],
             'time' => [
                 'from' => date('d.m.Y H:i:s', strtotime($lastDate)),
@@ -240,7 +244,8 @@ class Statistics
             ],
             'db' => [
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
-                'sql' => self::formatSql($videoSql) . "\n\n" . self::formatSql($channelSql) . "\n\n" . self::formatSql($lastTimeSql) . "\n\n" . self::formatSql($prevTimeSql)
+                'sql' => self::formatSql($videoSql) . "\n\n" . self::formatSql($channelSql) . "\n\n" . self::formatSql($lastTimeSql) . "\n\n" . self::formatSql($prevTimeSql),
+                'cache_id' => $cacheId,
             ]
         ];
     }

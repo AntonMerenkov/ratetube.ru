@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use app\models\Categories;
 use app\models\Channels;
 use app\models\Profiling;
 use app\components\Statistics;
@@ -75,7 +76,7 @@ class AgentController extends Controller
         $profiling->code = 'agent-update-statistics';
         $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
 
-        $videoIds = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
+        $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
         $videoStatistics = Statistics::getByVideoIds($videoIds);
 
         if (isset($videoStatistics[ 'error' ])) {
@@ -195,5 +196,74 @@ class AgentController extends Controller
         $transaction->commit();
 
         Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+    }
+
+    /**
+     * Очистка неактуальных видео.
+     */
+    public function actionFlushVideos()
+    {
+        // TODO: добавить в crontab
+        // TODO: экспортировать crontab
+
+        $time = microtime(true);
+
+        $profiling = new Profiling();
+        $profiling->code = 'agent-flush-videos';
+        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
+
+        // загружаем критерии удаления для всех каналов
+        $channelCriteria = ArrayHelper::map(Channels::find()->with('category')->all(), 'id', function($item) {
+            return $item->flush_timeframe != '' ? [
+                'flush_timeframe' => $item->flush_timeframe,
+                'flush_count' => $item->flush_count,
+            ] : [
+                'flush_timeframe' => $item->category->flush_timeframe,
+                'flush_count' => $item->category->flush_count,
+            ];
+        });
+
+        $framesData = array_unique(array_filter(array_map(function($item) {
+            return $item[ 'flush_timeframe' ];
+        }, $channelCriteria), function($item) {
+            return $item != '';
+        }));
+
+        if (empty($framesData))
+            return true;
+
+        $framesData = array_map(function($item) {
+            return Statistics::getStatistics(1, [
+                'timeType' => $item,
+                'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
+                'fullData' => true
+            ]);
+        }, array_combine($framesData, $framesData));
+
+        $videoIds = [];
+
+        foreach ($framesData as $key => $frameData) {
+            // пропустить обработку, если не набрана статистика
+            if ($frameData[ 'time' ][ 'from' ] == $frameData[ 'time' ][ 'to' ])
+                continue;
+
+            foreach ($frameData[ 'data' ] as $videoData) {
+                if ($channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_timeframe' ] != $key)
+                    continue;
+
+                if ($videoData[ 'views_diff'  ] < $channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_count' ])
+                    $videoIds[] = $videoData[ 'id' ];
+            }
+        }
+
+        if (empty($videoIds))
+            return true;
+
+        foreach ($framesData as $frameData)
+            Yii::$app->cache->delete($frameData[ 'db' ][ 'cache_id' ]);
+
+        Videos::updateAll(['active' => 0], 'id IN (' . implode(',', $videoIds) . ')');
+
+        Yii::info(Yii::t('app', '{n, plural, one{# видео помечено как неактуальное} other{# видео помечены как неактуальные}}', ['n' =>  count($videoIds) ]) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
 }
