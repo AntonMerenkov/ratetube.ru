@@ -284,3 +284,17 @@ table tbody td {
     top: 2px;
     opacity: 0.5;
 }
+
+#size-table th,
+#size-table td {
+    text-align: center;
+}
+
+#size-table tbody tr td:first-child,
+#size-table tfoot td {
+    text-align: left;
+}
+
+#size-table tfoot td:last-child {
+    text-align: right;
+}

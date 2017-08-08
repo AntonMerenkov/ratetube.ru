@@ -6,6 +6,7 @@
 /* @var $statisticsQueryData [] */
 /* @var $tableSizeData [] */
 
+use app\components\Statistics;
 use sjaakp\gcharts\LineChart;
 
 $this->title = 'Статистика';
@@ -97,10 +98,11 @@ $this->title = 'Статистика';
                 <h2 class="text-center">Объем БД</h2>
                 <br>
 
-                <table class="table table-bordered">
+                <table class="table table-bordered" id="size-table">
                     <thead>
                     <tr>
                         <th>Таблица</th>
+                        <th>Время</th>
                         <th>Данные</th>
                         <th>Индексы</th>
                         <th>Общий объем</th>
@@ -126,6 +128,22 @@ $this->title = 'Статистика';
                                 <? endif; ?>
                             </td>
                             <td>
+                                <? if (array_key_exists('MIN_DATE', $table)) : ?>
+                                    <? if (is_null($table[ 'MIN_DATE' ])) : ?>
+                                        <span class="text-muted">нет данных</span>
+                                    <? else : ?>
+                                        <? if ($table[ 'DATE_DIFF' ] >= Statistics::$timeDiffs[ preg_replace('/^statistics_/', '', $table[ 'TABLE_NAME' ]) ]) : ?>
+                                            <i class="text-success glyphicon glyphicon-ok"></i>
+                                        <? else : ?>
+                                            <i class="text-danger glyphicon glyphicon-remove"></i>
+                                        <? endif; ?>
+                                        <span class="text-muted" style="font-size: 80%">
+                                            <?=Yii::$app->formatter->asDuration($table[ 'DATE_DIFF' ] > 86400 ? floor($table[ 'DATE_DIFF' ] / 3600) * 3600 : floor($table[ 'DATE_DIFF' ] / 60) * 60) ?>
+                                        </span>
+                                    <? endif; ?>
+                                <? endif; ?>
+                            </td>
+                            <td>
                                 <?=Yii::$app->formatter->asShortSize($table[ 'DATA_LENGTH' ], 1) ?>
                             </td>
                             <td>
@@ -135,12 +153,11 @@ $this->title = 'Статистика';
                                 <?=Yii::$app->formatter->asShortSize($table[ 'DATA_LENGTH' ] + $table[ 'INDEX_LENGTH' ], 1) ?>
                             </td>
                         </tr>
-
                     <? endforeach; ?>
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="3">Итого:</td>
+                        <td colspan="4">Итого:</td>
                         <td>
                             <?=Yii::$app->formatter->asShortSize($fullSize, 1) ?> / <?=Yii::$app->formatter->asShortSize(disk_total_space('/var/lib/mysql'), 1) ?>
                             (<b><?=Yii::$app->formatter->asPercent($fullSize / disk_total_space('/var/lib/mysql')) ?></b>)

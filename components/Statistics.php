@@ -254,10 +254,26 @@ class Statistics
             return $item[ 1 ];
         }, $dsn));
 
-        return ArrayHelper::map(Yii::$app->db->createCommand("select TABLE_NAME, TABLE_COMMENT, DATA_LENGTH, INDEX_LENGTH
+        $tables = ArrayHelper::map(Yii::$app->db->createCommand("select TABLE_NAME, TABLE_COMMENT, DATA_LENGTH, INDEX_LENGTH
 from information_schema.TABLES
 where TABLE_SCHEMA = '" . $dsn[ 'dbname' ] . "'")->queryAll(), 'TABLE_NAME', function($item) {
+            if (preg_match('/^statistics_/i', $item[ 'TABLE_NAME' ])) {
+                $item[ 'MIN_DATE' ] = Yii::$app->db->createCommand('SELECT MIN(datetime) from ' . $item[ 'TABLE_NAME' ])->queryScalar();
+
+                if (!is_null($item[ 'MIN_DATE' ]))
+                    $item[ 'DATE_DIFF' ] = time() - strtotime($item[ 'MIN_DATE' ]);
+            }
+
             return $item;
         });
+
+        uksort($tables, function($a, $b) {
+            if (preg_match('/^statistics_(.+)/', $a, $aMatches) && preg_match('/^statistics_(.+)/', $b, $bMatches))
+                return array_search($aMatches[ 1 ], array_keys(self::$tableModels)) - array_search($bMatches[ 1 ], array_keys(self::$tableModels));
+            else
+                return strcmp($a, $b);
+        });
+
+        return $tables;
     }
 }
