@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "videos".
@@ -109,6 +110,7 @@ class Videos extends \yii\db\ActiveRecord
                         return [
                             'id' => $item[ 'id' ][ 'videoId' ],
                             'title' => $item[ 'snippet' ][ 'title' ],
+                            'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
                             'channel_id' => $channelQueryData[ $id ][ 'id' ]
                         ];
                     }, $response[ 'items' ])));

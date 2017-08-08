@@ -15,6 +15,7 @@ use Yii;
  * @property integer $category_id
  * @property string $flush_timeframe
  * @property integer $flush_count
+ * @property integer $load_last_days
  *
  * @property Categories $category
  * @property Videos[] $videos
@@ -60,6 +61,7 @@ class Channels extends \yii\db\ActiveRecord
             [['flush_timeframe'], 'string', 'max' => 20],
             [['timeframeExist'], 'boolean'],
             [['timeframeExist'], 'timeframeCheck'],
+            [['load_last_days'], 'integer'],
         ];
     }
 
@@ -79,6 +81,7 @@ class Channels extends \yii\db\ActiveRecord
             'flush_count' => 'Минимальное количество просмотров',
             'timeframeExist' => 'Особый критерий удаления',
             'videos' => 'Видеозаписей',
+            'load_last_days' => 'Загружать видео за период (дней)',
         ];
     }
 
@@ -99,6 +102,9 @@ class Channels extends \yii\db\ActiveRecord
             $this->flush_timeframe = null;
             $this->flush_count = null;
         }
+
+        if ($this->load_last_days == 0)
+            $this->load_last_days = null;
 
         return parent::beforeValidate();
     }

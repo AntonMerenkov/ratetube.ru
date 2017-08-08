@@ -27,7 +27,9 @@ class AgentController extends Controller
         $profiling->code = 'agent-update-videos';
         $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
 
-        $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
+        $channelModels = Channels::find()->all();
+        $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
+        $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
 
         $oldVideos = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
         $newVideoIds = Videos::getByChannelIds($channelsIds);
@@ -41,10 +43,15 @@ class AgentController extends Controller
                 if (in_array($videoData[ 'id' ], $oldVideos))
                     continue;
 
+                $channelId = array_search($videoData[ 'channel_id' ], $channelsIds);
+
+                if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400))
+                    continue;
+
                 $values[] = [
                     'name' => mb_substr($videoData[ 'title' ], 0, 255),
                     'video_link' => $videoData[ 'id' ],
-                    'channel_id' => array_search($videoData[ 'channel_id' ], $channelsIds),
+                    'channel_id' => $channelId,
                 ];
             }
 

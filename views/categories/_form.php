@@ -16,25 +16,30 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
     <?= $form->field($model, 'code')->textInput(['maxlength' => true]) ?>
 
-    <h3>Удаление видео</h3>
-    <?= $form->field($model, 'timeframeExist')->checkbox() ?>
-    <div id="timeframe"<? if (!$model->timeframeExist) : ?> class="hidden"<? endif; ?>>
-        <?= $form->field($model, 'flush_timeframe')->dropDownList([null => '[не выбран]'] + array_map(function($item) {
-            return Statistics::$timeTypes[ $item ];
-        }, array_combine(array_keys(Statistics::$timeDiffs), array_keys(Statistics::$timeDiffs)))) ?>
-        <?= $form->field($model, 'flush_count')->textInput([
-            'type' => 'number',
-            'min' => 1
-        ]) ?>
-    </div>
-    <script>
-        $('#categories-timeframeexist').change(function() {
-            if ($(this).is(':checked'))
-                $('#timeframe').removeClass('hidden');
-            else
-                $('#timeframe').addClass('hidden');
-        });
-    </script>
+    <br>
+
+    <fieldset>
+        <legend>Удаление видео</legend>
+
+        <?= $form->field($model, 'timeframeExist')->checkbox() ?>
+        <div id="timeframe"<? if (!$model->timeframeExist) : ?> class="hidden"<? endif; ?>>
+            <?= $form->field($model, 'flush_timeframe')->dropDownList([null => '[не выбран]'] + array_map(function($item) {
+                    return Statistics::$timeTypes[ $item ];
+                }, array_combine(array_keys(Statistics::$timeDiffs), array_keys(Statistics::$timeDiffs)))) ?>
+            <?= $form->field($model, 'flush_count')->textInput([
+                'type' => 'number',
+                'min' => 1
+            ]) ?>
+        </div>
+        <script>
+            $('#categories-timeframeexist').change(function() {
+                if ($(this).is(':checked'))
+                    $('#timeframe').removeClass('hidden');
+                else
+                    $('#timeframe').addClass('hidden');
+            });
+        </script>
+    </fieldset>
     <br>
 
     <div class="form-group">
