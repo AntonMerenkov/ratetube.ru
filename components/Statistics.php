@@ -31,6 +31,17 @@ class Statistics
     ];
 
     /**
+     * @var array Цвета для отображения в графиках.
+     */
+    public static $timeColors = [
+        self::QUERY_TIME_MINUTE => '#006098',
+        self::QUERY_TIME_HOUR => '#0099a9',
+        self::QUERY_TIME_DAY => '#009579',
+        self::QUERY_TIME_WEEK => '#dbaa00',
+        self::QUERY_TIME_MONTH => '#fa364a',
+    ];
+
+    /**
      * @var array Названия временных интервалов.
      */
     public static $timeTypes = [
@@ -56,7 +67,7 @@ class Statistics
      * @var array Интервал для добавления данных в БД.
      */
     public static $appendInterval = [
-        self::QUERY_TIME_MINUTE => 60,
+        self::QUERY_TIME_MINUTE => 300,
         self::QUERY_TIME_HOUR => 300,
         self::QUERY_TIME_DAY => 1800,
         self::QUERY_TIME_WEEK => 10800,

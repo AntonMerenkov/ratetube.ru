@@ -9,6 +9,7 @@ use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
 use yii\helpers\Json;
 use yii\web\Controller;
@@ -82,10 +83,65 @@ class StatisticsController extends Controller
 
         $tableSizeData = Statistics::getTableSizeData();
 
+        $statisticsDatesData = array_map(function($item) {
+            $tableModel = '\\app\\models\\' . $item;
+            return Yii::$app->db->createCommand('SELECT DISTINCT(datetime) FROM ' . $tableModel::tableName())->queryColumn();
+        }, Statistics::$tableModels);
+
+        foreach ($statisticsDatesData as $key => $data) {
+            $intervals = [];
+            $startDate = null;
+            $endDate = null;
+            foreach ($data as $date) {
+                if (is_null($startDate)) {
+                    $startDate = $date;
+                } else if (is_null($endDate)) {
+                    if (strtotime($date) - strtotime($startDate) - 300 <= Statistics::$appendInterval[ $key ]) {
+                        $endDate = $date;
+                    } else {
+                        $intervals[] = [
+                            $startDate,
+                            date('Y-m-d H:i:s', strtotime($startDate) + 60),
+                        ];
+
+                        $startDate = $date;
+                    }
+                } else {
+                    if (strtotime($date) - strtotime($endDate) - 300 <= Statistics::$appendInterval[ $key ]) {
+                        $endDate = $date;
+                    } else {
+                        $intervals[] = [
+                            $startDate,
+                            $endDate
+                        ];
+
+                        $startDate = $date;
+                        $endDate = null;
+                    }
+                }
+            }
+
+            if (!is_null($startDate)) {
+                if (!is_null($endDate))
+                    $intervals[] = [
+                        $startDate,
+                        $endDate
+                    ];
+                else
+                    $intervals[] = [
+                        $startDate,
+                        date('Y-m-d H:i:s', strtotime($startDate) + 60)
+                    ];
+            }
+
+            $statisticsDatesData[ $key ] = $intervals;
+        }
+
         return $this->render('index', [
             'videosDataProvider' => $videosDataProvider,
             'statisticsDataProvider' => $statisticsDataProvider,
             'statisticsQueryData' => $statisticsQueryData,
+            'statisticsDatesData' => $statisticsDatesData,
             'tableSizeData' => $tableSizeData,
         ]);
     }
