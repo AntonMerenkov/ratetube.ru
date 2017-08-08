@@ -114,7 +114,13 @@ class Statistics
         foreach ($responseArray as $response) {
             $response = json_decode($response, true);
 
-            if (!empty($response[ 'items' ]))
+            if (isset($response[ 'error' ])) {
+                return [
+                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
+                ];
+            }
+
+            if (isset($response[ 'items' ]))
                 foreach ($response[ 'items' ] as $item)
                     $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
         }
@@ -157,9 +163,10 @@ class Statistics
         // 4 отдельных запроса получаются быстрее единого
         $videoSql = "SELECT v.id, v.name, v.video_link, v.channel_id
                       FROM videos v
-                      " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id
-                      WHERE c.category_id = " . $filter[ 'category_id' ] :
-                        ($filter[ 'channel_id' ] > 0 ? "WHERE v.channel_id = " . $filter[ 'channel_id' ] : ""));
+                      " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id" : "") . "
+                      WHERE v.active = 1
+                      " . ($filter[ 'category_id' ] > 0 ? "AND c.category_id = " . $filter[ 'category_id' ] : "") . "
+                      " . ($filter[ 'channel_id' ] > 0 ? "AND v.channel_id = " . $filter[ 'channel_id' ] : "");
         $channelSql = "SELECT c.id, c.name, c.url, c.image_url FROM channels c";
         $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
@@ -233,9 +240,20 @@ class Statistics
             ],
             'db' => [
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
-                'sql' => $videoSql . "\n\n" . $channelSql . "\n\n" . $lastTimeSql . "\n\n" . $prevTimeSql
+                'sql' => self::formatSql($videoSql) . "\n\n" . self::formatSql($channelSql) . "\n\n" . self::formatSql($lastTimeSql) . "\n\n" . self::formatSql($prevTimeSql)
             ]
         ];
+    }
+
+    /**
+     * Форматирование текста SQL-запроса для вывода на экран.
+     *
+     * @param $sql
+     * @return string
+     */
+    private static function formatSql($sql)
+    {
+        return trim(preg_replace('/^\s+/m', '', $sql));
     }
 
     /**

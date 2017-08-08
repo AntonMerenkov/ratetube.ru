@@ -78,6 +78,11 @@ class AgentController extends Controller
         $videoIds = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
         $videoStatistics = Statistics::getByVideoIds($videoIds);
 
+        if (isset($videoStatistics[ 'error' ])) {
+            Yii::warning($videoStatistics[ 'error' ], 'agent');
+            return true;
+        }
+
         $transaction = Yii::$app->db->beginTransaction();
 
         try {

@@ -1,5 +1,6 @@
 <?php
 
+use app\components\Statistics;
 use app\models\Categories;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
@@ -32,6 +33,35 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'category_id')->dropDownList(ArrayHelper::map(Categories::find()->all(), 'id', 'name'),
         $model->isNewRecord ? ['disabled' => true] : []); ?>
+
+    <h3>Удаление видео</h3>
+    <p class="text-muted">
+        [Категория]
+        <? if ($model->category->timeframeExist) : ?>
+            Критерий удаления неактуальных видео: удалять видео, набравшие менее <?=Yii::t('app', '{n, plural, one{# просмотра} other{# просмотров}}', ['n' =>  $model->category->flush_count ]); ?> за <?=Statistics::$timeTypes[ $model->category->flush_timeframe ] ?>.
+        <? else : ?>
+            Неактуальные видео не удаляются.
+        <? endif; ?>
+    </p>
+    <?= $form->field($model, 'timeframeExist')->checkbox() ?>
+    <div id="timeframe"<? if (!$model->timeframeExist) : ?> class="hidden"<? endif; ?>>
+        <?= $form->field($model, 'flush_timeframe')->dropDownList([null => '[не выбран]'] + array_map(function($item) {
+                return Statistics::$timeTypes[ $item ];
+            }, array_combine(array_keys(Statistics::$timeDiffs), array_keys(Statistics::$timeDiffs)))) ?>
+        <?= $form->field($model, 'flush_count')->textInput([
+            'type' => 'number',
+            'min' => 1
+        ]) ?>
+    </div>
+    <script>
+        $('#channels-timeframeexist').change(function() {
+            if ($(this).is(':checked'))
+                $('#timeframe').removeClass('hidden');
+            else
+                $('#timeframe').addClass('hidden');
+        });
+    </script>
+    <br>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Добавить' : 'Сохранить', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

@@ -11,6 +11,8 @@ use sjaakp\gcharts\LineChart;
 
 $this->title = 'Статистика';
 
+// TODO: статистика по равномерности заполняемости БД
+
 ?>
 <div class="statistics-index">
 

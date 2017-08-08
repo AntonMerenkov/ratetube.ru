@@ -13,18 +13,35 @@ use Yii;
  * @property string $channel_link
  * @property string $image_url
  * @property integer $category_id
+ * @property string $flush_timeframe
+ * @property integer $flush_count
  *
  * @property Categories $category
  * @property Videos[] $videos
  */
 class Channels extends \yii\db\ActiveRecord
 {
+    public $timeframeExist;
+
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
         return 'channels';
+    }
+
+    /**
+     * Проверка корректности критерия удаления.
+     *
+     * @param $attribute
+     * @param $params
+     */
+    public function timeframeCheck($attribute, $params)
+    {
+        if ($this->$attribute)
+            if ($this->flush_timeframe == '' || $this->flush_count <= 0)
+                $this->addError($attribute, 'Укажите корректные данные для критерия удаления.');
     }
 
     /**
@@ -39,6 +56,10 @@ class Channels extends \yii\db\ActiveRecord
             [['name', 'image_url'], 'string', 'max' => 255],
             [['channel_link'], 'string', 'max' => 128],
             [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categories::className(), 'targetAttribute' => ['category_id' => 'id']],
+            [['flush_count'], 'integer'],
+            [['flush_timeframe'], 'string', 'max' => 20],
+            [['timeframeExist'], 'boolean'],
+            [['timeframeExist'], 'timeframeCheck'],
         ];
     }
 
@@ -54,7 +75,31 @@ class Channels extends \yii\db\ActiveRecord
             'channel_link' => 'ID канала',
             'image_url' => 'Картинка канала',
             'category_id' => 'Рубрика',
+            'flush_timeframe' => 'Период очистки',
+            'flush_count' => 'Минимальное количество просмотров',
+            'timeframeExist' => 'Особый критерий удаления',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterFind()
+    {
+        $this->timeframeExist = ($this->flush_timeframe != '') && ($this->flush_count > 0);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        if (!$this->timeframeExist) {
+            $this->flush_timeframe = null;
+            $this->flush_count = null;
+        }
+
+        return parent::beforeValidate();
     }
 
     /**
