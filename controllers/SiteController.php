@@ -107,7 +107,7 @@ class SiteController extends Controller
         ]);
 
         // для демо
-        for ($i = 1; $i <= rand(2, 4); $i++) {
+        /*for ($i = 1; $i <= rand(2, 4); $i++) {
             $j = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
             $k = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
 
@@ -116,7 +116,7 @@ class SiteController extends Controller
                 $statisticsQueryData[ 'data' ][ $j ] = $statisticsQueryData[ 'data' ][ $k ];
                 $statisticsQueryData[ 'data' ][ $k ] = $tmp;
             }
-        }
+        }*/
 
         return Json::encode($statisticsQueryData[ 'data' ]);
     }

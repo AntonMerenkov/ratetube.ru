@@ -80,7 +80,9 @@ $(function() {
             }
 
             // выравниваем элементы по верху с отступом 2px, т.к. у элементов может быть разная высота
-            var currentPosition = $('#news-table thead').outerHeight() - 2;
+            var currentPosition = $('#news-table thead tr').outerHeight() - 2;
+            if (currentPosition > 100)
+                currentPosition = 32;
             var rowsSorted = $('#news-table tbody tr').sort(function(a, b) {
                 return parseInt($(a).attr('data-top')) - parseInt($(b).attr('data-top'));
             });
