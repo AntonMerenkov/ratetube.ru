@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\Url;
 use yii\widgets\ListView;
 use yii\widgets\Pjax;
 use app\models\Videos;
@@ -62,6 +63,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'dataProvider' => $channelDataProvider,
                     'filterModel' => $searchModel,
                     'summary' => false,
+                    'id' => 'channels-grid',
                     'columns' => [
                         [
                             'attribute' => 'name',
@@ -93,10 +95,10 @@ $this->params['breadcrumbs'][] = $this->title;
                                 $activeCount = Videos::find()->where(['channel_id' => $data->id])->active()->count();
                                 $allCount = Videos::find()->where(['channel_id' => $data->id])->count();
 
-                                return '<span class="text-success">' . $activeCount . '</span>' .
+                                return '<a href="' . Url::to(['list-videos', 'id' => $data->id]) . '"><span class="text-success">' . $activeCount . '</span>' .
                                     ($activeCount < $allCount ?
                                         '<span class="text-muted"> / ' . $allCount . '</span>' .
-                                        '  (<a href="' . \yii\helpers\Url::to(['channels/restore', 'id' => $data->id]) . '" onclick="return confirm(\'Вы действительно хотите вернуть неактуальные видео?\')" class="text-danger"><i class="glyphicon glyphicon-repeat"></i> вернуть</a>)' : '');
+                                        '</a>  (<a href="' . \yii\helpers\Url::to(['channels/restore', 'id' => $data->id]) . '" onclick="return confirm(\'Вы действительно хотите вернуть неактуальные видео?\')" class="text-danger"><i class="glyphicon glyphicon-repeat"></i> вернуть</a>)' : '');
                             },
                             'headerOptions' => [
                                 'class' => 'text-center'
@@ -105,111 +107,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'class' => 'text-center'
                             ]
                         ],
-
-                        /*[
-                            'attribute' => 'ip_addr',
-                            'contentOptions' => [
-                                'class' => 'text-center'
-                            ],
-                            'headerOptions' => [
-                                'class' => 'text-center'
-                            ],
-                        ],
-
-                        [
-                            'attribute' => 'mac_addr',
-                            'contentOptions' => [
-                                'class' => 'text-center'
-                            ],
-                            'headerOptions' => [
-                                'class' => 'text-center'
-                            ],
-                        ],
-
-                        [
-                            'attribute' => 'nb_addr',
-                            'contentOptions' => [
-                                'class' => 'text-center'
-                            ],
-                            'headerOptions' => [
-                                'class' => 'text-center'
-                            ],
-                        ],
-
-                        [
-                            'attribute' => 'status',
-                            'format' => 'raw',
-                            'value' => function ($data) {
-                                $filesCount = count($data->files);
-
-                                if ($filesCount == 0)
-                                    return '<i class="glyphicon glyphicon-ok text-success"></i> OK';
-                                else
-                                    return '<i class="glyphicon glyphicon-remove text-danger"></i> ' . \Yii::t('app', '{n,plural,one{# файл} few{# файла} many{# файлов} other{# файла}}', ['n' => $filesCount]);
-                            },
-                            'contentOptions' => [
-                                'class' => 'text-center',
-                                'style' => 'min-width: 120px;'
-                            ],
-                            'headerOptions' => [
-                                'class' => 'text-center'
-                            ],
-                        ],
-
-                        [
-                            'attribute' => 'last_date',
-                            'format' => 'raw',
-                            'value' => function ($data) {
-                                $lastScan = $data->scans[ 0 ];
-
-                                if (is_null($lastScan))
-                                    return '<span class="text-muted">[нет]</span>';
-
-                                $time = strtotime($lastScan->time);
-
-                                $month_name = [
-                                    1 => 'января',
-                                    2 => 'февраля',
-                                    3 => 'марта',
-                                    4 => 'апреля',
-                                    5 => 'мая',
-                                    6 => 'июня',
-                                    7 => 'июля',
-                                    8 => 'августа',
-                                    9 => 'сентября',
-                                    10 => 'октября',
-                                    11 => 'ноября',
-                                    12 => 'декабря'
-                                ];
-
-                                $month = $month_name[date('n', $time)];
-
-                                $day = date('j', $time);
-                                $year = date('Y', $time);
-                                $hour = date('G', $time);
-                                $min = date('i', $time);
-
-                                $dif = time() - $time;
-
-                                if ($dif < 59) {
-                                    return $dif . " сек. назад";
-                                } elseif ($dif / 60 > 1 and $dif / 60 < 59) {
-                                    return round($dif / 60) . " мин. назад";
-                                } elseif ($dif / 3600 > 1 and $dif / 3600 < 23) {
-                                    return round($dif / 3600) . " час. назад";
-                                } elseif ($dif / 3600 / 24 >= 1 and $dif / 3600 / 24 < 7) {
-                                    return round($dif / 3600 / 24) . " дн. назад";
-                                } else {
-                                    return '<span class="text-danger">' . round($dif / 3600 / 24) . " дн. назад" . '</span>';
-                                }
-                            },
-                            'contentOptions' => [
-                                'class' => 'text-center'
-                            ],
-                            'headerOptions' => [
-                                'class' => 'text-center'
-                            ],
-                        ],*/
 
                         [
                             'class' => 'yii\grid\ActionColumn',

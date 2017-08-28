@@ -2,8 +2,10 @@
 
 namespace app\controllers;
 
+use app\commands\AgentController;
 use app\models\Categories;
 use app\models\Videos;
+use app\models\VideosSearch;
 use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
@@ -190,6 +192,22 @@ class ChannelsController extends Controller
     }
 
     /**
+     * Finds the Videos model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Videos the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findVideosModel($id)
+    {
+        if (($model = Videos::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    /**
      * Creates a new Categories model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
@@ -252,5 +270,55 @@ class ChannelsController extends Controller
         Videos::updateAll(['active' => 1], ['channel_id' => $id]);
 
         $this->redirect(['index', 'id' => $model->category_id]);
+    }
+
+    /**
+     * Список видео канала.
+     *
+     * @param $id
+     * @return string
+     */
+    public function actionListVideos($id) {
+        $channelModel = $this->findModel($id);
+
+        $searchModel = new VideosSearch();
+        $searchModel->channel_id = $id;
+
+        $videosDataProvider = $searchModel->search(Yii::$app->request->get());
+
+        return $this->render('list-videos', [
+            'channelModel' => $channelModel,
+            'searchModel' => $searchModel,
+            'videosDataProvider' => $videosDataProvider,
+        ]);
+    }
+
+    /**
+     * Загрузка списка видео канала вручную.
+     *
+     * @param $id
+     */
+    public function actionReload($id) {
+        set_time_limit(300);
+
+        $channelModel = $this->findModel($id);
+
+        $consoleController = new AgentController('agent', null);
+        $consoleController->actionUpdateVideos($id);
+
+        $this->redirect(['list-videos', 'id' => $id]);
+    }
+
+    /**
+     * Удаление видео.
+     *
+     * @param $id
+     */
+    public function actionDeleteVideo($id) {
+        $model = $this->findVideosModel($id);
+
+        $model->delete();
+
+        $this->redirect(['list-videos', 'id' => $model->channel_id]);
     }
 }

@@ -298,3 +298,7 @@ table tbody td {
 #size-table tfoot td:last-child {
     text-align: right;
 }
+
+#channels-grid tbody tr td:nth-child(2) a:first-child span {
+    text-decoration: underline;
+}

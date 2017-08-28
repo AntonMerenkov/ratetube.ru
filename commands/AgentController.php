@@ -18,8 +18,11 @@ class AgentController extends Controller
 {
     /**
      * Обновление списка видео.
+     *
+     * @param null $channel_id
+     * @throws \Exception
      */
-    public function actionUpdateVideos()
+    public function actionUpdateVideos($channel_id = null)
     {
         $time = microtime(true);
 
@@ -27,11 +30,19 @@ class AgentController extends Controller
         $profiling->code = 'agent-update-videos';
         $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
 
-        $channelModels = Channels::find()->all();
+        if (!is_null($channel_id))
+            $channelModels = Channels::find()->where(['id' => $channel_id])->all();
+        else
+            $channelModels = Channels::find()->all();
+
         $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
         $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
 
-        $oldVideos = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
+        if (!is_null($channel_id))
+            $oldVideos = ArrayHelper::map(Videos::find()->where(['channel_id' => $channel_id])->all(), 'id', 'video_link');
+        else
+            $oldVideos = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
+
         $newVideoIds = Videos::getByChannelIds($channelsIds);
 
         $transaction = Videos::getDb()->beginTransaction();

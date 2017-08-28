@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\Statistics;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -12,6 +13,7 @@ use yii\helpers\ArrayHelper;
  * @property string $name
  * @property string $video_link
  * @property integer $channel_id
+ * @property integer $active
  *
  * @property Channels $channel
  */
@@ -49,6 +51,7 @@ class Videos extends \yii\db\ActiveRecord
             'name' => 'Наименование',
             'video_link' => 'ID видео',
             'channel_id' => 'ID канала',
+            'active' => 'Активен',
         ];
     }
 
@@ -58,6 +61,17 @@ class Videos extends \yii\db\ActiveRecord
     public function getChannel()
     {
         return $this->hasOne(Channels::className(), ['id' => 'channel_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getStatistics()
+    {
+        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
+
+        return $this->hasMany($tableModel::className(), ['video_id' => 'id']);
     }
 
     /**
