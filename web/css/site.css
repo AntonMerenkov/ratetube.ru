@@ -106,31 +106,32 @@ header .refresh-block {
 }
 
 #categories {
-    font-size: 22px;
+    font-size: 20px;
     color: #ffb962;
     border-bottom: 2px solid #ffb962;
     line-height: 1;
 }
 
 #categories ul {
-    margin: 0;
+    margin: 0 0 -3px;
     padding: 0;
     list-style: none;
 }
 
 #categories li {
     display: inline-block;
-    padding-bottom: 8px;
+    padding-bottom: 5px;
+    margin-right: 8px;
 }
 
 #categories li a {
     color: inherit;
-    display: inline;
+    display: block;
     padding: 5px 10px;
 }
 
-#categories li + li {
-    margin-left: 10px;
+#categories li:last-child {
+    margin-left: 0;
 }
 
 /*#categories li.active {
@@ -141,7 +142,7 @@ header .refresh-block {
 #categories li a:hover,
 #categories li a:focus {
     background: rgba(255, 185, 98, 0.25);
-    border-radius: 6px 6px 0 0;
+    border-radius: 6px;
 }
 
 #categories li.active a {
@@ -1063,8 +1064,8 @@ article p {
         font-size: 18px;
     }
 
-    #categories li + li {
-        margin-left: 20px;
+    #categories li {
+        margin-right: 5px;
     }
 
     #tags {
@@ -1184,11 +1185,11 @@ article p {
     }
 
     #categories {
-        font-size: 18px;
+        font-size: 16px;
     }
 
-    #categories li + li {
-        margin-left: 20px;
+    #categories li {
+        margin-right: 5px;
     }
 
     #tags {
@@ -1226,14 +1227,18 @@ article p {
         margin-top: 0;
     }
 
-    footer {
-        position: relative;
-        padding-bottom: 40px;
+    footer > .container > .row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     footer > .container > .row > .col-md-8 {
-        position: absolute;
-        bottom: 10px;
+        order: 3;
+    }
+
+    footer > .container > .row > .col-md-2:last-child {
+        order: 2;
     }
 
     footer nav ul li {
@@ -1252,11 +1257,27 @@ article p {
 }
 
 @media (max-width: 480px) {
+    body {
+        background-image: url('../img/background_white.jpg');
+        background-color: #415464;
+    }
+
+    #news-table {
+        font-size: 12px;
+    }
+
     #news-table .info {
         display: none;
     }
 
-    #news-table td .cell-table-cell:nth-child(1),
+    #news-table td .cell-table-cell:nth-child(1) {
+        padding: 0 5px;
+    }
+
+    #news-table td .cell-table-cell:nth-child(2) {
+        padding: 0;
+    }
+
     #news-table td .cell-table-cell:nth-child(3) {
         display: none;
     }
