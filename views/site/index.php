@@ -28,6 +28,8 @@ $this->title = 'RateTube';
 <?= Html::a("", [
     "site/ajax-get-statistics",
     "id" => Yii::$app->request->get('id', null),
+    "category_id" => Yii::$app->request->get('category_id', null),
+    "channel_id" => Yii::$app->request->get('channel_id', null),
     "page" => $statisticsQueryData[ 'pagination' ][ 'page' ] == 1 ? null : $statisticsQueryData[ 'pagination' ][ 'page' ],
 ], ['class' => 'hidden', 'id' => 'refreshButton']) ?>
 

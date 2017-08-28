@@ -59,6 +59,8 @@ class SiteController extends Controller
     /**
      * Список видео со статистикой.
      *
+     * PS: При внесении дополнительного фильтра изменить self::actionAjaxGetStatistics и #refreshButton.
+     *
      * @param null $category_id
      * @param null $channel_id
      * @param null $query
