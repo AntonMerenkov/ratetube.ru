@@ -145,16 +145,25 @@ class Channels extends \yii\db\ActiveRecord
         if (!filter_var($url, FILTER_VALIDATE_URL))
             return ['error' => 'Данный URL не является верным.'];
 
-        if (!preg_match('#/user/(.+)/#i', $url, $matches) && !preg_match('#/user/(.+)$#i', $url, $matches))
+        if (preg_match('#/user/(.+)/#i', $url, $matches) || preg_match('#/user/(.+)$#i', $url, $matches)) {
+            $userId = $matches[ 1 ];
+
+            $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
+                    'part' => 'snippet',
+                    'forUsername' => $userId,
+                    'key' => Yii::$app->params[ 'apiKey' ]
+                )));
+        } else if (preg_match('#/channel/(.+)/#i', $url, $matches) || preg_match('#/channel/(.+)$#i', $url, $matches)) {
+            $channelId = $matches[ 1 ];
+
+            $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
+                'part' => 'snippet',
+                'id' => $channelId,
+                'key' => Yii::$app->params[ 'apiKey' ]
+            )));
+        } else {
             return ['error' => 'Данный URL не является ссылкой на канал пользователя.'];
-
-        $userId = $matches[ 1 ];
-
-        $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-            'part' => 'snippet',
-            'forUsername' => $userId,
-            'key' => Yii::$app->params[ 'apiKey' ]
-        )));
+        }
 
         $result = json_decode($res, true);
 
