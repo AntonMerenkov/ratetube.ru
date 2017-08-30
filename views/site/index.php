@@ -6,6 +6,8 @@
 use app\assets\CircleProgressAsset;
 use app\models\Categories;
 use app\components\Statistics;
+use app\models\Channels;
+use app\models\Videos;
 use yii\bootstrap\Nav;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
@@ -14,6 +16,7 @@ use yii\helpers\Html;
 use yii\widgets\Pjax;
 
 $this->title = 'RateTube';
+$channelId = Yii::$app->request->get('channel_id', null);
 ?>
 
 <?php $this->beginBlock('refresh-block'); ?>
@@ -24,6 +27,17 @@ $this->title = 'RateTube';
 
     <? $this->registerJsFile('/js/refresh.js'); ?>
 <?php $this->endBlock(); ?>
+
+<? if (!is_null($channelId)) : ?>
+    <? $channel = Channels::findOne(['id' => $channelId]) ?>
+    <div id="channel-info">
+        <div class="image" style="background-image: url('<?=$channel->image_url ?>')"></div>
+        <div class="info">
+            <div class="name"><?=$channel->name ?></div>
+            <div class="description"><?=number_format(Videos::find()->where(['channel_id' => $channelId])->count(), 0, ',', ' ') ?> видео | <?=number_format($channel->subscribers_count, 0, ',', ' ') ?> подписчиков</div>
+        </div>
+    </div>
+<? endif; ?>
 
 <?= Html::a("", [
     "site/ajax-get-statistics",
