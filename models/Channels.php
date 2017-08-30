@@ -16,6 +16,7 @@ use Yii;
  * @property string $flush_timeframe
  * @property integer $flush_count
  * @property integer $load_last_days
+ * @property integer $subscribers_count
  *
  * @property Categories $category
  * @property Videos[] $videos
@@ -61,7 +62,7 @@ class Channels extends \yii\db\ActiveRecord
             [['flush_timeframe'], 'string', 'max' => 20],
             [['timeframeExist'], 'boolean'],
             [['timeframeExist'], 'timeframeCheck'],
-            [['load_last_days'], 'integer'],
+            [['load_last_days', 'subscribers_count'], 'integer'],
         ];
     }
 
@@ -82,6 +83,7 @@ class Channels extends \yii\db\ActiveRecord
             'timeframeExist' => 'Особый критерий удаления',
             'videos' => 'Видеозаписей',
             'load_last_days' => 'Загружать видео за период (дней)',
+            'subscribers_count' => 'Количество подписчиков',
         ];
     }
 
@@ -149,7 +151,7 @@ class Channels extends \yii\db\ActiveRecord
             $userId = $matches[ 1 ];
 
             $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-                    'part' => 'snippet',
+                    'part' => 'snippet,statistics',
                     'forUsername' => $userId,
                     'key' => Yii::$app->params[ 'apiKey' ]
                 )));
@@ -157,7 +159,7 @@ class Channels extends \yii\db\ActiveRecord
             $channelId = $matches[ 1 ];
 
             $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-                'part' => 'snippet',
+                'part' => 'snippet,statistics',
                 'id' => $channelId,
                 'key' => Yii::$app->params[ 'apiKey' ]
             )));
@@ -173,6 +175,7 @@ class Channels extends \yii\db\ActiveRecord
                     'id' => $item[ 'id' ],
                     'name' => $item[ 'snippet' ][ 'title' ],
                     'image' => $item[ 'snippet' ][ 'thumbnails' ][ 'default' ][ 'url' ],
+                    'subscribers_count' => $item[ 'statistics' ][ 'subscriberCount' ],
                 ];
             }, $result[ 'items' ]));
         else

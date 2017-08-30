@@ -25,7 +25,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'channel_link')->hiddenInput() ?>
+    <?= $form->field($model, 'channel_link')->hiddenInput()->label(false); ?>
+    <?= $form->field($model, 'subscribers_count')->hiddenInput()->label(false); ?>
 
     <p id="channels-link" class="help-block"><? if ($model->channel_link != '') : ?><?=$model->channel_link ?><? else : ?>[не получен]<? endif; ?></p>
 
@@ -103,6 +104,8 @@ use yii\widgets\ActiveForm;
             }
             if (data.name != undefined)
                 $('#channels-name').val(data.name);
+            if (data.subscribers_count != undefined)
+                $('#channels-subscribers_count').val(data.subscribers_count);
             if (data.image != undefined) {
                 $('#channels-image').css('background-image', "url('" + data.image + "')");
                 $('#channels-image_url').val(data.image);

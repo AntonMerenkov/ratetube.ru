@@ -1257,6 +1257,10 @@ article p {
 }
 
 @media (max-width: 480px) {
+    html {
+        -webkit-text-size-adjust: none;
+    }
+
     body {
         background-image: url('../img/background_white.jpg');
         background-color: #415464;

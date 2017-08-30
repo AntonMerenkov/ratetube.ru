@@ -11,6 +11,7 @@ use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
+use app\widgets\TopChannels;
 
 AppAsset::register($this);
 ?>
@@ -108,91 +109,7 @@ AppAsset::register($this);
     <div class="container">
         <div class="row">
             <div class="col-md-2">
-                <!--<div class="widget widget-top-channels">
-                    <div class="widget-header">Топ-10 блоггеров</div>
-
-                    <div class="channel-list">
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-1.png')"></div>
-                            <div class="info">
-                                <div class="name">Jove</div>
-                                <div class="description">Подписчиков: 2 755 625</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-2.png')"></div>
-                            <div class="info">
-                                <div class="name">Amway921WOT</div>
-                                <div class="description">Подписчиков: 1 576 672</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-3.png')"></div>
-                            <div class="info">
-                                <div class="name">PROТанки - моды...</div>
-                                <div class="description">Подписчиков: 832 056</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-4.png')"></div>
-                            <div class="info">
-                                <div class="name">WoT Fan - развле...</div>
-                                <div class="description">Подписчиков: 758 485</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-5.png')"></div>
-                            <div class="info">
-                                <div class="name">Vspishka в World ...</div>
-                                <div class="description">Подписчиков: 684 785</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-6.png')"></div>
-                            <div class="info">
-                                <div class="name">EviL GrannY | Worl...</div>
-                                <div class="description">Подписчиков: 620 194</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-7.png')"></div>
-                            <div class="info">
-                                <div class="name">DESERTOD TV</div>
-                                <div class="description">Подписчиков: 543 691</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-8.png')"></div>
-                            <div class="info">
-                                <div class="name">QuickyBaby</div>
-                                <div class="description">Подписчиков: 500 936</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-9.png')"></div>
-                            <div class="info">
-                                <div class="name">Murazor TV | World...</div>
-                                <div class="description">Подписчиков: 427 705</div>
-                            </div>
-                        </a>
-
-                        <a class="channel-item" href="#">
-                            <div class="image" style="background-image: url('data/channel-10.png')"></div>
-                            <div class="info">
-                                <div class="name">World of Tanks. О...</div>
-                                <div class="description">Подписчиков: 385 437</div>
-                            </div>
-                        </a>
-                    </div>
-                </div>-->
+                <?= TopChannels::widget() ?>
 
                 <!--<div class="widget widget-transparent widget-ad">
                     <a href="#">

@@ -7,7 +7,8 @@ use yii\helpers\Html;
 
 $this->title = 'Изменение канала: ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Каналы', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['index', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = ['label' => $model->category->name, 'url' => ['index', 'id' => $model->category_id]];
+$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['index', 'id' => $model->category_id]];
 $this->params['breadcrumbs'][] = 'Изменение';
 ?>
 <div class="channels-update">

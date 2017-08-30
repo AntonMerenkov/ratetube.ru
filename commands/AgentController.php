@@ -281,4 +281,63 @@ class AgentController extends Controller
 
         Yii::info(Yii::t('app', '{n, plural, one{# видео помечено как неактуальное} other{# видео помечены как неактуальные}}', ['n' =>  count($videoIds) ]) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
     }
+
+    /**
+     * Обновление статистики по количеству подписчиков.
+     */
+    public function actionUpdateSubscribers()
+    {
+        $time = microtime(true);
+
+        $profiling = new Profiling();
+        $profiling->code = 'agent-update-subscribers';
+        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
+
+        $channelIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
+
+        $result = [];
+        $urlArray = [];
+
+        // делаем запрос на получение статистики по каналам
+        foreach (array_chunk($channelIds, 50) as $channelIdsChunk)
+            $urlArray[] = 'https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
+                    'part' => 'statistics',
+                    'maxResults' => 50,
+                    'id' => implode(',', $channelIdsChunk),
+                    'key' => Yii::$app->params[ 'apiKey' ]
+                ));
+
+        $responseArray = Yii::$app->curl->queryMultiple($urlArray);
+
+        foreach ($responseArray as $response) {
+            $response = json_decode($response, true);
+
+            if (isset($response[ 'error' ])) {
+                return [
+                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
+                ];
+            }
+
+            if (isset($response[ 'items' ]))
+                foreach ($response[ 'items' ] as $item)
+                    $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+
+        foreach ($channelIds as $id => $channelId) {
+            Channels::updateAll([
+                'subscribers_count' => (int) $result[ $channelId ][ 'subscriberCount' ]
+            ], [
+                'id' => $id
+            ]);
+        }
+
+        $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+        $profiling->save();
+
+        $transaction->commit();
+
+        Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' =>  count($result) ]) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+    }
 }
