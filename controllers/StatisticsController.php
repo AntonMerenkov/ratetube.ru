@@ -53,9 +53,39 @@ class StatisticsController extends Controller
      */
     public function actionIndex()
     {
-        $videosData = Profiling::find()->where([
-            'code' => 'agent-update-videos'
-        ])->all();
+        // агенты
+        $profilingData = Profiling::find()->all();
+
+        $profilingTableData = [];
+        foreach ($profilingData as $item) {
+            $profilingTableData[ $item->code ][ 'code' ] = $item->code;
+            $profilingTableData[ $item->code ][ 'duration' ][] = $item->duration;
+            $profilingTableData[ $item->code ][ 'memory' ][] = $item->memory;
+        }
+
+        $profilingDataProvider = new ActiveDataProvider([
+            'models' => array_values(array_map(function($item) {
+                $item[ 'duration' ] = array_filter($item[ 'duration' ], function($item2) {
+                    return $item2 > 0;
+                });
+                $item[ 'memory' ] = array_filter($item[ 'memory' ], function($item2) {
+                    return $item2 > 0;
+                });
+
+                return [
+                    'code' => $item[ 'code' ],
+                    'duration_avg' => round(array_sum($item[ 'duration' ]) / count($item[ 'duration' ]), 2),
+                    'duration_max' => max($item[ 'duration' ]),
+                    'memory_avg' => round(array_sum($item[ 'memory' ]) / count($item[ 'memory' ]), 2),
+                    'memory_max' => max($item[ 'memory' ]),
+                ];
+            }, $profilingTableData)),
+            'pagination' => false
+        ]);
+
+        $videosData = array_values(array_filter($profilingData, function($item) {
+            return $item->code == 'agent-update-videos';
+        }));
 
         $videosData = array_map(function($item) {
             return $item[ 0 ];
@@ -66,9 +96,9 @@ class StatisticsController extends Controller
             'pagination' => false
         ]);
 
-        $statisticsData = Profiling::find()->where([
-            'code' => 'agent-update-statistics'
-        ])->all();
+        $statisticsData = array_values(array_filter($profilingData, function($item) {
+            return $item->code == 'agent-update-statistics';
+        }));
 
         $statisticsData = array_map(function($item) {
             return $item[ 0 ];
@@ -79,10 +109,13 @@ class StatisticsController extends Controller
             'pagination' => false
         ]);
 
+        // статистика по запросам
         $statisticsQueryData = Statistics::getStatistics();
 
+        // размер таблиц БД
         $tableSizeData = Statistics::getTableSizeData();
 
+        // наполняемость БД
         $statisticsDatesData = array_map(function($item) {
             $tableModel = '\\app\\models\\' . $item;
             return Yii::$app->db->createCommand('SELECT DISTINCT(datetime) FROM ' . $tableModel::tableName())->queryColumn();
@@ -143,6 +176,7 @@ class StatisticsController extends Controller
             'statisticsQueryData' => $statisticsQueryData,
             'statisticsDatesData' => $statisticsDatesData,
             'tableSizeData' => $tableSizeData,
+            'profilingDataProvider' => $profilingDataProvider,
         ]);
     }
 }

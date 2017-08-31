@@ -18,6 +18,14 @@ use yii\helpers\ArrayHelper;
 class AgentController extends Controller
 {
     /**
+     * Действия при инициализации контроллера.
+     */
+    public function init()
+    {
+        ini_set('memory_limit', '1024M');
+    }
+
+    /**
      * Обновление списка видео.
      *
      * @param null $channel_id
@@ -70,7 +78,8 @@ class AgentController extends Controller
             if (!empty($values))
                 Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[0]), $values)->execute();
 
-            $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+            $profiling->duration = round(microtime(true) - $time, 2);
+            $profiling->memory = memory_get_usage() / 1024 / 1024;
             $profiling->save();
 
             $transaction->commit();
@@ -81,7 +90,9 @@ class AgentController extends Controller
 
         Yii::info("Получено новых видео: " . count(array_diff(array_map(function ($item) {
                 return $item['id'];
-            }, $newVideoIds), $oldVideos)) . ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+            }, $newVideoIds), $oldVideos)) .
+            ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -145,7 +156,8 @@ class AgentController extends Controller
                 }
             }
 
-            $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+            $profiling->duration = round(microtime(true) - $time, 2);
+            $profiling->memory = memory_get_usage() / 1024 / 1024;
             $profiling->save();
 
             $transaction->commit();
@@ -154,7 +166,9 @@ class AgentController extends Controller
             throw $e;
         }
 
-        Yii::info("Получена статистика для " . count($videoIds) . " видео, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек, интервалы: " . implode("", $addedIntervals), 'agent');
+        Yii::info("Получена статистика для " . count($videoIds) . " видео, интервалы: " .
+            implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -209,12 +223,15 @@ class AgentController extends Controller
             return in_array($item['TABLE_NAME'], $statisticTables);
         })));
 
-        $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
         $profiling->save();
 
         $transaction->commit();
 
-        Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " .
+            Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -280,7 +297,13 @@ class AgentController extends Controller
 
         Videos::updateAll(['active' => 0], 'id IN (' . implode(',', $videoIds) . ')');
 
-        Yii::info(Yii::t('app', '{n, plural, one{# видео помечено как неактуальное} other{# видео помечены как неактуальные}}', ['n' => count($videoIds)]) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
+        $profiling->save();
+
+        Yii::info(Yii::t('app', '{n, plural, one{# видео помечено как неактуальное} other{# видео помечены как неактуальные}}', ['n' => count($videoIds)]) . ", время: " .
+            Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -334,12 +357,15 @@ class AgentController extends Controller
             ]);
         }
 
-        $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
         $profiling->save();
 
         $transaction->commit();
 
-        Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => count($result)]) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+        Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => count($result)]) .
+            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -415,8 +441,6 @@ class AgentController extends Controller
      */
     public function actionUpdateTags()
     {
-        ini_set('memory_limit', '1024M');
-
         $time = microtime(true);
 
         $profiling = new Profiling();
@@ -508,13 +532,15 @@ class AgentController extends Controller
         if (!empty($delIds))
             Tags::deleteAll(['id' => $delIds]);
 
-        $profiling->duration = Yii::$app->formatter->asDecimal(microtime(true) - $time, 2);
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
         $profiling->save();
 
         $transaction->commit();
 
         Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($addData)]) .
             ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($delIds)]) .
-            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . " сек", 'agent');
+            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 }

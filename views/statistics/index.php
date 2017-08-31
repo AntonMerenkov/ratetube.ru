@@ -3,6 +3,7 @@
 /* @var $this yii\web\View */
 /* @var $videosDataProvider yii\data\ActiveDataProvider */
 /* @var $statisticsDataProvider yii\data\ActiveDataProvider */
+/* @var $profilingDataProvider yii\data\ActiveDataProvider */
 /* @var $statisticsDatesData [] */
 
 /* @var $tableSizeData [] */
@@ -11,6 +12,7 @@ use app\components\Statistics;
 use sjaakp\gcharts\LineChart;
 use sjaakp\gcharts\TimelineChart;
 use yii\data\ArrayDataProvider;
+use yii\grid\GridView;
 
 $this->title = 'Статистика';
 
@@ -67,8 +69,9 @@ $this->title = 'Статистика';
     <div class="body-content">
 
         <div class="row text-center">
+            <h2>Периодические агенты</h2>
             <div class="col-lg-6">
-                <h2>Обновление списка видео</h2>
+                <h3>Обновление списка видео</h3>
 
                 <?= LineChart::widget([
                     'height' => '400px',
@@ -83,7 +86,7 @@ $this->title = 'Статистика';
                 ]) ?>
             </div>
             <div class="col-lg-6">
-                <h2>Обновление статистики по видео</h2>
+                <h3>Обновление статистики по видео</h3>
 
                 <?= LineChart::widget([
                     'height' => '400px',
@@ -98,6 +101,58 @@ $this->title = 'Статистика';
                 ]) ?>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <?= GridView::widget([
+                    'dataProvider' => $profilingDataProvider,
+                    'summary' => false,
+                    'tableOptions' => [
+                        'class' => 'table table-bordered',
+                    ],
+                    'columns' => [
+                        [
+                            'attribute' => 'code',
+                            'header' => 'Код агента',
+                        ],
+                        [
+                            'attribute' => 'duration',
+                            'header' => 'Время выполнения (сред / макс)',
+                            'format' => 'raw',
+                            'value' => function($item) {
+                                return '<span>' . Yii::$app->formatter->asDecimal($item[ 'duration_avg' ], 2) .
+                                    ' сек</span><span class="text-muted"> / ' .
+                                    Yii::$app->formatter->asDecimal($item[ 'duration_max' ], 2) . ' сек</span>';
+                            },
+                            'contentOptions' => [
+                                'class' => 'text-center',
+                            ],
+                            'headerOptions' => [
+                                'class' => 'text-center',
+                            ],
+                        ],
+                        [
+                            'attribute' => 'memory',
+                            'header' => 'Память (сред / макс)',
+                            'format' => 'raw',
+                            'value' => function($item) {
+                                return '<span>' . Yii::$app->formatter->asDecimal($item[ 'memory_avg' ], 2) .
+                                    ' МБ</span><span class="text-muted"> / ' .
+                                    Yii::$app->formatter->asDecimal($item[ 'memory_max' ], 2) . ' МБ</span>';
+                            },
+                            'contentOptions' => [
+                                'class' => 'text-center',
+                            ],
+                            'headerOptions' => [
+                                'class' => 'text-center',
+                            ],
+                        ],
+                    ],
+                ]); ?>
+            </div>
+        </div>
+
+        <h2 class="text-center">База данных</h2>
 
         <div class="row">
             <div class="col-lg-12">
@@ -147,7 +202,7 @@ $this->title = 'Статистика';
 
         <div class="row">
             <div class="col-lg-12">
-                <h2 class="text-center">Объем БД</h2>
+                <h3 class="text-center">Объем БД</h3>
                 <br>
 
                 <table class="table table-bordered" id="size-table">

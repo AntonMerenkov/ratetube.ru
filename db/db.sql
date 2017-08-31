@@ -69,6 +69,7 @@ CREATE TABLE `profiling` (
   `datetime` datetime NOT NULL COMMENT 'Время',
   `code` varchar(32) NOT NULL COMMENT 'Код',
   `duration` decimal(10,2) NOT NULL COMMENT 'Время выполнения',
+  `memory` decimal(8,2) DEFAULT NULL COMMENT 'Память (МБ)',
   PRIMARY KEY (`id`),
   KEY `profiling_code_datetime_index` (`code`,`datetime`)
 ) ENGINE=InnoDB AUTO_INCREMENT=76442 DEFAULT CHARSET=utf8 COMMENT='Данные профайлинга';
@@ -109,7 +110,7 @@ CREATE TABLE `statistics_hour` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_hour_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=49718370 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
+) ENGINE=InnoDB AUTO_INCREMENT=49733003 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -128,7 +129,7 @@ CREATE TABLE `statistics_minute` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_minute_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=52655653 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
+) ENGINE=InnoDB AUTO_INCREMENT=52670286 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -216,4 +217,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-31 15:42:49
+-- Dump completed on 2017-08-31 15:47:15

@@ -11,6 +11,7 @@ use Yii;
  * @property string $datetime
  * @property string $code
  * @property string $duration
+ * @property string $memory
  */
 class Profiling extends \yii\db\ActiveRecord
 {
@@ -30,7 +31,7 @@ class Profiling extends \yii\db\ActiveRecord
         return [
             [['datetime', 'code', 'duration'], 'required'],
             [['datetime'], 'safe'],
-            [['duration'], 'number'],
+            [['duration', 'memory'], 'number'],
             [['code'], 'string', 'max' => 32],
         ];
     }
@@ -45,6 +46,7 @@ class Profiling extends \yii\db\ActiveRecord
             'datetime' => 'Время',
             'code' => 'Код',
             'duration' => 'Время выполнения',
+            'memory' => 'Память (МБ)',
         ];
     }
 
