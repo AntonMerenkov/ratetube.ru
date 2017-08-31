@@ -1,5 +1,7 @@
 */30 * * * * flock -n /tmp/agent-update-videos.lock -c "php /var/www/html/yii agent/update-videos"
 0 * * * * flock -n /tmp/agent-flush-statistics.lock -c "php /var/www/html/yii agent/flush-statistics"
 */5 * * * * flock -n /tmp/agent-update-statistics.lock -c "php /var/www/html/yii agent/update-statistics"
-0 3 * * * flock -n /tmp/agent-flush-videos.lock -c "php /var/www/html/yii agent/flush-videos"
+5 * * * * flock -n /tmp/agent-flush-videos.lock -c "php /var/www/html/yii agent/flush-videos"
+0 */2 * * * flock -n /tmp/agent-update-subscribers -c "php /var/www/html/yii agent/update-subscribers"
+0 */12 * * * flock -n /tmp/agent-update-tags -c "php /var/www/html/yii agent/update-tags"
 * * * * * /root/mariadb_restart.sh > /dev/null
