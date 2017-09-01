@@ -8,6 +8,7 @@ use app\models\Profiling;
 use app\components\Statistics;
 use app\models\Tags;
 use app\models\Videos;
+use app\widgets\PopularTags;
 use yii\console\Controller;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -537,6 +538,8 @@ class AgentController extends Controller
         $profiling->save();
 
         $transaction->commit();
+
+        Yii::$app->cache->delete(PopularTags::TAGS_CACHE_KEY);
 
         Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($addData)]) .
             ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($delIds)]) .

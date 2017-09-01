@@ -166,6 +166,10 @@ header .refresh-block {
     margin: 8px 0;
 }
 
+#tags nav {
+    margin-right: 100px;
+}
+
 #tags ul {
     margin: 0;
     padding: 0;
@@ -179,10 +183,11 @@ header .refresh-block {
 
 #tags li a {
     color: inherit;
+    margin-right: 20px;
 }
 
-#tags li + li {
-    margin-left: 30px;
+#tags li:last-child {
+    margin-right: 0;
 }
 
 #tags li.active {
@@ -1071,8 +1076,8 @@ article p {
         font-size: 14px;
     }
 
-    #tags li + li {
-        margin-left: 15px;
+    #tags li {
+        margin-right: 15px;
     }
 
     #search {
@@ -1195,8 +1200,8 @@ article p {
         font-size: 14px;
     }
 
-    #tags li + li {
-        margin-left: 15px;
+    #tags li {
+        margin-right: 15px;
     }
 
     #search {

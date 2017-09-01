@@ -269,6 +269,7 @@ class Statistics
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
                 'sql' => self::formatSql($videoSql) . "\n\n" . self::formatSql($channelSql) . "\n\n" . self::formatSql($lastTimeSql) . "\n\n" . self::formatSql($prevTimeSql),
                 'cache_id' => $cacheId,
+                'sort_type' => $sortType,
             ]
         ];
     }

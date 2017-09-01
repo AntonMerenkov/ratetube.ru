@@ -5,6 +5,7 @@
 
 use app\components\Statistics;
 use app\models\Categories;
+use app\widgets\PopularTags;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
@@ -58,14 +59,7 @@ AppAsset::register($this);
                         </nav>
                     </div>
                     <div id="tags">
-                        <nav>
-                            <ul>
-                                <li class="active"><a href="#">WOT</a></li>
-                                <li><a href="#">WOW</a></li>
-                                <li><a href="#">TESO</a></li>
-                                <li><a href="#">DOTA</a></li>
-                            </ul>
-                        </nav>
+                        <?= PopularTags::widget(); ?>
 
                         <div id="search">
                             <form action="<?=Url::to(['site/index']) ?>" method="get">

@@ -153,7 +153,7 @@ class Videos extends \yii\db\ActiveRecord
 
         $query = implode('', array_map(function($item) {
             return '*' . $item . '*';
-        }, preg_split('/\s+/ui', $query, PREG_SPLIT_NO_EMPTY)));
+        }, preg_split('/\s+/ui', $query, -1, PREG_SPLIT_NO_EMPTY)));
 
         $data = Yii::$app->db->createCommand("SELECT video_id, type,
             MATCH (text) AGAINST (:query) as REL
