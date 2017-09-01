@@ -202,7 +202,7 @@ header .refresh-block {
 
 #tags li.active,
 #tags li.active + li {
-    margin-left: 10px;
+    margin-left: -10px;
 }
 
 #tags li:first-child {

@@ -5,6 +5,7 @@ namespace app\models;
 use app\components\Statistics;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\sphinx\Query;
 
 /**
  * This is the model class for table "videos".
@@ -149,23 +150,16 @@ class Videos extends \yii\db\ActiveRecord
      */
     public static function searchByQuery($query)
     {
-        // TODO: морфологический поиск через Sphinx
-
-        $query = implode('', array_map(function($item) {
-            return '*' . $item . '*';
-        }, preg_split('/\s+/ui', $query, -1, PREG_SPLIT_NO_EMPTY)));
-
-        $data = Yii::$app->db->createCommand("SELECT video_id, type,
-            MATCH (text) AGAINST (:query) as REL
-            FROM `" . Tags::tableName() . "`
-            WHERE MATCH (text) AGAINST (:query)
-            ORDER BY REL desc", [
-                ':query' => $query
-            ])->queryAll();
+        // поиск через Sphinx
+        $sphinxQuery = new Query();
+        $data = $sphinxQuery->from('tags')
+            ->match($query)
+            ->limit(1000)
+            ->all();
 
         // сортировка с использованием весовых коэффициентов
         usort($data, function($a, $b) {
-            return 100 / $b[ 'REL' ] * Tags::$weights[ $b[ 'type' ] ] - 100 / $a[ 'REL' ] * Tags::$weights[ $a[ 'type' ] ];
+            return Tags::$weights[ $b[ 'type' ] ] - Tags::$weights[ $a[ 'type' ] ];
         });
 
         $data = array_map(function($item) {

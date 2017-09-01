@@ -62,7 +62,11 @@ AppAsset::register($this);
                         <?= PopularTags::widget(); ?>
 
                         <div id="search">
-                            <form action="<?=Url::to(['site/index']) ?>" method="get">
+                            <form action="<?=Url::to([
+                                'site/index',
+                                "category_id" => Yii::$app->request->get('category_id', null),
+                                "channel_id" => Yii::$app->request->get('channel_id', null),
+                            ]) ?>" method="get">
                                 <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
                                 <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
                             </form>

@@ -14,7 +14,9 @@ use yii\helpers\Url;
                 <li<? if ($tag[ 'active' ]) : ?> class="active"<? endif; ?>>
                     <a href="<?=Url::to([
                         'site/index',
-                        'query' => $tag[ 'text' ]
+                        "category_id" => Yii::$app->request->get('category_id', null),
+                        "channel_id" => Yii::$app->request->get('channel_id', null),
+                        "query" => $tag[ 'text' ]
                     ])?>"><?=$tag[ 'text' ] ?></a>
                 </li>
             <? endforeach; ?>

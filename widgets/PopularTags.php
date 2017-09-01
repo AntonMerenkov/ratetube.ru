@@ -107,20 +107,20 @@ class PopularTags extends Widget
             $randomTags = array_keys($tagWeights);
             $randomTags = array_intersect_key($randomTags, array_fill_keys(array_rand($randomTags, $this->count), 0));
 
-            $query = Yii::$app->request->get('query', null);
-
             $resultTags = [];
             foreach ($randomTags as $tag)
                 $resultTags[] = [
                     'text' => $tagNames[ $tag ],
                     'weight' => $tagWeights[ $tag ],
-                    'active' => !is_null($query) && (mb_strtolower($tagNames[ $tag ]) == mb_strtolower($query)),
                 ];
 
             return $resultTags;
         }, 3600);
 
-        // TODO: URLы для поиска по категории и по каналу (в 2 формах поиска и в ссылках тэгов)
+        $query = Yii::$app->request->get('query', null);
+        foreach ($resultTags as $id => $tag)
+            if (!is_null($query) && (mb_strtolower($tag[ 'text' ]) == mb_strtolower($query)))
+                $resultTags[ $id ][ 'active' ] = true;
 
         return $this->render('popular-tags', [
             'tags' => $resultTags,

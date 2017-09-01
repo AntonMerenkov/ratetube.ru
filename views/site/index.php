@@ -46,11 +46,15 @@ $query = Yii::$app->request->get('query', null);
         <div class="summary">
             Найдено <span class="count"><?=$statisticsQueryData[ 'pagination' ][ 'count' ] ?> видео</span> по запросу: "<span class="query"><?=$query ?></span>"
         </div>
-        <form action="<?=Url::to(['site/index']) ?>" method="get">
+        <form action="<?=Url::to([
+            'site/index',
+            "category_id" => Yii::$app->request->get('category_id', null),
+            "channel_id" => Yii::$app->request->get('channel_id', null),
+        ]) ?>" method="get">
             <div class="input-group">
                 <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?" value="<?=$query ?>">
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-search"></i> Найти</button>
+                    <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i> Найти</button>
                 </span>
             </div>
         </form>
