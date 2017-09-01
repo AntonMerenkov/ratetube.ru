@@ -13,10 +13,12 @@ use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\Pjax;
 
 $this->title = 'RateTube';
 $channelId = Yii::$app->request->get('channel_id', null);
+$query = Yii::$app->request->get('query', null);
 ?>
 
 <?php $this->beginBlock('refresh-block'); ?>
@@ -39,11 +41,28 @@ $channelId = Yii::$app->request->get('channel_id', null);
     </div>
 <? endif; ?>
 
+<? if (!is_null($query)) : ?>
+    <div id="search-info">
+        <div class="summary">
+            Найдено <span class="count"><?=$statisticsQueryData[ 'pagination' ][ 'count' ] ?> видео</span> по запросу: "<span class="query"><?=$query ?></span>"
+        </div>
+        <form action="<?=Url::to(['site/index']) ?>" method="get">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?" value="<?=$query ?>">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-search"></i> Найти</button>
+                </span>
+            </div>
+        </form>
+    </div>
+<? endif; ?>
+
 <?= Html::a("", [
     "site/ajax-get-statistics",
     "id" => Yii::$app->request->get('id', null),
     "category_id" => Yii::$app->request->get('category_id', null),
     "channel_id" => Yii::$app->request->get('channel_id', null),
+    "query" => Yii::$app->request->get('query', null),
     "page" => $statisticsQueryData[ 'pagination' ][ 'page' ] == 1 ? null : $statisticsQueryData[ 'pagination' ][ 'page' ],
 ], ['class' => 'hidden', 'id' => 'refreshButton']) ?>
 
@@ -166,6 +185,7 @@ $statisticsDataProvider = new ArrayDataProvider([
                         "site/index" ,
                         "category_id" => Yii::$app->request->get('category_id', null),
                         "channel_id" => Yii::$app->request->get('channel_id', null),
+                        "query" => Yii::$app->request->get('query', null),
                         "page" => $pages[ $i ] == 1 ? null : $pages[ $i ]]) ?>"><?=$pages[ $i ] ?></a>
                 </li>
                 <? if (isset($pages[ $i + 1 ]) && $pages[ $i ] + 1 < $pages[ $i + 1 ]) : ?>

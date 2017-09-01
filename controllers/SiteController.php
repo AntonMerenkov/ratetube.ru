@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Categories;
 use app\components\Statistics;
 use app\models\Channels;
+use app\models\Videos;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\Json;
@@ -78,6 +79,7 @@ class SiteController extends Controller
         $statisticsQueryData = Statistics::getStatistics($page, [
             'category_id' => $category_id,
             'channel_id' => $channel_id,
+            'query' => $query,
         ]);
 
         return $this->render('index', [
@@ -106,6 +108,7 @@ class SiteController extends Controller
         $statisticsQueryData = Statistics::getStatistics($page, [
             'category_id' => $category_id,
             'channel_id' => $channel_id,
+            'query' => $query,
         ]);
 
         // для демо

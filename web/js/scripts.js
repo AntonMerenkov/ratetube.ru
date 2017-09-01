@@ -29,11 +29,17 @@ $(function() {
     });
 
     $('#search form').submit(function() {
-        $('#search').toggleClass('active');
+        if ($('#search').hasClass('active')) {
+            if ($.trim($('#search input').val()) != '') {
+                $('#search form').submit();
+            } else {
+                $('#search').removeClass('active')
+            }
+        } else {
+            $('#search').addClass('active')
+        }
 
-        $('#search-info').find('.query').text($('#search input').val());
-        $('#search-info').find('input').val($('#search input').val());
-        $('#search-info').removeClass('hidden');
+        $('#search').toggleClass('active');
 
         return false;
     });

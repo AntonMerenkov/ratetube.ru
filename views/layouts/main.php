@@ -9,6 +9,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
+use yii\helpers\Url;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 use app\widgets\TopChannels;
@@ -57,7 +58,7 @@ AppAsset::register($this);
                         </nav>
                     </div>
                     <div id="tags">
-                        <!--<nav>
+                        <nav>
                             <ul>
                                 <li class="active"><a href="#">WOT</a></li>
                                 <li><a href="#">WOW</a></li>
@@ -67,11 +68,11 @@ AppAsset::register($this);
                         </nav>
 
                         <div id="search">
-                            <form>
-                                <input type="text" name="q" class="form-control" placeholder="Что вы хотите найти?">
+                            <form action="<?=Url::to(['site/index']) ?>" method="get">
+                                <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
                                 <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
                             </form>
-                        </div>-->
+                        </div>
                     </div>
                 </div>
                 <? if (isset($this->blocks['refresh-block']))

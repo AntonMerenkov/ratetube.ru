@@ -2,6 +2,7 @@
 
 namespace app\components;
 
+use app\models\Videos;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -142,6 +143,11 @@ class Statistics
      *
      * @param int $page
      * @param array $filter
+     *      'category_id' - Фильтр по категории
+     *      'channel_id' - Фильтр по каналу
+     *      'timeType' - Принудительная установка таймфрейма
+     *      'sortType' - Принудительная установка сортировки
+     *      'fullData' - Выдача без постраничной разбивки (boolean)
      * @return array
      */
     public static function getStatistics($page = 1, $filter = [])
@@ -231,6 +237,14 @@ class Statistics
 
             return $videoData;
         }, 600);
+
+        // если включен поиск, то фильтруем данные
+        if (isset($filter[ 'query' ])) {
+            $videoIds = Videos::searchByQuery($filter[ 'query' ]);
+            $data = array_values(array_filter($data, function($item) use ($videoIds) {
+                return in_array($item[ 'id' ], $videoIds);
+            }));
+        }
 
         $time = microtime(true) - $time;
 

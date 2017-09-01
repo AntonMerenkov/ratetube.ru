@@ -163,7 +163,7 @@ header .refresh-block {
     color: #ffbea9;
     line-height: 1;
     position: relative;
-    margin-top: 8px;
+    margin: 8px 0;
 }
 
 #tags ul {
@@ -501,14 +501,13 @@ main > .container > .row > * > .block {
 
 .channel-item .info {
     margin-left: 32px;
-    line-height: 1;
+    line-height: 1.27;
 }
 
 .channel-item .info .name {
     color: #dadada;
     font-size: 14px;
-    margin-bottom: 3px;
-    margin-top: -2px;
+    margin-top: -3px;
 }
 
 .channel-item:hover .info .name,

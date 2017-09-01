@@ -139,4 +139,41 @@ class Videos extends \yii\db\ActiveRecord
 
         return $videoIds;
     }
+
+    /**
+     * Поиск по тэгам.
+     * Возвращает ID найденных видео
+     *
+     * @param $query
+     * @return array
+     */
+    public static function searchByQuery($query)
+    {
+        // TODO: морфологический поиск через Sphinx
+
+        $query = implode('', array_map(function($item) {
+            return '*' . $item . '*';
+        }, preg_split('/\s+/ui', $query, PREG_SPLIT_NO_EMPTY)));
+
+        $data = Yii::$app->db->createCommand("SELECT video_id, type,
+            MATCH (text) AGAINST (:query) as REL
+            FROM `" . Tags::tableName() . "`
+            WHERE MATCH (text) AGAINST (:query)
+            ORDER BY REL desc", [
+                ':query' => $query
+            ])->queryAll();
+
+        // сортировка с использованием весовых коэффициентов
+        usort($data, function($a, $b) {
+            return 100 / $b[ 'REL' ] * Tags::$weights[ $b[ 'type' ] ] - 100 / $a[ 'REL' ] * Tags::$weights[ $a[ 'type' ] ];
+        });
+
+        $data = array_map(function($item) {
+            return $item[ 'video_id' ];
+        }, $data);
+
+        $data = array_values(array_unique($data));
+
+        return $data;
+    }
 }
