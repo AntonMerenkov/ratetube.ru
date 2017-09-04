@@ -13,6 +13,7 @@ use yii\sphinx\Query;
  * @property integer $id
  * @property string $name
  * @property string $video_link
+ * @property string $image_url
  * @property integer $channel_id
  * @property integer $active
  *
@@ -36,7 +37,7 @@ class Videos extends \yii\db\ActiveRecord
         return [
             [['name', 'channel_id'], 'required'],
             [['channel_id'], 'integer'],
-            [['name'], 'string', 'max' => 255],
+            [['name', 'image_url'], 'string', 'max' => 255],
             [['video_link'], 'string', 'max' => 32],
             [['channel_id'], 'exist', 'skipOnError' => true, 'targetClass' => Channels::className(), 'targetAttribute' => ['channel_id' => 'id']],
         ];
@@ -51,6 +52,7 @@ class Videos extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Наименование',
             'video_link' => 'ID видео',
+            'image_url' => 'Предпросмотр',
             'channel_id' => 'ID канала',
             'active' => 'Активен',
         ];
@@ -126,7 +128,8 @@ class Videos extends \yii\db\ActiveRecord
                             'id' => $item[ 'id' ][ 'videoId' ],
                             'title' => $item[ 'snippet' ][ 'title' ],
                             'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
-                            'channel_id' => $channelQueryData[ $id ][ 'id' ]
+                            'channel_id' => $channelQueryData[ $id ][ 'id' ],
+                            'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
                         ];
                     }, $response[ 'items' ])));
 

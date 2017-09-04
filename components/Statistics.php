@@ -178,7 +178,7 @@ class Statistics
         ]);
 
         // 4 отдельных запроса получаются быстрее единого
-        $videoSql = "SELECT v.id, v.name, v.video_link, v.channel_id
+        $videoSql = "SELECT v.id, v.name, v.video_link, v.image_url, v.channel_id
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id" : "") . "
                       WHERE v.active = 1

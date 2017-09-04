@@ -164,6 +164,7 @@ header .refresh-block {
     line-height: 1;
     position: relative;
     margin: 8px 0;
+    min-height: 19px;
 }
 
 #tags nav {
@@ -715,6 +716,15 @@ main > .container > .row > * > .block {
 #news-table .info-row .image {
     width: 204px;
     float: left;
+}
+
+#news-table .info-row .image a {
+    display: block;
+    width: 100%;
+}
+
+#news-table .info-row .image img {
+    width: 100%;
 }
 
 #news-table .info-row .video-info {

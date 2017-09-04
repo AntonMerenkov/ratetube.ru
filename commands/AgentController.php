@@ -49,10 +49,15 @@ class AgentController extends Controller
         $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
 
         if (!is_null($channel_id))
-            $oldVideos = ArrayHelper::map(Videos::find()->where(['channel_id' => $channel_id])->all(), 'id', 'video_link');
+            $videoModels = Videos::find()->where(['channel_id' => $channel_id])->all();
         else
-            $oldVideos = ArrayHelper::map(Videos::find()->all(), 'id', 'video_link');
+            $videoModels = Videos::find()->all();
 
+        $videoModels = ArrayHelper::map($videoModels, 'id', function($item) {
+            return $item;
+        });
+
+        $oldVideos = ArrayHelper::map($videoModels, 'id', 'video_link');
         $newVideoIds = Videos::getByChannelIds($channelsIds);
 
         $transaction = Videos::getDb()->beginTransaction();
@@ -61,23 +66,30 @@ class AgentController extends Controller
             $values = [];
 
             foreach ($newVideoIds as $videoData) {
-                if (in_array($videoData['id'], $oldVideos))
+                // обновление картинок видео
+                if (isset($videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]) && $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url == '') {
+                    $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url = $videoData[ 'image_url' ];
+                    $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->save();
+                }
+
+                if (in_array($videoData[ 'id' ], $oldVideos))
                     continue;
 
-                $channelId = array_search($videoData['channel_id'], $channelsIds);
+                $channelId = array_search($videoData[ 'channel_id' ], $channelsIds);
 
-                if (($loadLastDays[$channelId] > 0) && (time() - strtotime($videoData['date']) > $loadLastDays[$channelId] * 86400))
+                if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400))
                     continue;
 
                 $values[] = [
-                    'name' => mb_substr($videoData['title'], 0, 255),
-                    'video_link' => $videoData['id'],
+                    'name' => mb_substr($videoData[ 'title' ], 0, 255),
+                    'video_link' => $videoData[ 'id' ],
                     'channel_id' => $channelId,
+                    'image_url' => $videoData[ 'image_url' ],
                 ];
             }
 
             if (!empty($values))
-                Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[0]), $values)->execute();
+                Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[ 0 ]), $values)->execute();
 
             $profiling->duration = round(microtime(true) - $time, 2);
             $profiling->memory = memory_get_usage() / 1024 / 1024;
@@ -90,7 +102,7 @@ class AgentController extends Controller
         }
 
         Yii::info("Получено новых видео: " . count(array_diff(array_map(function ($item) {
-                return $item['id'];
+                return $item[ 'id' ];
             }, $newVideoIds), $oldVideos)) .
             ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
@@ -110,8 +122,8 @@ class AgentController extends Controller
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
         $videoStatistics = Statistics::getByVideoIds($videoIds);
 
-        if (isset($videoStatistics['error'])) {
-            Yii::warning($videoStatistics['error'], 'agent');
+        if (isset($videoStatistics[ 'error' ])) {
+            Yii::warning($videoStatistics[ 'error' ], 'agent');
             return true;
         }
 
@@ -124,16 +136,16 @@ class AgentController extends Controller
             }, Statistics::$tableModels);
 
             foreach (array_keys($lastQueryTime) as $key) {
-                $tableModel = '\\app\\models\\' . Statistics::$tableModels[$key];
-                $lastQueryTime[$key] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
+                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+                $lastQueryTime[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
             }
 
             $addedIntervals = [];
             foreach (array_keys($lastQueryTime) as $key) {
-                if (time() - strtotime($lastQueryTime[$key]) < Statistics::$appendInterval[$key])
+                if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
                     continue;
 
-                $tableModel = '\\app\\models\\' . Statistics::$tableModels[$key];
+                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
 
                 $values = [];
 
@@ -144,16 +156,16 @@ class AgentController extends Controller
                     $values[] = [
                         'datetime' => date('Y-m-d H:i:s', strtotime($profiling->datetime)),
                         'video_id' => array_search($videoId, $videoIds),
-                        'views' => $videoData['viewCount'],
-                        'likes' => $videoData['likeCount'],
-                        'dislikes' => $videoData['dislikeCount'],
+                        'views' => $videoData[ 'viewCount' ],
+                        'likes' => $videoData[ 'likeCount' ],
+                        'dislikes' => $videoData[ 'dislikeCount' ],
                     ];
                 }
 
                 if (!empty($values)) {
                     $addedIntervals[] = strtoupper(substr($key, 0, 1));
 
-                    Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[0]), $values)->execute();
+                    Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[ 0 ]), $values)->execute();
                 }
             }
 
@@ -189,12 +201,12 @@ class AgentController extends Controller
 
         $statisticTables = [];
         foreach (array_keys($minQueryDate) as $key) {
-            $tableModel = '\\app\\models\\' . Statistics::$tableModels[$key];
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
             $statisticTables[] = $tableModel::tableName();
 
             $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
-            $minQueryDate[$key] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' where datetime <= "' .
-                date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[$key]) . '"')->queryScalar();
+            $minQueryDate[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' where datetime <= "' .
+                date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $key ]) . '"')->queryScalar();
         }
 
         if (count(array_filter($minQueryDate, function ($item) {
@@ -203,9 +215,9 @@ class AgentController extends Controller
             return true;
 
         $oldTableSize = array_sum(array_map(function ($item) {
-            return $item['DATA_LENGTH'] + $item['INDEX_LENGTH'];
+            return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
         }, array_filter(Statistics::getTableSizeData(), function ($item) use ($statisticTables) {
-            return in_array($item['TABLE_NAME'], $statisticTables);
+            return in_array($item[ 'TABLE_NAME' ], $statisticTables);
         })));
 
         $transaction = Yii::$app->db->beginTransaction();
@@ -214,14 +226,14 @@ class AgentController extends Controller
             if (is_null($date))
                 continue;
 
-            $tableModel = '\\app\\models\\' . Statistics::$tableModels[$key];
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
             Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() . ' where datetime < "' . $date . '"')->execute();
         }
 
         $newTableSize = array_sum(array_map(function ($item) {
-            return $item['DATA_LENGTH'] + $item['INDEX_LENGTH'];
+            return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
         }, array_filter(Statistics::getTableSizeData(), function ($item) use ($statisticTables) {
-            return in_array($item['TABLE_NAME'], $statisticTables);
+            return in_array($item[ 'TABLE_NAME' ], $statisticTables);
         })));
 
         $profiling->duration = round(microtime(true) - $time, 2);
@@ -258,7 +270,7 @@ class AgentController extends Controller
         });
 
         $framesData = array_unique(array_filter(array_map(function ($item) {
-            return $item['flush_timeframe'];
+            return $item[ 'flush_timeframe' ];
         }, $channelCriteria), function ($item) {
             return $item != '';
         }));
@@ -278,15 +290,15 @@ class AgentController extends Controller
 
         foreach ($framesData as $key => $frameData) {
             // пропустить обработку, если не набрана статистика
-            if ($frameData['time']['from'] == $frameData['time']['to'])
+            if ($frameData[ 'time' ][ 'from' ] == $frameData[ 'time' ][ 'to' ])
                 continue;
 
-            foreach ($frameData['data'] as $videoData) {
-                if ($channelCriteria[$videoData['channel']['id']]['flush_timeframe'] != $key)
+            foreach ($frameData[ 'data' ] as $videoData) {
+                if ($channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_timeframe' ] != $key)
                     continue;
 
-                if ($videoData['views_diff'] < $channelCriteria[$videoData['channel']['id']]['flush_count'])
-                    $videoIds[] = $videoData['id'];
+                if ($videoData[ 'views_diff' ] < $channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_count' ])
+                    $videoIds[] = $videoData[ 'id' ];
             }
         }
 
@@ -294,7 +306,7 @@ class AgentController extends Controller
             return true;
 
         foreach ($framesData as $frameData)
-            Yii::$app->cache->delete($frameData['db']['cache_id']);
+            Yii::$app->cache->delete($frameData[ 'db' ][ 'cache_id' ]);
 
         Videos::updateAll(['active' => 0], 'id IN (' . implode(',', $videoIds) . ')');
 
@@ -329,7 +341,7 @@ class AgentController extends Controller
                     'part' => 'statistics',
                     'maxResults' => 50,
                     'id' => implode(',', $channelIdsChunk),
-                    'key' => Yii::$app->params['apiKey']
+                    'key' => Yii::$app->params[ 'apiKey' ]
                 ));
 
         $responseArray = Yii::$app->curl->queryMultiple($urlArray);
@@ -337,22 +349,22 @@ class AgentController extends Controller
         foreach ($responseArray as $response) {
             $response = json_decode($response, true);
 
-            if (isset($response['error'])) {
+            if (isset($response[ 'error' ])) {
                 return [
-                    'error' => $response['error']['errors'][0]['message']
+                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
                 ];
             }
 
-            if (isset($response['items']))
-                foreach ($response['items'] as $item)
-                    $result[$item['id']] = $item['statistics'];
+            if (isset($response[ 'items' ]))
+                foreach ($response[ 'items' ] as $item)
+                    $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
         }
 
         $transaction = Yii::$app->db->beginTransaction();
 
         foreach ($channelIds as $id => $channelId) {
             Channels::updateAll([
-                'subscribers_count' => (int)$result[$channelId]['subscriberCount']
+                'subscribers_count' => (int)$result[ $channelId ][ 'subscriberCount' ]
             ], [
                 'id' => $id
             ]);
@@ -379,7 +391,7 @@ class AgentController extends Controller
         $split = 1;
         $array = array();
         for ($i = 0; $i < strlen($str);) {
-            $value = ord($str[$i]);
+            $value = ord($str[ $i ]);
             if ($value > 127) {
                 if ($value >= 192 && $value <= 223)
                     $split = 2;
@@ -392,7 +404,7 @@ class AgentController extends Controller
             }
             $key = NULL;
             for ($j = 0; $j < $split; $j++, $i++) {
-                $key .= $str[$i];
+                $key .= $str[ $i ];
             }
             array_push($array, $key);
         }
@@ -410,12 +422,12 @@ class AgentController extends Controller
         $s1 = array_merge($this->utf8StrSplit($sru), $this->utf8StrSplit(strtoupper($sru)), range('A', 'Z'), range('a', 'z'), range('0', '9'), array('&', ' ', '#', ';', '%', '?', ':', '(', ')', '-', '_', '=', '+', '[', ']', ',', '.', '/', '\\'));
         $codes = array();
         for ($i = 0; $i < count($s1); $i++) {
-            $codes[] = ord($s1[$i]);
+            $codes[] = ord($s1[ $i ]);
         }
         $str_s = $this->utf8StrSplit($str);
         for ($i = 0; $i < count($str_s); $i++) {
-            if (!in_array(ord($str_s[$i]), $codes)) {
-                $str = str_replace($str_s[$i], '', $str);
+            if (!in_array(ord($str_s[ $i ]), $codes)) {
+                $str = str_replace($str_s[ $i ], '', $str);
             }
         }
         return $str;
@@ -468,7 +480,7 @@ class AgentController extends Controller
                     'part' => 'snippet',
                     'maxResults' => 50,
                     'id' => implode(',', $videoIdsChunk),
-                    'key' => Yii::$app->params['apiKey']
+                    'key' => Yii::$app->params[ 'apiKey' ]
                 ));
 
         $responseArray = Yii::$app->curl->queryMultiple($urlArray);
@@ -476,21 +488,21 @@ class AgentController extends Controller
         foreach ($responseArray as $response) {
             $response = json_decode($response, true);
 
-            if (isset($response['error'])) {
+            if (isset($response[ 'error' ])) {
                 return [
-                    'error' => $response['error']['errors'][0]['message']
+                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
                 ];
             }
 
-            if (isset($response['items']))
-                foreach ($response['items'] as $item)
-                    $newTags[array_search($item['id'], $videoIds)] = [
-                        Tags::TYPE_TAG => $this->processUnicode($item['snippet']['tags']),
+            if (isset($response[ 'items' ]))
+                foreach ($response[ 'items' ] as $item)
+                    $newTags[ array_search($item[ 'id' ], $videoIds) ] = [
+                        Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
                         Tags::TYPE_CHANNEL => [
-                            $this->processUnicode($item['snippet']['channelTitle'])
+                            $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
                         ],
                         Tags::TYPE_TITLE => [
-                            $this->processUnicode($item['snippet']['title'])
+                            $this->processUnicode($item[ 'snippet' ][ 'title' ])
                         ],
                     ];
         }
@@ -498,7 +510,7 @@ class AgentController extends Controller
         // формируем массив старых тэгов
         $oldTags = [];
         foreach ($tags as $tag)
-            $oldTags[$tag->video_id][(int)$tag->type][$tag->id] = $tag->text;
+            $oldTags[ $tag->video_id ][ (int)$tag->type ][ $tag->id ] = $tag->text;
 
         $transaction = Yii::$app->db->beginTransaction();
 
@@ -506,15 +518,15 @@ class AgentController extends Controller
         $delIds = [];
         $addData = [];
         foreach ($videoIds as $videoId => $videoLink) {
-            if (!isset($oldTags[$videoId]) && !isset($newTags[$videoId]))
+            if (!isset($oldTags[ $videoId ]) && !isset($newTags[ $videoId ]))
                 continue;
 
             foreach (Tags::$weights as $type => $weight) {
-                if (!isset($oldTags[$videoId][$type]) && !isset($newTags[$videoId][$type]))
+                if (!isset($oldTags[ $videoId ][ $type ]) && !isset($newTags[ $videoId ][ $type ]))
                     continue;
 
-                $addValues = array_diff((array) $newTags[$videoId][$type], (array) $oldTags[$videoId][$type]);
-                $delValues = array_diff((array) $oldTags[$videoId][$type], (array) $newTags[$videoId][$type]);
+                $addValues = array_diff((array)$newTags[ $videoId ][ $type ], (array)$oldTags[ $videoId ][ $type ]);
+                $delValues = array_diff((array)$oldTags[ $videoId ][ $type ], (array)$newTags[ $videoId ][ $type ]);
 
                 $delIds = array_merge($delIds, array_keys($delValues));
 
@@ -528,7 +540,7 @@ class AgentController extends Controller
         }
 
         if (!empty($addData))
-            Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[0]), $addData)->execute();
+            Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[ 0 ]), $addData)->execute();
 
         if (!empty($delIds))
             Tags::deleteAll(['id' => $delIds]);

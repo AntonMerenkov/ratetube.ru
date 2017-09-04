@@ -103,16 +103,18 @@ class PopularTags extends Widget
             $tagNames = $tagsData[ 'names' ];
 
             // сортируем и отдаем $count тэгов из последних $slice
-            $tagWeights = array_slice($tagWeights, 0, $this->slice);
-            $randomTags = array_keys($tagWeights);
-            $randomTags = array_intersect_key($randomTags, array_fill_keys(array_rand($randomTags, $this->count), 0));
-
             $resultTags = [];
-            foreach ($randomTags as $tag)
-                $resultTags[] = [
-                    'text' => $tagNames[ $tag ],
-                    'weight' => $tagWeights[ $tag ],
-                ];
+            if (!empty($tagWeights)) {
+                $tagWeights = array_slice($tagWeights, 0, $this->slice);
+                $randomTags = array_keys($tagWeights);
+                $randomTags = array_intersect_key($randomTags, array_fill_keys(array_rand($randomTags, $this->count), 0));
+
+                foreach ($randomTags as $tag)
+                    $resultTags[] = [
+                        'text' => $tagNames[ $tag ],
+                        'weight' => $tagWeights[ $tag ],
+                    ];
+            }
 
             return $resultTags;
         }, 3600);

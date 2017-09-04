@@ -108,7 +108,10 @@ $statisticsDataProvider = new ArrayDataProvider([
                     <div class="cell-table-cell">' . Html::a(
                         $data[ 'name' ],
                         'https://www.youtube.com/watch?v=' . $data[ 'video_link' ],
-                        ['target' => '_blank']
+                        [
+                            'data-image' => $data[ 'image_url' ],
+                            'target' => '_blank'
+                        ]
                     ) . '</div>
                     
                     <div class="cell-table-cell"><a href="#" class="info"></a></div>

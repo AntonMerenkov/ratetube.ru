@@ -12,12 +12,15 @@ $(function() {
             var oldIds = $.makeArray(rows.map(function() {
                 return parseInt($(this).attr('data-id'));
             }));
+            var oldIdsCheck = $.makeArray(rows.filter('[data-id]').map(function() {
+                return parseInt($(this).attr('data-id'));
+            }));
             var newIds = newData.map(function(item) {
                 return parseInt(item.id);
             });
 
             // если данные не изменились - ничего не делаем
-            if (JSON.stringify(oldIds) == JSON.stringify(newIds))
+            if (JSON.stringify(oldIdsCheck) == JSON.stringify(newIds))
                 return true;
 
             // превращаем верстку в абсолютную
@@ -30,57 +33,89 @@ $(function() {
             var positions = $('#news-table').find('tbody tr').map(function() {
                 return $(this).position().top - 2;
             });
+            var heights = $('#news-table').find('tbody tr').map(function() {
+                return $(this).outerHeight() + 2;
+            });
             $('#news-table').find('tbody tr').each(function(index) {
                 $(this).css({
                     position: 'absolute',
                     top: positions[ index ],
                     left: 0,
                     right: 0
-                }).attr('data-top', positions[ index ]).find('td:first-child').css('width', firstColWidth + 'px');
+                }).attr('data-top', positions[ index ]).attr('data-height', heights[ index ]);
+
+                if ($(this).hasClass('info-row'))
+                    $(this).find('td:first-child').css('width', $(this).outerWidth() + 'px');
+                else
+                    $(this).find('td:first-child').css('width', firstColWidth + 'px');
             });
 
             // анимация
             // скрываем старые элементы
             for (var i in oldIds) {
                 if (newIds.indexOf(oldIds[ i ]) == -1) {
-                    rows.eq(i).animate({opacity: 0}, 400, 'swing', function() {
-                        $(this).addClass('hidden');
-                    });
+                    if (!rows.eq(i).hasClass('info-row'))
+                        rows.eq(i).animate({opacity: 0}, 400, 'swing', function() {
+                            $(this).addClass('hidden');
+                        });
                 }
             }
 
-            for (var i in newIds) {
-                if (newIds[ i ] != oldIds[ i ]) {
-                    if (oldIds.indexOf(newIds[ i ]) == -1) {
-                        // добавляем новый элемент
-                        $('#news-table').find('tbody').append($('<tr data-id="' + newData[ i ].id + '" class="warning" style="position: absolute; top: ' + positions[ i ] + 'px; left: 0; right: 0;" data-top="' + positions[ i ] + '">' +
-                            '<td style="width: 693px;">' +
-                            '<div class="cell-table">' +
-                                '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '" style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"></a></div>' +
-                                '<div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" target="_blank">' + newData[ i ].name + '</a></div>' +
-                                '<div class="cell-table-cell"><a href="#" class="info"></a></div>' +
-                            '</div>' +
-                            '</td>' +
-                            '<td>' + (newData[ i ].views_diff > 0 ? '+' + newData[ i ].views_diff : "") + '</td>' +
-                            '<td>' + (newData[ i ].likes_diff > 0 ? '+' + newData[ i ].likes_diff : "") + '</td>' +
-                            '<td>' + (newData[ i ].dislikes_diff > 0 ? '+' + newData[ i ].dislikes_diff : "") + '</td>' +
-                            '<td>' + (newData[ i ].likes > 0 ? '+' + newData[ i ].likes : "") + '</td>' +
-                            '</tr>'));
-                    } else {
-                        // изменяем позицию элемента
-                        var element = $('#news-table').find('tbody tr').eq(oldIds.indexOf(newIds[ i ]));
-                        if (parseInt(element.attr('data-top')) > positions[ i ]) {
-                            element.find('td').animate({'background-color': '#264155'}, 1800, 'swing', function() {
-                                $(this).parent().addClass('active');
-                                $(this).delay(2000).animate({'background-color': '#16202d'}, 2000, 'swing', function() {
-                                    $(this).parent().removeClass('active');
-                                });
-                            });
-                        }
+            // расставляем ряды с начальной позиции
+            var currentPosition = rows.first().position().top;
 
-                        element.attr('data-top', positions[ i ]).animate({top: positions[ i ]});
+            for (var i in newIds) {
+                if (oldIds.indexOf(newIds[ i ]) == -1) {
+                    // добавляем новый элемент
+                    var newRow = $('<tr data-id="' + newData[ i ].id + '" class="warning" style="position: absolute; top: ' + currentPosition + 'px; left: 0; right: 0;" data-top="' + currentPosition + '" data-height="">' +
+                        '<td style="width: 693px;">' +
+                        '<div class="cell-table">' +
+                        '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '" style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"></a></div>' +
+                        '<div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '" target="_blank">' + newData[ i ].name + '</a></div>' +
+                        '<div class="cell-table-cell"><a href="#" class="info"></a></div>' +
+                        '</div>' +
+                        '</td>' +
+                        '<td>' + (newData[ i ].views_diff > 0 ? '+' + newData[ i ].views_diff : "") + '</td>' +
+                        '<td>' + (newData[ i ].likes_diff > 0 ? '+' + newData[ i ].likes_diff : "") + '</td>' +
+                        '<td>' + (newData[ i ].dislikes_diff > 0 ? '+' + newData[ i ].dislikes_diff : "") + '</td>' +
+                        '<td>' + (newData[ i ].likes > 0 ? '+' + newData[ i ].likes : "") + '</td>' +
+                        '</tr>').appendTo($('#news-table').find('tbody'));
+
+                    newRow.attr('data-height', newRow.outerHeight());
+                    currentPosition += newRow.outerHeight();
+                } else {
+                    // изменяем позицию элемента
+                    var element = $('#news-table').find('tbody tr').eq(oldIds.indexOf(newIds[ i ]));
+
+                    // если видео поднялось - подсвечиваем его
+                    if (parseInt(element.attr('data-top')) > currentPosition) {
+                        element.find('td').animate({'background-color': '#264155'}, 1800, 'swing', function() {
+                            $(this).parent().addClass('active');
+                            $(this).delay(2000).animate({'background-color': '#16202d'}, 2000, 'swing', function() {
+                                $(this).parent().removeClass('active');
+                            });
+                        });
+                    }
+
+                    if (parseInt(element.attr('data-top')) != currentPosition) {
+                        //console.log('Элемент ' + oldIds.indexOf(newIds[ i ]), element.attr('data-top') + 'px => ' + currentPosition + 'px');
+                        element.attr('data-top', currentPosition).animate({top: currentPosition});
+                        currentPosition += parseInt(element.attr('data-height'));
+
+                        // если следом следует информационный ряд - переместить его следом за элементом
+                        var infoElement = $('#news-table').find('tbody tr').eq(oldIds.indexOf(newIds[ i ]) + 1);
+                        if (infoElement.hasClass('info-row')) {
+                            //console.log('Инфо-элемент ' + (oldIds.indexOf(newIds[ i ]) + 1), currentPosition + 'px');
+
+                            infoElement.attr('data-top', currentPosition).animate({top: currentPosition});
+                            currentPosition += parseInt(infoElement.attr('data-height'));
+                        }
+                    } else {
+                        currentPosition += parseInt(element.attr('data-height'));
                     }
                 }
+
+                //console.log('Новая позиция ' + currentPosition + 'px');
             }
 
             // выравниваем элементы по верху с отступом 2px, т.к. у элементов может быть разная высота
@@ -99,7 +134,6 @@ $(function() {
 
             // устанавливаем новые значения статистики для существующих элементов
             for (var i in newData) {
-                //console.log(newData[ i ]);
                 var row = rows.filter('[data-id="' + newData[ i ].id + '"]');
 
                 if (row.find('td').eq(1).text() != (newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff))
@@ -140,22 +174,32 @@ $(function() {
                 // удаляем невидимые элементы
                 $('#news-table').find('tbody tr.hidden').remove();
 
-                rows = $('#news-table').find('tbody tr');
+                rows = $('#news-table').find('tbody tr').filter('[data-id]');
                 oldIds = $.makeArray(rows.map(function() {
                     return parseInt($(this).attr('data-id'));
                 }));
 
                 rows.removeAttr('data-top');
+                rows.removeAttr('data-height');
 
-                for (var i in newIds)
+                var infoRows = {};
+                $('#news-table').find('tbody tr').filter('.info-row').each(function() {
+                    infoRows[ $(this).prev('tr').attr('data-id') ] = $(this);
+                });
+
+                for (var i in newIds) {
                     if (newIds[ i ] != oldIds[ i ]) {
                         rows.eq(oldIds.indexOf(newIds[ i ])).insertBefore(rows.eq(i));
 
-                        rows = $('#news-table').find('tbody tr');
+                        rows = $('#news-table').find('tbody tr').filter('[data-id]');
                         oldIds = $.makeArray(rows.map(function() {
                             return parseInt($(this).attr('data-id'));
                         }));
                     }
+                }
+
+                for (var id in infoRows)
+                    infoRows[ id ].insertAfter(rows.filter('[data-id="' + id + '"]'));
 
                 $('#news-table').find('tbody tr').removeAttr('style').removeClass('warning');
                 $('#news-table').find('tbody tr td').removeAttr('style');
