@@ -53,8 +53,10 @@ class StatisticsController extends Controller
      */
     public function actionIndex()
     {
-        // агенты
-        $profilingData = Profiling::find()->all();
+        // агенты (за 30 дней)
+        $profilingData = Profiling::find()->where([
+            '>', 'datetime', date('Y-m-d H:i:s', time() - 86400 * 14)
+        ])->all();
 
         $profilingTableData = [];
         foreach ($profilingData as $item) {
@@ -87,9 +89,10 @@ class StatisticsController extends Controller
             return $item->code == 'agent-update-videos';
         }));
 
-        $videosData = array_map(function($item) {
-            return $item[ 0 ];
-        }, array_chunk($videosData, floor(count($videosData) / 1000)));
+        if (count($videosData) > 1000)
+            $videosData = array_map(function($item) {
+                return $item[ 0 ];
+            }, array_chunk($videosData, floor(count($videosData) / 1000)));
 
         $videosDataProvider = new ActiveDataProvider([
             'models' => $videosData,
@@ -100,9 +103,10 @@ class StatisticsController extends Controller
             return $item->code == 'agent-update-statistics';
         }));
 
-        $statisticsData = array_map(function($item) {
-            return $item[ 0 ];
-        }, array_chunk($statisticsData, floor(count($statisticsData) / 1000)));
+        if (count($statisticsData) > 1000)
+            $statisticsData = array_map(function($item) {
+                return $item[ 0 ];
+            }, array_chunk($statisticsData, floor(count($statisticsData) / 1000)));
 
         $statisticsDataProvider = new ActiveDataProvider([
             'models' => $statisticsData,
