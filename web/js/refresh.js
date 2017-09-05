@@ -78,6 +78,7 @@ $(function() {
                             '<td>' + (newData[ i ].likes_diff > 0 ? '+' + newData[ i ].likes_diff : "") + '</td>' +
                             '<td>' + (newData[ i ].dislikes_diff > 0 ? '+' + newData[ i ].dislikes_diff : "") + '</td>' +
                             '<td>' + (newData[ i ].likes > 0 ? '+' + newData[ i ].likes : "") + '</td>' +
+                            '<td>' + (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : (newData[ i ].position_diff < 0 ? newData[ i ].position_diff : "")) + '</td>' +
                             '</tr>').appendTo($('#news-table').find('tbody'));
 
                         newRow.attr('data-height', newRow.outerHeight());
