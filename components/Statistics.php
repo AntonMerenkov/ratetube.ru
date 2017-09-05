@@ -82,6 +82,7 @@ class Statistics
     const SORT_TYPE_LIKES_DIFF = 'likes_diff';
     const SORT_TYPE_DISLIKES_DIFF = 'dislikes_diff';
     const SORT_TYPE_VIEWS = 'views';
+    const SORT_TYPE_POSITION_DIFF = 'position_diff';
 
     /**
      * @var array Названия типов сортировки.
@@ -91,6 +92,7 @@ class Statistics
         self::SORT_TYPE_LIKES_DIFF => 'Лайки',
         self::SORT_TYPE_DISLIKES_DIFF => 'Дизлайки',
         self::SORT_TYPE_VIEWS => 'Просмотры',
+        self::SORT_TYPE_POSITION_DIFF => 'Позиция',
     ];
 
     /**
@@ -279,7 +281,10 @@ class Statistics
                 $lastPositions = array_flip($lastPositions);
                 $prevPositions = array_flip($prevPositions);
                 foreach ($videoData as $id => $value) {
-                    $videoData[ $id ][ 'position_diff' ] = $prevPositions[ $videoData[ $id ][ 'id' ] ] - $lastPositions[ $videoData[ $id ][ 'id' ] ];
+                    if (isset($videoData[ $id ][ 'views2' ]) && isset($videoData[ $id ][ 'views_diff2' ]))
+                        $videoData[ $id ][ 'position_diff' ] = $prevPositions[ $videoData[ $id ][ 'id' ] ] - $lastPositions[ $videoData[ $id ][ 'id' ] ];
+                    else
+                        $videoData[ $id ][ 'position_diff' ] = 0;
 
                     unset($videoData[ $id ][ 'views2' ]);
                     unset($videoData[ $id ][ 'views_diff2' ]);

@@ -563,9 +563,11 @@ main > .container > .row > * > .block {
 #news-table th:nth-child(2),
 #news-table th:nth-child(3),
 #news-table th:nth-child(4),
+#news-table th:nth-child(6),
 #news-table td:nth-child(2),
 #news-table td:nth-child(3),
-#news-table td:nth-child(4) {
+#news-table td:nth-child(4),
+#news-table td:nth-child(6) {
     width: 60px;
     max-width: 60px;
     font-size: 12px;
@@ -626,6 +628,16 @@ main > .container > .row > * > .block {
 #news-table th:nth-child(5).active,
 #news-table tr.active td:nth-child(5) {
     color: rgba(255, 255, 255, 1);
+}
+
+#news-table th:nth-child(6),
+#news-table td:nth-child(6) {
+    color: rgba(240, 173, 78, 0.35);
+}
+
+#news-table th:nth-child(6).active,
+#news-table tr.active td:nth-child(6) {
+    color: rgba(240, 173, 78, 1);
 }
 
 #news-table .channel-link {

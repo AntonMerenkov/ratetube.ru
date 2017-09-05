@@ -167,6 +167,21 @@ $statisticsDataProvider = new ArrayDataProvider([
                 'class' => Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_VIEWS ? ' active' : '',
             ],
         ],
+        [
+            'attribute' => 'position_diff',
+            'header' => Html::a('<i class="glyphicon glyphicon-sort"></i>', ['site/ajax-set-sorting', 'id' => Statistics::SORT_TYPE_POSITION_DIFF]),
+            'format' => 'raw',
+            'value' => function($data){
+                if ($data[ 'position_diff' ] > 0)
+                    return '+' . $data[ 'position_diff' ];
+                else if ($data[ 'position_diff' ] < 0)
+                    return $data[ 'position_diff' ];
+                else return '';
+            },
+            'headerOptions' => [
+                'class' => Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF) == Statistics::SORT_TYPE_POSITION_DIFF ? ' active' : '',
+            ],
+        ],
     ],
 ]); ?>
 
