@@ -26,6 +26,8 @@ class PopularTags extends Widget
 
     public function run()
     {
+        Yii::beginProfile('Виджет «Популярные тэги»');
+
         $cacheKey = self::TAGS_CACHE_KEY .
             '-' . Yii::$app->request->get('category_id', '') .
             '-' . (int) Yii::$app->request->get('channel_id', 0);
@@ -123,6 +125,8 @@ class PopularTags extends Widget
         foreach ($resultTags as $id => $tag)
             if (!is_null($query) && (mb_strtolower($tag[ 'text' ]) == mb_strtolower($query)))
                 $resultTags[ $id ][ 'active' ] = true;
+
+        Yii::endProfile('Виджет «Популярные тэги»');
 
         return $this->render('popular-tags', [
             'tags' => $resultTags,

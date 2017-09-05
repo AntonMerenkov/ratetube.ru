@@ -123,12 +123,6 @@ class SiteController extends Controller
             }
         }*/
 
-        $tmpRand = rand(0, count($statisticsQueryData[ 'data' ]) - 1);
-        $tmpRand = 6;
-        $tmp = $statisticsQueryData[ 'data' ][ 0 ];
-        $statisticsQueryData[ 'data' ][ 0 ] = $statisticsQueryData[ 'data' ][ $tmpRand ];
-        $statisticsQueryData[ 'data' ][ $tmpRand ] = $tmp;
-
         return Json::encode($statisticsQueryData[ 'data' ]);
     }
 

@@ -5,6 +5,7 @@ namespace app\widgets;
 use app\components\Statistics;
 use app\models\Channels;
 use backend\components\Backups;
+use Yii;
 use yii\base\Widget;
 use yii\helpers\ArrayHelper;
 
@@ -25,6 +26,8 @@ class TopChannels extends Widget
 
     public function run()
     {
+        Yii::beginProfile('Виджет «Топ 10 блоггеров»');
+
         if ($this->count <= 0)
             $this->count = 10;
 
@@ -49,6 +52,8 @@ class TopChannels extends Widget
         $topChannels = [];
         foreach (array_slice(array_keys($viewCount), 0, $this->count) as $id)
             $topChannels[] = $channels[ $id ];
+
+        Yii::endProfile('Виджет «Топ 10 блоггеров»');
 
         return $this->render('top-channels', [
             'count' => (int) $this->count,

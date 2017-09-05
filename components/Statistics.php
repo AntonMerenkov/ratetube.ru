@@ -163,9 +163,14 @@ class Statistics
         $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName)->queryScalar();
         $prevDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName . ' where datetime <= "' .
             date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
+        if (isset($prevDate))
+            $prevDate2 = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName . ' where datetime <= "' .
+                date('Y-m-d H:i:s', strtotime($prevDate) - Statistics::$timeDiffs[ $timeType ]) . '"')->queryScalar();
 
         if (is_null($prevDate))
             $prevDate = $lastDate;
+        if (!isset($prevDate2))
+            $prevDate2 = $lastDate;
 
         $time = microtime(true);
 
@@ -177,7 +182,7 @@ class Statistics
                 $timeType
         ]);
 
-        // 4 отдельных запроса получаются быстрее единого
+        // 5 отдельных запросов получаются быстрее единого
         $videoSql = "SELECT v.id, v.name, v.video_link, v.image_url, v.channel_id
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id" : "") . "
@@ -191,12 +196,17 @@ class Statistics
         $prevTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
                         WHERE datetime = '" . $prevDate . "'";
+        $prevTimeSql2 = "SELECT s.video_id, s.views, s.likes, s.dislikes
+                        FROM " . $tableName . " s
+                        WHERE datetime = '" . $prevDate2 . "'";
 
         // для демо-режима не использовать кэш
         if (Yii::$app->controller->route == 'statistics/index')
             Yii::$app->cache->delete($cacheId);
 
-        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $sortType) {
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $sortType, $filter, $cacheId) {
+            Yii::beginProfile('Генерация статистики [' . $cacheId . ']');
+
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
             $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
             $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
@@ -215,6 +225,13 @@ class Statistics
                 return $item[ 'video_id' ];
             }, $prevTimeData), $prevTimeData);
 
+            if (!$filter[ 'fullData' ]) {
+                $prevTimeData2 = Yii::$app->db->createCommand($prevTimeSql2)->queryAll();
+                $prevTimeData2 = array_combine(array_map(function($item) {
+                    return $item[ 'video_id' ];
+                }, $prevTimeData2), $prevTimeData2);
+            }
+
             foreach ($videoData as $id => $value) {
                 $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
                 unset($videoData[ $id ][ 'channel_id' ]);
@@ -226,6 +243,48 @@ class Statistics
                     $lastTimeData[ $id ][ 'likes' ] - $prevTimeData[ $id ][ 'likes' ] : 0);
                 $videoData[ $id ][ 'dislikes_diff' ] = ($lastTimeData[ $id ][ 'dislikes' ] > 0 && $prevTimeData[ $id ][ 'dislikes' ] > 0 ?
                     $lastTimeData[ $id ][ 'dislikes' ] - $prevTimeData[ $id ][ 'dislikes' ] : 0);
+
+                // для вычисления позиции
+                if (!$filter[ 'fullData' ]) {
+                    $videoData[ $id ][ 'views2' ] = $prevTimeData[ $id ][ 'views' ];
+                    $videoData[ $id ][ 'views_diff2' ] = ($prevTimeData[ $id ][ 'views' ] > 0 && $prevTimeData2[ $id ][ 'views' ] > 0 ?
+                        $prevTimeData[ $id ][ 'views' ] - $prevTimeData2[ $id ][ 'views' ] : 0);
+                }
+            }
+
+            Yii::beginProfile('Сортировка');
+
+            // вычисление позиций по views_diff (для полных данных - не вычислять)
+            if (!$filter[ 'fullData' ]) {
+                usort($videoData, function($a, $b) {
+                    if ($a[ 'views_diff' ] != $b[ 'views_diff' ])
+                        return $b[ 'views_diff' ] - $a[ 'views_diff' ];
+                    else
+                        return $b[ 'views' ] - $a[ 'views' ];
+                });
+                $lastPositions = array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $videoData);
+                usort($videoData, function($a, $b) {
+                    if ($a[ 'views_diff2' ] != $b[ 'views_diff2' ])
+                        return $b[ 'views_diff2' ] - $a[ 'views_diff2' ];
+                    else
+                        return $b[ 'views2' ] - $a[ 'views2' ];
+                });
+                $prevPositions = array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $videoData);
+
+                Yii::beginProfile('Сопоставление позиций');
+                $lastPositions = array_flip($lastPositions);
+                $prevPositions = array_flip($prevPositions);
+                foreach ($videoData as $id => $value) {
+                    $videoData[ $id ][ 'position_diff' ] = $prevPositions[ $videoData[ $id ][ 'id' ] ] - $lastPositions[ $videoData[ $id ][ 'id' ] ];
+
+                    unset($videoData[ $id ][ 'views2' ]);
+                    unset($videoData[ $id ][ 'views_diff2' ]);
+                }
+                Yii::endProfile('Сопоставление позиций');
             }
 
             usort($videoData, function($a, $b) use ($sortType) {
@@ -234,6 +293,10 @@ class Statistics
                 else
                     return $b[ 'views' ] - $a[ 'views' ];
             });
+
+            Yii::endProfile('Сортировка');
+
+            Yii::endProfile('Генерация статистики [' . $cacheId . ']');
 
             return $videoData;
         }, 600);

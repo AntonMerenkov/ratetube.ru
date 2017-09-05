@@ -207,6 +207,11 @@ class AgentController extends Controller
             $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
             $minQueryDate[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' where datetime <= "' .
                 date('Y-m-d H:i:s', strtotime($lastDate) - Statistics::$timeDiffs[ $key ]) . '"')->queryScalar();
+
+            // двойной интервал (для колонки Изменение позиции)
+            if (isset($minQueryDate[ $key ]))
+                $minQueryDate[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' where datetime <= "' .
+                    date('Y-m-d H:i:s', strtotime($minQueryDate[ $key ]) - Statistics::$timeDiffs[ $key ]) . '"')->queryScalar();
         }
 
         if (count(array_filter($minQueryDate, function ($item) {

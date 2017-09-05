@@ -239,8 +239,10 @@ $this->title = 'Статистика';
                                     <? if (is_null($table['MIN_DATE'])) : ?>
                                         <span class="text-muted">нет данных</span>
                                     <? else : ?>
-                                        <? if ($table['DATE_DIFF'] >= Statistics::$timeDiffs[preg_replace('/^statistics_/', '', $table['TABLE_NAME'])]) : ?>
+                                        <? if ($table['DATE_DIFF'] >= Statistics::$timeDiffs[preg_replace('/^statistics_/', '', $table['TABLE_NAME'])] * 2) : ?>
                                             <i class="text-success glyphicon glyphicon-ok"></i>
+                                        <? elseif ($table['DATE_DIFF'] >= Statistics::$timeDiffs[preg_replace('/^statistics_/', '', $table['TABLE_NAME'])]) : ?>
+                                            <i class="text-warning glyphicon glyphicon-ok"></i>
                                         <? else : ?>
                                             <i class="text-danger glyphicon glyphicon-remove"></i>
                                         <? endif; ?>
