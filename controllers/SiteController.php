@@ -111,6 +111,27 @@ class SiteController extends Controller
             'query' => $query,
         ]);
 
+        // рандомизация данных для анимации
+        $lastTime = strtotime($statisticsQueryData[ 'time' ][ 'from' ]);
+        $prevTime = strtotime($statisticsQueryData[ 'time' ][ 'to' ]);
+        if ($lastTime > $prevTime) {
+            $timeDiff = time() - $lastTime;
+
+            // 30% от максимально возможного прироста
+            foreach ($statisticsQueryData[ 'data' ] as $id => $value) {
+                $statisticsQueryData[ 'data' ][ $id ][ 'views' ] += round($statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] * $timeDiff / ($lastTime - $prevTime) * 0.3);
+
+                /*if (rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] += rand(0, 20);
+                if (rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] += rand(0, 20);
+                if (rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] += rand(0, 20);
+                if (rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] += rand(-20, 20);*/
+            }
+        }
+
         // для демо
         /*for ($i = 1; $i <= rand(2, 4); $i++) {
             $j = rand(0, count($statisticsQueryData[ 'data' ]) - 1);

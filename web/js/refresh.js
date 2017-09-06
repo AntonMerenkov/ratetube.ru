@@ -1,4 +1,87 @@
+var RGBvalues = (function () {
+    var _hex2dec = function (v) {
+        return parseInt(v, 16)
+    };
+
+    var _splitHEX = function (hex) {
+        var c;
+        if (hex.length === 4) {
+            c = (hex.replace('#', '')).split('');
+            return {
+                r: _hex2dec((c[0] + c[0])),
+                g: _hex2dec((c[1] + c[1])),
+                b: _hex2dec((c[2] + c[2]))
+            };
+        } else {
+            return {
+                r: _hex2dec(hex.slice(1, 3)),
+                g: _hex2dec(hex.slice(3, 5)),
+                b: _hex2dec(hex.slice(5))
+            };
+        }
+    };
+
+    var _splitRGB = function (rgb) {
+        var c = (rgb.slice(rgb.indexOf('(') + 1, rgb.indexOf(')'))).split(',');
+        var flag = false, obj;
+        c = c.map(function (n, i) {
+            return (i !== 3) ? parseInt(n, 10) : flag = true, parseFloat(n);
+        });
+        obj = {
+            r: c[0],
+            g: c[1],
+            b: c[2]
+        };
+        if (flag) obj.a = c[3];
+        return obj;
+    };
+
+    var color = function (col) {
+        var slc = col.slice(0, 1);
+        if (slc === '#') {
+            return _splitHEX(col);
+        } else if (slc.toLowerCase() === 'r') {
+            return _splitRGB(col);
+        } else {
+            console.log('!Ooops! RGBvalues.color(' + col + ') : HEX, RGB, or RGBa strings only');
+        }
+    };
+
+    return {
+        color: color
+    };
+}());
+
 $(function() {
+    function animateCell(cell, newValue) {
+        if (cell.text() == newValue)
+            return;
+
+        var textColor = RGBvalues.color(cell.css('color'));
+
+        /*console.debug(RGBvalues.color('rgb(52, 86, 120)'));
+        console.debug(RGBvalues.color('#345678'));
+        console.debug(RGBvalues.color('rgba(52, 86, 120, 0.67)'));
+        console.debug(RGBvalues.color('#357'));*/
+
+        cell.animate({'background-color': 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0.1)'}, 300, function() {
+            cell.css({
+                color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0)',
+                transition: 'none'
+            }).text(newValue).animate({
+                color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + Math.min(textColor.a * 2, 1) + ')'
+            }, 300, function() {
+                $(this).animate({
+                    color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
+                }, 300)
+            });
+
+            $(this).animate({'background-color': 'rgba(22, 32, 45, 1)'}, 300, function() {
+                $(this).removeAttr('style');
+            });
+        });
+    }
+
     function updateStatistics() {
         /**
          * Обновление позиций
@@ -97,8 +180,6 @@ $(function() {
                             });
                         }
 
-                        console.log(newData[ i ]);
-
                         if (parseInt(element.attr('data-top')) != currentPosition) {
                             //console.log('Элемент ' + oldIds.indexOf(newIds[ i ]), element.attr('data-top') + 'px => ' + currentPosition + 'px');
                             element.attr('data-top', currentPosition).animate({top: currentPosition});
@@ -173,48 +254,15 @@ $(function() {
             }
 
             // устанавливаем новые значения статистики для существующих элементов
+            var animationInterval = 80;
             for (var i in newData) {
                 var row = rows.filter('[data-id="' + newData[ i ].id + '"]');
 
-                if (row.find('td').eq(1).text() != (newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff))
-                    row.find('td').eq(1).css({
-                        color: 'rgba(103, 193, 245, 0)',
-                        transition: 'none'
-                    }).text(newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff).animate({
-                        color: 'rgba(103, 193, 245, 0.35)'
-                    });
-
-                if (row.find('td').eq(2).text() != (newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff))
-                    row.find('td').eq(2).css({
-                        color: 'rgba(113, 213, 76, 0)',
-                        transition: 'none'
-                    }).text(newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff).animate({
-                        color: 'rgba(113, 213, 76, 0.35)'
-                    });
-
-                if (row.find('td').eq(3).text() != (newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff))
-                    row.find('td').eq(3).css({
-                        color: 'rgba(255, 69, 57, 0)',
-                        transition: 'none'
-                    }).text(newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff).animate({
-                        color: 'rgba(255, 69, 57, 0.35)'
-                    });
-
-                if (row.find('td').eq(4).text() != (newData[ i ].views == 0 ? '' : newData[ i ].views))
-                    row.find('td').eq(4).css({
-                        color: 'rgba(255, 255, 255, 0)',
-                        transition: 'none'
-                    }).text(newData[ i ].views == 0 ? '' : newData[ i ].views).css({
-                        color: 'rgba(255, 255, 255, 0.35)'
-                    });
-
-                if (row.find('td').eq(5).text() != (newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)))
-                    row.find('td').eq(5).css({
-                        color: 'rgba(240, 173, 78, 0)',
-                        transition: 'none'
-                    }).text(newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)).animate({
-                        color: 'rgba(240, 173, 78, 0.35)'
-                    });
+                setTimeout(animateCell.bind(null, row.find('td:eq(1)'), newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff), (parseInt(i) + 1) * animationInterval);
+                setTimeout(animateCell.bind(null, row.find('td:eq(2)'), newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff), (parseInt(i) + 2) * animationInterval);
+                setTimeout(animateCell.bind(null, row.find('td:eq(3)'), newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff), (parseInt(i) + 3) * animationInterval);
+                setTimeout(animateCell.bind(null, row.find('td:eq(4)'), newData[ i ].views == 0 ? '' : newData[ i ].views), (parseInt(i) + 4) * animationInterval);
+                setTimeout(animateCell.bind(null, row.find('td:eq(5)'), newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)), (parseInt(i) + 5) * animationInterval);
             }
         });
     }
