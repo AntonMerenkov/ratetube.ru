@@ -63,14 +63,18 @@ $(function() {
         var link = $(this).closest('tr').find('.cell-table .cell-table-cell:eq(1) a');
         var channelLink = $(this).closest('tr').find('.cell-table .cell-table-cell:eq(0) a');
 
+        var regExp = new RegExp('watch\\?v\\=(.+)$', 'i');
+        var linkMatches = regExp.exec(link.attr('href'));
+
         $(this).closest('tr').addClass('full');
         var infoRow = $('<tr class="info-row">' +
             '<td colspan="6">\n' +
                 '<div class="cell-content">\n' +
                     '<div class="image">\n' +
-                        '<a href="' + link.attr('href') + ' target="_blank"">\n' +
-                            '<img src="' + link.attr('data-image') + '">\n' +
-                        '</a>\n' +
+                        '<iframe width="204" height="121" src="https://www.youtube.com/embed/' + linkMatches[ 1 ] + '" frameborder="0" allowfullscreen></iframe>\n' +
+                        //'<a href="' + link.attr('href') + ' target="_blank"">\n' +
+                        //    '<img src="' + link.attr('data-image') + '">\n' +
+                        //'</a>\n' +
                     '</div>\n' +
                     '<div class="video-info">\n' +
                         '<div class="channel-info">\n' +

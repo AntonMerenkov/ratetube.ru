@@ -57,6 +57,14 @@ $(function() {
         if (cell.text() == newValue)
             return;
 
+        if (Visibility.state() != 'visible')
+            return true;
+
+        if (cell.attr('data-animation') == 1) {
+            cell.text(newValue);
+            return;
+        }
+
         var textColor = RGBvalues.color(cell.css('color'));
 
         /*console.debug(RGBvalues.color('rgb(52, 86, 120)'));
@@ -64,25 +72,31 @@ $(function() {
         console.debug(RGBvalues.color('rgba(52, 86, 120, 0.67)'));
         console.debug(RGBvalues.color('#357'));*/
 
-        cell.animate({'background-color': 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0.1)'}, 300, function() {
+        cell.attr('data-animation', 1).animate({'background-color': 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0.1)'}, 300, function() {
             cell.css({
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0)',
                 transition: 'none'
             }).text(newValue).animate({
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + Math.min(textColor.a * 2, 1) + ')'
-            }, 300, function() {
+            }, 500, function() {
                 $(this).animate({
                     color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
-                }, 300)
+                }, 500, function() {
+                    $(this).removeAttr('style');
+                })
             });
 
-            $(this).animate({'background-color': 'rgba(22, 32, 45, 1)'}, 300, function() {
-                $(this).removeAttr('style');
+            $(this).animate({'background-color': 'rgba(22, 32, 45, 1)'}, 500, function() {
+                $(this).removeAttr('style').removeAttr('data-animation');
             });
         });
     }
 
     function updateStatistics() {
+        // ничего не обновляем, если вкладка не активна
+        if (Visibility.state() != 'visible')
+            return true;
+
         /**
          * Обновление позиций
          */

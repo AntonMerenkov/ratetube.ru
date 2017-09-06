@@ -27,6 +27,7 @@ class AppAsset extends AssetBundle
         'lib/flexslider/jquery.flexslider-min.js',
         'lib/jquery-circle-progress/circle-progress.js',
         'lib/share42/share42.js',
+        'lib/visibility/visibility.min.js',
         'js/scripts.js'
     ];
     public $depends = [

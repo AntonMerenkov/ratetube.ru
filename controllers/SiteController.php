@@ -121,14 +121,18 @@ class SiteController extends Controller
             foreach ($statisticsQueryData[ 'data' ] as $id => $value) {
                 $statisticsQueryData[ 'data' ][ $id ][ 'views' ] += round($statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] * $timeDiff / ($lastTime - $prevTime) * 0.3);
 
-                /*if (rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] += rand(0, 20);
-                if (rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] += rand(0, 20);
-                if (rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] += rand(0, 20);
-                if (rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] += rand(-20, 20);*/
+                if (mt_rand(0, 1) == 1) {
+                    $viewsRand = mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] * 0.1)));
+                    $statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] += $viewsRand;
+                    $statisticsQueryData[ 'data' ][ $id ][ 'views' ] += $viewsRand;
+                }
+                if (mt_rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] += mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] * 0.1)));
+                if (mt_rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] += mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] * 0.1)));
+                if (mt_rand(0, 1) == 1)
+                    $statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] += mt_rand(-abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] * 0.1)),
+                        abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] * 0.1)));
             }
         }
 
@@ -158,7 +162,7 @@ class SiteController extends Controller
         if (isset(Statistics::$timeTypes[ $id ]))
             Yii::$app->session->set(Statistics::TIME_SESSION_KEY, $id);
 
-        return $this->redirect(Yii::$app->request->referrer);
+        return $this->redirect(Yii::$app->request->referrer ? Yii::$app->request->referrer : '/');
     }
 
     /**
@@ -172,7 +176,7 @@ class SiteController extends Controller
         if (isset(Statistics::$sortingTypes[ $id ]))
             Yii::$app->session->set(Statistics::SORT_SESSION_KEY, $id);
 
-        return $this->redirect(Yii::$app->request->referrer);
+        return $this->redirect(Yii::$app->request->referrer ? Yii::$app->request->referrer : '/');
     }
 
     /**
