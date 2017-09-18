@@ -101,17 +101,18 @@ class AgentController extends Controller
             throw $e;
         }
 
-        Yii::info("Получено новых видео: " . count(array_diff(array_map(function ($item) {
-                return $item[ 'id' ];
-            }, $newVideoIds), $oldVideos)) .
+        Yii::info("Получено новых видео: " . count($values) .
             ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
      * Обновление статистики по видео.
+     * @param int $force
+     * @return bool
+     * @throws \Exception
      */
-    public function actionUpdateStatistics()
+    public function actionUpdateStatistics($force = 0)
     {
         $time = microtime(true);
 
@@ -142,8 +143,9 @@ class AgentController extends Controller
 
             $addedIntervals = [];
             foreach (array_keys($lastQueryTime) as $key) {
-                if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
-                    continue;
+                if (!$force)
+                    if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
+                        continue;
 
                 $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
 
@@ -302,8 +304,10 @@ class AgentController extends Controller
                 if ($channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_timeframe' ] != $key)
                     continue;
 
-                if ($videoData[ 'views_diff' ] < $channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_count' ])
+                // если статистики по данному видео нет - не удалять его
+                if ($videoData[ 'views_diff' ] < $channelCriteria[ $videoData[ 'channel' ][ 'id' ] ][ 'flush_count' ] && $videoData[ 'views' ] > 0 && !is_null($videoData[ 'views_old' ])) {
                     $videoIds[] = $videoData[ 'id' ];
+                }
             }
         }
 

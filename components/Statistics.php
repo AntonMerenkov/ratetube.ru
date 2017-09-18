@@ -239,6 +239,7 @@ class Statistics
                 unset($videoData[ $id ][ 'channel_id' ]);
 
                 $videoData[ $id ][ 'views' ] = $lastTimeData[ $id ][ 'views' ];
+                $videoData[ $id ][ 'views_old' ] = $prevTimeData[ $id ][ 'views' ];
                 $videoData[ $id ][ 'views_diff' ] = ($lastTimeData[ $id ][ 'views' ] > 0 && $prevTimeData[ $id ][ 'views' ] > 0 ?
                     $lastTimeData[ $id ][ 'views' ] - $prevTimeData[ $id ][ 'views' ] : 0);
                 $videoData[ $id ][ 'likes_diff' ] = ($lastTimeData[ $id ][ 'likes' ] > 0 && $prevTimeData[ $id ][ 'likes' ] > 0 ?
