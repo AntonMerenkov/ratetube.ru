@@ -7,6 +7,7 @@ Vagrant.configure(2) do |config|
     #config.vbguest.auto_update = false
 
     config.vm.network "forwarded_port", guest: 8080, host: 8080
+    config.vm.network "forwarded_port", guest: 3306, host: 3306
 
     config.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
     config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
@@ -26,7 +27,7 @@ Vagrant.configure(2) do |config|
         sudo yum -y install epel-release
         sudo yum -y localinstall https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
         sudo yum -y install yum-plugin-replace
-        sudo yum -y install policycoreutils-python sshpass
+        sudo yum -y install policycoreutils-python sshpass git
         sudo yum -y install nginx
         sudo systemctl start nginx
         sudo systemctl enable nginx
@@ -144,9 +145,23 @@ Vagrant.configure(2) do |config|
         sudo systemctl restart mariadb
 
         sudo mysql -u root mysql -e'UPDATE user SET Password = PASSWORD("me-262-a1"); FLUSH PRIVILEGES;'
+        sudo mysql -u root -pme-262-a1 -e'GRANT ALL PRIVILEGES ON *.* TO "root"@"%" IDENTIFIED BY "me-262-a1"'
 
         # Периодический дамп БД в файл (на Windows - с преобразованием в CRLF)
-        sudo mysql -u root -pme-262-a1 -e'CREATE DATABASE IF NOT EXISTS ratetube CHARACTER SET utf8 COLLATE utf8_unicode_ci'
+        sudo mysql -u root -pme-262-a1 -e'CREATE DATABASE IF NOT EXISTS rate_stat CHARACTER SET utf8 COLLATE utf8_unicode_ci'
+        sudo mysql -u root -pme-262-a1 rate_stat < /home/vagrant/sync/db/db.sql
         echo "*/2 * * * * mysqldump --skip-comments -u root -pme-262-a1 ratetube > /home/vagrant/sync/sql/db.sql" | crontab
+
+        # Установка Composer
+        cd /tmp
+        curl -sS https://getcomposer.org/installer | php
+        sudo mv composer.phar /usr/local/bin/composer
+        echo '{
+                  "github-oauth": {
+                      "github.com": "5a07804b8b4b3a25750cd446f42451d6701e8fc8"
+                  }
+              }
+        ' > /home/vagrant/.config/composer/auth.json
+        composer global require "fxp/composer-asset-plugin:^1.2.0"
     SHELL
 end

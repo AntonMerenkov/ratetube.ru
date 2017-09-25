@@ -161,6 +161,7 @@ class AgentController extends Controller
                         'views' => $videoData[ 'viewCount' ],
                         'likes' => $videoData[ 'likeCount' ],
                         'dislikes' => $videoData[ 'dislikeCount' ],
+                        'viewers' => $videoData[ 'viewers' ],
                     ];
                 }
 

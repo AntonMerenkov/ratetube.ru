@@ -6,6 +6,7 @@
 use app\components\Statistics;
 use app\models\Categories;
 use app\widgets\PopularTags;
+use app\widgets\Streaming;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
@@ -129,40 +130,7 @@ AppAsset::register($this);
                 <?=$content ?>
             </div>
             <div class="col-lg-2">
-                <!--<div class="widget widget-streaming">
-                    <div class="widget-header">В эфире</div>
-
-                    <div class="video-list">
-                        <div class="video-item">
-                            <a href="#" class="channel-name">Marakasi wot</a>
-                            <a href="#" class="link">
-                                <img src="/data/stream-1.png" class="image">
-                                <div class="name">НОВЫЙ АККАУНТ БЕЗ
-                                    ДОНАТА, НАБИРАЮ
-                                    РЕКРУТОВ! РАЗЫГРЫВАЮ
-                                    ГОЛДУ World of Tanks</div>
-                            </a>
-                        </div>
-
-                        <div class="video-item">
-                            <a href="#" class="channel-name">De3epTup</a>
-                            <a href="#" class="link">
-                                <img src="/data/stream-2.png" class="image">
-                                <div class="name">Арта Wot. В погоне за уроном:
-                                    Объект 261 и GWE E100.
-                                    Стрим танки.</div>
-                            </a>
-                        </div>
-
-                        <div class="video-item">
-                            <a href="#" class="channel-name">Game World</a>
-                            <a href="#" class="link">
-                                <img src="/data/stream-3.png" class="image">
-                                <div class="name">WOT Мастер на все топы.</div>
-                            </a>
-                        </div>
-                    </div>
-                </div>-->
+                <?= Streaming::widget() ?>
 
                 <!--<div class="widget widget-top-videos">
                     <div class="widget-header">Топ-5 видео</div>

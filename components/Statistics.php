@@ -2,6 +2,7 @@
 
 namespace app\components;
 
+use app\models\StatisticsMinute;
 use app\models\Videos;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -115,7 +116,7 @@ class Statistics
 
         foreach (array_chunk($videoIds, 50) as $videoIdsChunk)
             $urlArray[] = 'https://www.googleapis.com/youtube/v3/videos?' . http_build_query(array(
-                    'part' => 'statistics',
+                    'part' => 'statistics,liveStreamingDetails',
                     'maxResults' => 50,
                     'id' => implode(',', $videoIdsChunk),
                     'key' => Yii::$app->params[ 'apiKey' ]
@@ -133,8 +134,12 @@ class Statistics
             }
 
             if (isset($response[ 'items' ]))
-                foreach ($response[ 'items' ] as $item)
+                foreach ($response[ 'items' ] as $item) {
                     $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
+
+                    if (isset($item[ 'liveStreamingDetails' ][ 'concurrentViewers' ]))
+                        $result[ $item[ 'id' ] ][ 'viewers' ] = $item[ 'liveStreamingDetails' ][ 'concurrentViewers' ];
+                }
         }
 
         return $result;
@@ -391,5 +396,70 @@ where TABLE_SCHEMA = '" . $dsn[ 'dbname' ] . "'")->queryAll(), 'TABLE_NAME', fun
         });
 
         return $tables;
+    }
+
+    /**
+     * Получение списка видео в эфире.
+     * Список составляется из временного интервала minute.
+     *
+     * @return array
+     */
+    public static function getStreaming()
+    {
+        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . StatisticsMinute::tableName())->queryScalar();
+
+        $cacheId = 'streaming-' . implode('-', [
+            date('Y-m-d-H-i-s', strtotime($lastDate)),
+        ]);
+
+        $lastTimeSql = "SELECT s.video_id, s.viewers
+                        FROM " . StatisticsMinute::tableName() . " s
+                        WHERE viewers IS NOT NULL AND datetime = '" . $lastDate . "'";
+
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($lastTimeSql) {
+            $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
+
+            if (empty($lastTimeData))
+                return [];
+
+            $videoIds = array_map(function($item) {
+                return $item[ 'video_id' ];
+            }, $lastTimeData);
+
+            $videoSql = "SELECT v.id, v.name, v.video_link, v.image_url, v.channel_id
+                      FROM videos v
+                      WHERE v.id IN (" . implode(',', $videoIds) . ")";
+
+            $channelSql = "SELECT c.id, c.name, c.url, c.image_url FROM channels c";
+
+            $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
+            $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
+
+            $videoData = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $videoData), $videoData);
+            $channelData = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $channelData), $channelData);
+            $lastTimeData = array_combine(array_map(function($item) {
+                return $item[ 'video_id' ];
+            }, $lastTimeData), $lastTimeData);
+
+            foreach ($videoData as $id => $value) {
+                $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
+                unset($videoData[ $id ][ 'channel_id' ]);
+
+                $videoData[ $id ][ 'viewers' ] = $lastTimeData[ $id ][ 'viewers' ];
+            }
+
+            // сортировка
+            usort($videoData, function($a, $b) {
+                return $b[ 'viewers' ] - $a[ 'viewers' ];
+            });
+
+            return $videoData;
+        }, 1); // TODO: заменить на 600
+
+        return $data;
     }
 }

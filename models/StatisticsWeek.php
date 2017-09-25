@@ -13,6 +13,7 @@ use Yii;
  * @property integer $likes
  * @property integer $dislikes
  * @property integer $video_id
+ * @property integer $viewers
  *
  * @property Videos $video
  */
@@ -34,7 +35,7 @@ class StatisticsWeek extends \yii\db\ActiveRecord
         return [
             [['datetime', 'video_id'], 'required'],
             [['datetime'], 'safe'],
-            [['views', 'likes', 'dislikes', 'video_id'], 'integer'],
+            [['views', 'likes', 'dislikes', 'viewers', 'video_id'], 'integer'],
             [['video_id'], 'exist', 'skipOnError' => true, 'targetClass' => Videos::className(), 'targetAttribute' => ['video_id' => 'id']],
         ];
     }
@@ -50,6 +51,7 @@ class StatisticsWeek extends \yii\db\ActiveRecord
             'views' => 'Views',
             'likes' => 'Likes',
             'dislikes' => 'Dislikes',
+            'viewers' => 'Viewers',
             'video_id' => 'Video ID',
         ];
     }
