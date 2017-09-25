@@ -150,10 +150,7 @@ class SiteController extends Controller
         }*/
 
         $streamingData = Statistics::getStreaming();
-        /*$streamingData = [
-            $streamingData[ 1 ],
-            $streamingData[ 0 ],
-        ];*/
+        //$streamingData = [];
 
         return Json::encode([
             'data' => $statisticsQueryData[ 'data' ],

@@ -119,6 +119,21 @@ $this->params['breadcrumbs'][] = 'Список видео';
                     'style' => 'width: 80px;'
                 ]
             ],
+            [
+                'attribute' => 'viewers',
+                'header' => '<i class="glyphicon glyphicon-user"></i>',
+                'format' => 'raw',
+                'value' => function($data){
+                    return end($data->statistics)->viewers;
+                },
+                'headerOptions' => [
+                    'class' => 'text-center'
+                ],
+                'contentOptions' => [
+                    'class' => 'text-center',
+                    'style' => 'width: 80px;'
+                ]
+            ],
 
             [
                 'attribute' => 'active',

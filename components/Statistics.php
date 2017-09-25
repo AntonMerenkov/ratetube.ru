@@ -458,7 +458,7 @@ where TABLE_SCHEMA = '" . $dsn[ 'dbname' ] . "'")->queryAll(), 'TABLE_NAME', fun
             });
 
             return $videoData;
-        }, 1); // TODO: заменить на 600
+        }, 600);
 
         return $data;
     }

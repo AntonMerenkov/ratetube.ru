@@ -283,6 +283,7 @@ $(function() {
 
             // обновление виджета В эфире
             var newStreaming = data[ 'streaming' ];
+            newStreaming = newStreaming.slice(0, parseInt($('.widget-streaming .video-list').attr('data-count')));
 
             rows = $('.widget-streaming').find('.video-item');
             oldIds = $.makeArray(rows.map(function() {
@@ -295,13 +296,20 @@ $(function() {
             // анимация
             // если данные не изменились - ничего не делаем
             if (JSON.stringify(oldIds) != JSON.stringify(newIds)) {
+                if (newIds.length == 0)
+                    $('.widget-streaming').addClass('hidden');
+                else
+                    $('.widget-streaming').removeClass('hidden');
+
                 // фиксируем высоту
                 $('.widget-streaming .video-list').css({
                     height: $('.widget-streaming .video-list').height() + 'px'
                 });
 
                 // скрываем все элементы
-                rows.animate({opacity: 0}, 400, 'swing', function() {
+                rows.animate({opacity: 0}, 400, 'swing');
+
+                setTimeout(function() {
                     // удаляем пропавшие
                     for (var i in oldIds) {
                         if (newIds.indexOf(oldIds[ i ]) == -1) {
@@ -361,9 +369,9 @@ $(function() {
 
                     // показываем все элементы
                     rows.animate({opacity: 1}, 400, 'swing', function() {
-
+                        $(this).removeAttr('style');
                     });
-                });
+                }, 500);
             }
         });
     }
