@@ -7,6 +7,7 @@ use app\components\Statistics;
 use app\models\Categories;
 use app\widgets\PopularTags;
 use app\widgets\Streaming;
+use app\widgets\TopVideos;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
@@ -131,39 +132,7 @@ AppAsset::register($this);
             </div>
             <div class="col-lg-2">
                 <?= Streaming::widget() ?>
-
-                <!--<div class="widget widget-top-videos">
-                    <div class="widget-header">Топ-5 видео</div>
-
-                    <div class="flexslider">
-                        <div class="video-list">
-                            <div class="video-item">
-                                <a href="#" class="link">
-                                    <img src="/data/stream-1.png" class="image">
-                                </a>
-                            </div>
-
-                            <div class="video-item">
-                                <a href="#" class="link">
-                                    <img src="/data/stream-2.png" class="image">
-                                </a>
-                            </div>
-
-                            <div class="video-item">
-                                <a href="#" class="link">
-                                    <img src="/data/stream-3.png" class="image">
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="navigation">
-                        <a href="#" class="flex-prev"></a>
-                        <a href="#" class="flex-next"></a>
-                    </div>
-
-                    <div class="control-nav"></div>
-                </div>-->
+                <?= TopVideos::widget() ?>
 
                 <!--<div class="widget widget-transparent widget-ad visible-lg-block">
                     <a href="#">
