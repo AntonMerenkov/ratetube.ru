@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Categories;
 use app\components\Statistics;
 use app\models\Channels;
+use app\models\StatisticsMinute;
 use app\models\Videos;
 use Yii;
 use yii\filters\AccessControl;
@@ -148,7 +149,16 @@ class SiteController extends Controller
             }
         }*/
 
-        return Json::encode($statisticsQueryData[ 'data' ]);
+        $streamingData = Statistics::getStreaming();
+        /*$streamingData = [
+            $streamingData[ 1 ],
+            $streamingData[ 0 ],
+        ];*/
+
+        return Json::encode([
+            'data' => $statisticsQueryData[ 'data' ],
+            'streaming' => $streamingData,
+        ]);
     }
 
     /**
