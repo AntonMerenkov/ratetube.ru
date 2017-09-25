@@ -138,6 +138,8 @@ class Ads extends \yii\db\ActiveRecord
     {
         parent::afterDelete();
 
+        unlink($this->getPath());
+
         Yii::$app->cache->delete('ads');
     }
 }
