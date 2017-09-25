@@ -468,7 +468,7 @@ main > .container > .row > * > .block {
     display: block;
 }
 
-.widget-ad a + a {
+.widget-ad > div + div {
     margin-top: 15px;
 }
 

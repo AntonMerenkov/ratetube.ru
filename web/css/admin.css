@@ -302,3 +302,7 @@ table tbody td {
 #channels-grid tbody tr td:nth-child(2) a:first-child span {
     text-decoration: underline;
 }
+
+h1 {
+    margin-bottom: 20px;
+}

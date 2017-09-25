@@ -5,6 +5,7 @@
 
 use app\components\Statistics;
 use app\models\Categories;
+use app\widgets\Ads;
 use app\widgets\PopularTags;
 use app\widgets\Streaming;
 use app\widgets\TopVideos;
@@ -112,20 +113,14 @@ AppAsset::register($this);
             <div class="col-md-2">
                 <?= TopChannels::widget() ?>
 
-                <!--<div class="widget widget-transparent widget-ad">
-                    <a href="#">
-                        <img src="/data/ad-left-1.png">
-                    </a>
-                    <a href="#">
-                        <img src="/data/ad-left-2.png">
-                    </a>
-                    <a href="#">
-                        <img src="/data/ad-left-3.png">
-                    </a>
-                    <a href="#">
-                        <img src="/data/ad-left-4.png">
-                    </a>
-                </div>-->
+                <?= Ads::widget([
+                    'positions' => [
+                        \app\models\Ads::POSITION_LEFT_1,
+                        \app\models\Ads::POSITION_LEFT_2,
+                        \app\models\Ads::POSITION_LEFT_3,
+                        \app\models\Ads::POSITION_LEFT_4,
+                    ]
+                ]) ?>
             </div>
             <div class="col-lg-8 col-md-10">
                 <?=$content ?>
@@ -133,6 +128,17 @@ AppAsset::register($this);
             <div class="col-lg-2">
                 <?= Streaming::widget() ?>
                 <?= TopVideos::widget() ?>
+
+                <?= Ads::widget([
+                    'positions' => [
+                        \app\models\Ads::POSITION_RIGHT_1,
+                        \app\models\Ads::POSITION_RIGHT_2,
+                        \app\models\Ads::POSITION_RIGHT_3,
+                    ],
+                    'options' => [
+                        'class' => 'widget widget-transparent widget-ad visible-lg-block'
+                    ]
+                ]) ?>
 
                 <!--<div class="widget widget-transparent widget-ad visible-lg-block">
                     <a href="#">
@@ -177,6 +183,7 @@ AppAsset::register($this);
                                 ] : [
                                     ['label' => 'Статистика', 'url' => ['/statistics/index']],
                                     ['label' => 'Каналы', 'url' => ['/channels/index']],
+                                    ['label' => 'Реклама', 'url' => ['/ads/index']],
                                     '<li>'
                                     . Html::beginForm(['/site/logout'], 'post')
                                     . Html::submitButton(
