@@ -206,18 +206,20 @@ class Statistics
         $prevTimeSql2 = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
                         WHERE datetime = '" . $prevDate2 . "'";
+        $positionsSql = "SELECT p.video_id, p.position FROM positions p";
 
         // для демо-режима не использовать кэш
         if (Yii::$app->controller->route == 'statistics/index')
             Yii::$app->cache->delete($cacheId);
 
-        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $sortType, $filter, $cacheId) {
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $positionsSql, $sortType, $filter, $cacheId) {
             Yii::beginProfile('Генерация статистики [' . $cacheId . ']');
 
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
             $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
             $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
             $prevTimeData = Yii::$app->db->createCommand($prevTimeSql)->queryAll();
+            $positionsData = Yii::$app->db->createCommand($positionsSql)->queryAll();
 
             $videoData = array_combine(array_map(function($item) {
                 return $item[ 'id' ];
@@ -257,6 +259,24 @@ class Statistics
                     $videoData[ $id ][ 'views2' ] = $prevTimeData[ $id ][ 'views' ];
                     $videoData[ $id ][ 'views_diff2' ] = ($prevTimeData[ $id ][ 'views' ] > 0 && $prevTimeData2[ $id ][ 'views' ] > 0 ?
                         $prevTimeData[ $id ][ 'views' ] - $prevTimeData2[ $id ][ 'views' ] : 0);
+                }
+            }
+
+            if (!empty($positionsData)) {
+                $positionsData = array_filter($positionsData, function($item) use ($videoData) {
+                    return isset($videoData[ $item[ 'video_id' ] ]);
+                });
+
+                // позиции видео (по 1 видео выбирать случайно)
+                $positionsData = array_reduce($positionsData, function($carry, $item) {
+                    $carry[ $item[ 'position' ] - 1 ][] = $item[ 'video_id' ];
+
+                    return $carry;
+                }, []);
+
+                foreach ($positionsData as $position => $items) {
+                    $positionsData[ $position ] = $videoData[ $items[ array_rand($items) ] ];
+                    $positionsData[ $position ][ 'ad' ] = 1;
                 }
             }
 
@@ -306,6 +326,25 @@ class Statistics
             });
 
             Yii::endProfile('Сортировка');
+
+            if (!empty($positionsData)) {
+                Yii::beginProfile('Вставка позиций');
+
+                // удаляем видео с позициями из общего списка
+                $positionedVideoIds = array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $positionsData);
+
+                $videoData = array_filter($videoData, function($item) use ($positionedVideoIds) {
+                    return !in_array($item[ 'id' ], $positionedVideoIds);
+                });
+
+                // вставляем видео на заданные позиции
+                foreach ($positionsData as $position => $value)
+                    $videoData = array_merge(array_slice($videoData, 0, $position), [$value], array_slice($videoData, $position));
+
+                Yii::endProfile('Вставка позиций');
+            }
 
             Yii::endProfile('Генерация статистики [' . $cacheId . ']');
 

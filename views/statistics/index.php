@@ -16,6 +16,11 @@ use yii\grid\GridView;
 
 $this->title = 'Статистика';
 
+$keys = [];
+foreach ($statisticsQueryData['data'] as $item)
+    if (count($keys) < count($item))
+        $keys = array_keys($item);
+
 ?>
 <div class="statistics-index">
 
@@ -42,7 +47,7 @@ $this->title = 'Статистика';
                             <table class="table table-bordered">
                                 <thead>
                                 <tr>
-                                    <? foreach (array_keys($statisticsQueryData['data'][0]) as $key) : ?>
+                                    <? foreach ($keys as $key) : ?>
                                         <th><?= $key ?></th>
                                     <? endforeach; ?>
                                 </tr>
@@ -50,8 +55,8 @@ $this->title = 'Статистика';
                                 <tbody>
                                 <? foreach ($statisticsQueryData['data'] as $row) : ?>
                                     <tr>
-                                        <? foreach ($row as $value) : ?>
-                                            <td><?= $value ?></td>
+                                        <? foreach ($keys as $key) : ?>
+                                            <td><?=$row[ $key ] ?></td>
                                         <? endforeach; ?>
                                     </tr>
                                 <? endforeach; ?>
