@@ -28,7 +28,7 @@ CREATE TABLE `ad_statistics` (
   `date` date NOT NULL COMMENT 'Дата',
   `views` int(11) NOT NULL DEFAULT '0' COMMENT 'Показов',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `ads` (
   `position` tinyint(4) NOT NULL COMMENT 'Позиция',
   `url` varchar(255) DEFAULT NULL COMMENT 'URL',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,6 +91,42 @@ CREATE TABLE `channels` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `position_statistics`
+--
+
+DROP TABLE IF EXISTS `position_statistics`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `position_statistics` (
+  `id` int(11) NOT NULL COMMENT 'ID',
+  `position_id` int(11) NOT NULL COMMENT 'Позиция',
+  `date` date NOT NULL COMMENT 'Дата',
+  `views` int(11) NOT NULL DEFAULT '0' COMMENT 'Просмотров',
+  PRIMARY KEY (`id`),
+  KEY `position_id` (`position_id`),
+  CONSTRAINT `position_statistics_ibfk_1` FOREIGN KEY (`position_id`) REFERENCES `positions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `positions`
+--
+
+DROP TABLE IF EXISTS `positions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `positions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `video_id` int(11) NOT NULL COMMENT 'Видео',
+  `position` smallint(8) NOT NULL COMMENT 'Позиция',
+  PRIMARY KEY (`id`),
+  KEY `video_id` (`video_id`),
+  KEY `position` (`position`),
+  CONSTRAINT `positions_ibfk_1` FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `profiling`
 --
 
@@ -105,7 +141,7 @@ CREATE TABLE `profiling` (
   `memory` decimal(8,2) DEFAULT NULL COMMENT 'Память (МБ)',
   PRIMARY KEY (`id`),
   KEY `profiling_code_datetime_index` (`code`,`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=81680 DEFAULT CHARSET=utf8 COMMENT='Данные профайлинга';
+) ENGINE=InnoDB AUTO_INCREMENT=82142 DEFAULT CHARSET=utf8 COMMENT='Данные профайлинга';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -125,7 +161,7 @@ CREATE TABLE `statistics_day` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_day_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=14321853 DEFAULT CHARSET=utf8 COMMENT='Статистика за день';
+) ENGINE=InnoDB AUTO_INCREMENT=14919005 DEFAULT CHARSET=utf8 COMMENT='Статистика за день';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,7 +181,7 @@ CREATE TABLE `statistics_hour` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_hour_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=84160949 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
+) ENGINE=InnoDB AUTO_INCREMENT=87664844 DEFAULT CHARSET=utf8 COMMENT='Статистика за час';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -165,7 +201,7 @@ CREATE TABLE `statistics_minute` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_minute_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=87098232 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
+) ENGINE=InnoDB AUTO_INCREMENT=90602127 DEFAULT CHARSET=utf8 COMMENT='Статистика за 10 минут';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -185,7 +221,7 @@ CREATE TABLE `statistics_month` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_month_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=743227 DEFAULT CHARSET=utf8 COMMENT='Статистика за месяц';
+) ENGINE=InnoDB AUTO_INCREMENT=788307 DEFAULT CHARSET=utf8 COMMENT='Статистика за месяц';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -205,7 +241,7 @@ CREATE TABLE `statistics_week` (
   `video_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `statistics_week_datetime_index` (`datetime`)
-) ENGINE=InnoDB AUTO_INCREMENT=2595625 DEFAULT CHARSET=utf8 COMMENT='Статистика за неделю';
+) ENGINE=InnoDB AUTO_INCREMENT=2719565 DEFAULT CHARSET=utf8 COMMENT='Статистика за неделю';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,7 +259,7 @@ CREATE TABLE `tags` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `tags_id_uindex` (`id`),
   KEY `tags_videos_id_fk` (`video_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1683571 DEFAULT CHARSET=utf8 COMMENT='Тэги';
+) ENGINE=InnoDB AUTO_INCREMENT=1727513 DEFAULT CHARSET=utf8 COMMENT='Тэги';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -238,12 +274,12 @@ CREATE TABLE `videos` (
   `name` varchar(255) NOT NULL COMMENT 'Наименование',
   `video_link` varchar(32) DEFAULT NULL COMMENT 'ID видео',
   `image_url` varchar(255) DEFAULT NULL COMMENT 'Предпросмотр',
-  `channel_id` int(11) NOT NULL,
+  `channel_id` int(11) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Активно',
   PRIMARY KEY (`id`),
   KEY `videos_channels_id_fk` (`channel_id`),
   CONSTRAINT `videos_channels_id_fk` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=22478 DEFAULT CHARSET=utf8 COMMENT='Видео';
+) ENGINE=InnoDB AUTO_INCREMENT=22576 DEFAULT CHARSET=utf8 COMMENT='Видео';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -255,4 +291,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-25 22:33:15
+-- Dump completed on 2017-09-27 17:34:01

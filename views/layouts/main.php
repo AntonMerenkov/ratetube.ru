@@ -139,18 +139,6 @@ AppAsset::register($this);
                         'class' => 'widget widget-transparent widget-ad visible-lg-block'
                     ]
                 ]) ?>
-
-                <!--<div class="widget widget-transparent widget-ad visible-lg-block">
-                    <a href="#">
-                        <img src="/data/ad-right-1.png">
-                    </a>
-                    <a href="#">
-                        <img src="/data/ad-right-2.png">
-                    </a>
-                    <a href="#">
-                        <img src="/data/ad-right-3.png">
-                    </a>
-                </div>-->
             </div>
         </div>
     </div>
@@ -184,6 +172,7 @@ AppAsset::register($this);
                                     ['label' => 'Статистика', 'url' => ['/statistics/index']],
                                     ['label' => 'Каналы', 'url' => ['/channels/index']],
                                     ['label' => 'Реклама', 'url' => ['/ads/index']],
+                                    ['label' => 'Позиции', 'url' => ['/positions/index']],
                                     '<li>'
                                     . Html::beginForm(['/site/logout'], 'post')
                                     . Html::submitButton(

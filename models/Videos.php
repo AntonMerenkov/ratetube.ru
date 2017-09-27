@@ -35,7 +35,7 @@ class Videos extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'channel_id'], 'required'],
+            [['name'], 'required'],
             [['channel_id'], 'integer'],
             [['name', 'image_url'], 'string', 'max' => 255],
             [['video_link'], 'string', 'max' => 32],
@@ -146,7 +146,7 @@ class Videos extends \yii\db\ActiveRecord
 
     /**
      * Поиск по тэгам.
-     * Возвращает ID найденных видео
+     * Возвращает ID найденных видео.
      *
      * @param $query
      * @return array
@@ -172,5 +172,42 @@ class Videos extends \yii\db\ActiveRecord
         $data = array_values(array_unique($data));
 
         return $data;
+    }
+
+    /**
+     * Получение данных о видео по ссылке.
+     *
+     * @param $url
+     * @return array|mixed
+     */
+    public static function queryData($url)
+    {
+        if (!filter_var($url, FILTER_VALIDATE_URL))
+            return ['error' => 'Данный URL не является верным.'];
+
+        if (!preg_match('/watch\?v\=(.+)$/ui', $url, $matches))
+            return ['error' => 'Данный URL не является ссылкой на видео.'];
+
+        $videoId = $matches[ 1 ];
+
+        $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/videos?' . http_build_query(array(
+                'part' => 'snippet,statistics',
+                'id' => $videoId,
+                'key' => Yii::$app->params[ 'apiKey' ]
+            )));
+
+        $result = json_decode($res, true);
+
+        if (isset($result[ 'error' ][ 'message' ]))
+            return ['error' => 'Ошибка YouTube: ' . $result[ 'error' ][ 'message' ]];
+
+        if (!isset($result[ 'items' ][ 0 ]))
+            return ['error' => 'Видео не найдено. Возможно, ссылка на видео является неверной.'];
+
+        return [
+            'id' => $result[ 'items' ][ 0 ][ 'id' ],
+            'name' => $result[ 'items' ][ 0 ][ 'snippet' ][ 'title' ],
+            'image' => $result[ 'items' ][ 0 ][ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ],
+        ];
     }
 }

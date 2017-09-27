@@ -78,6 +78,14 @@ class Ads extends \yii\db\ActiveRecord
     }
 
     /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAdStatistics()
+    {
+        return $this->hasMany(AdStatistics::className(), ['ad_id' => 'id']);
+    }
+
+    /**
      * Генерация нового UUID.
      *
      * @return string

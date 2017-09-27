@@ -4,6 +4,7 @@ namespace app\commands;
 
 use app\models\Categories;
 use app\models\Channels;
+use app\models\Positions;
 use app\models\Profiling;
 use app\components\Statistics;
 use app\models\Tags;
@@ -311,6 +312,14 @@ class AgentController extends Controller
                 }
             }
         }
+
+        // рекламные видео, не привязанные к позиции
+        $adVideos = ArrayHelper::map(Videos::find()->where('channel_id IS NULL AND active = 1')->all(), 'id', 'id');
+        $adPositions = ArrayHelper::map(Positions::find()->all(), 'id', 'video_id');
+        $unusedVideos = array_diff($adVideos, $adPositions);
+
+        foreach ($unusedVideos as $id)
+            $videoIds[] = $id;
 
         if (empty($videoIds))
             return true;

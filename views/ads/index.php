@@ -1,6 +1,7 @@
 <?php
 
 use app\models\Ads;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\Url;
@@ -37,6 +38,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format' => 'raw',
                 'value' => function($model) {
                     return '<img src="' . Url::to(['ads/file', 'uuid' => $model->uuid, 'no_stat' => 1]) . '" style="max-width: 200px; max-height: 200px;">';
+                },
+            ],
+            [
+                'attribute' => 'views',
+                'header' => 'Всего просмотров',
+                'value' => function($model) {
+                    return array_sum(ArrayHelper::map($model->adStatistics, 'id', 'views'));
                 },
             ],
 

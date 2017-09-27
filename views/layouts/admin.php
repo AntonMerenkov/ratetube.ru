@@ -48,6 +48,7 @@ AdminAsset::register($this);
             ['label' => 'Статистика', 'url' => ['/statistics/index']],
             ['label' => 'Каналы', 'url' => ['/channels/index']],
             ['label' => 'Реклама', 'url' => ['/ads/index']],
+            ['label' => 'Позиции', 'url' => ['/positions/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
