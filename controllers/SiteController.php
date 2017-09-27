@@ -5,10 +5,13 @@ namespace app\controllers;
 use app\models\Categories;
 use app\components\Statistics;
 use app\models\Channels;
+use app\models\Positions;
+use app\models\PositionStatistics;
 use app\models\StatisticsMinute;
 use app\models\Videos;
 use Yii;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -82,6 +85,46 @@ class SiteController extends Controller
             'channel_id' => $channel_id,
             'query' => $query,
         ]);
+
+        // подсчет статистики по позициям видео
+        $positionIds = array_map(function($item) {
+            return $item[ 'id' ];
+        }, array_filter($statisticsQueryData[ 'data' ], function($item) {
+            return $item[ 'ad' ];
+        }));
+
+        $positionIds = ArrayHelper::map(Positions::find()->where([
+            'video_id' => $positionIds
+        ])->all(), 'id', 'id');
+
+        if (!empty($positionIds)) {
+            $positionStatistics = ArrayHelper::map(PositionStatistics::find()->where([
+                'position_id' => $positionIds,
+                'date' => date('Y-m-d')
+            ])->all(), 'position_id', function($item) {
+                return $item;
+            });
+
+            foreach ($positionIds as $positionId)
+                if (!isset($positionStatistics[ $positionId ])) {
+                    $positionStatistics[ $positionId ] = new PositionStatistics();
+                    $positionStatistics[ $positionId ]->position_id = $positionId;
+                    $positionStatistics[ $positionId ]->date = date('Y-m-d');
+                    $positionStatistics[ $positionId ]->views = 0;
+                    $positionStatistics[ $positionId ]->save();
+                }
+
+            foreach ($positionStatistics as $model) {
+                //$model->views++;
+                //$model->save();
+            }
+
+            PositionStatistics::updateAllCounters([
+                'views' => 1,
+            ], [
+                'id' => ArrayHelper::map($positionStatistics, 'id', 'id')
+            ]);
+        }
 
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData

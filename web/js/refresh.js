@@ -171,7 +171,7 @@ $(function() {
                         var newRow = $('<tr data-id="' + newData[ i ].id + '" class="warning" style="position: absolute; top: ' + currentPosition + 'px; left: 0; right: 0;" data-top="' + currentPosition + '" data-height="">' +
                             '<td style="width: ' + firstColWidth + 'px;">' +
                             '<div class="cell-table">' +
-                            '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '" style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"></a></div>' +
+                            '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '"' + (newData[ i ].channel.image_url ? ' style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"' : '') + '></a></div>' +
                             '<div class="cell-table-cell"><a ' + (newData[ i ].ad != undefined && newData[ i ].ad ? 'class="ad" ' : '') + 'href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '" target="_blank">' + newData[ i ].name + '</a></div>' +
                             '<div class="cell-table-cell"><a href="#" class="info"></a></div>' +
                             '</div>' +

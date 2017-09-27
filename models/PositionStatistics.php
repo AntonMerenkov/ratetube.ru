@@ -30,8 +30,8 @@ class PositionStatistics extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'position_id', 'date'], 'required'],
-            [['id', 'position_id', 'views'], 'integer'],
+            [['position_id', 'date'], 'required'],
+            [['position_id', 'views'], 'integer'],
             [['date'], 'safe'],
             [['position_id'], 'exist', 'skipOnError' => true, 'targetClass' => Positions::className(), 'targetAttribute' => ['position_id' => 'id']],
         ];

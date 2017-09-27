@@ -100,7 +100,7 @@ $statisticsDataProvider = new ArrayDataProvider([
                         ['/site/index', 'channel_id' => $data[ 'channel' ][ 'id' ]],
                         [
                             'class' => 'channel-link',
-                            'style' => 'background-image: url("' . $data[ 'channel' ][ 'image_url' ] . '")',
+                            'style' => $data[ 'channel' ][ 'image_url' ] ? 'background-image: url("' . $data[ 'channel' ][ 'image_url' ] . '")' : '',
                             'title' => $data[ 'channel' ][ 'name' ]
                         ]
                     ) . '</div>
