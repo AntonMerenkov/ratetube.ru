@@ -54,6 +54,9 @@ var RGBvalues = (function () {
 
 $(function() {
     function animateCell(cell, newValue) {
+        if (cell.length == 0)
+            return;
+
         if (cell.text() == newValue)
             return;
 
@@ -153,7 +156,7 @@ $(function() {
                 for (var i in oldIds) {
                     if (newIds.indexOf(oldIds[ i ]) == -1) {
                         if (!rows.eq(i).hasClass('info-row'))
-                            rows.eq(i).animate({opacity: 0}, 400, 'swing', function() {
+                            rows.eq(i).addClass('must-hidden').animate({opacity: 0}, 400, 'swing', function() {
                                 $(this).addClass('hidden');
                             });
                     }
@@ -166,10 +169,10 @@ $(function() {
                     if (oldIds.indexOf(newIds[ i ]) == -1) {
                         // добавляем новый элемент
                         var newRow = $('<tr data-id="' + newData[ i ].id + '" class="warning" style="position: absolute; top: ' + currentPosition + 'px; left: 0; right: 0;" data-top="' + currentPosition + '" data-height="">' +
-                            '<td style="width: 693px;">' +
+                            '<td style="width: ' + firstColWidth + 'px;">' +
                             '<div class="cell-table">' +
                             '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '" style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"></a></div>' +
-                            '<div class="cell-table-cell"><a href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '" target="_blank">' + newData[ i ].name + '</a></div>' +
+                            '<div class="cell-table-cell"><a ' + (newData[ i ].ad != undefined && newData[ i ].ad ? 'class="ad" ' : '') + 'href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '" target="_blank">' + newData[ i ].name + '</a></div>' +
                             '<div class="cell-table-cell"><a href="#" class="info"></a></div>' +
                             '</div>' +
                             '</td>' +
@@ -221,7 +224,7 @@ $(function() {
                 var currentPosition = $('#news-table thead tr').outerHeight() - 2;
                 if (currentPosition > 100)
                     currentPosition = 32;
-                var rowsSorted = $('#news-table tbody tr').sort(function(a, b) {
+                var rowsSorted = $('#news-table tbody tr').not('.must-hidden').sort(function(a, b) {
                     return parseInt($(a).attr('data-top')) - parseInt($(b).attr('data-top'));
                 });
 
@@ -285,18 +288,18 @@ $(function() {
             var newStreaming = data[ 'streaming' ];
             newStreaming = newStreaming.slice(0, parseInt($('.widget-streaming .video-list').attr('data-count')));
 
-            rows = $('.widget-streaming').find('.video-item');
-            oldIds = $.makeArray(rows.map(function() {
+            var rowsStreaming = $('.widget-streaming').find('.video-item');
+            var oldStreamingIds = $.makeArray(rowsStreaming.map(function() {
                 return parseInt($(this).attr('data-id'));
             }));
-            newIds = newStreaming.map(function(item) {
+            var newStreamingIds = newStreaming.map(function(item) {
                 return parseInt(item.id);
             });
 
             // анимация
             // если данные не изменились - ничего не делаем
-            if (JSON.stringify(oldIds) != JSON.stringify(newIds)) {
-                if (newIds.length == 0)
+            if (JSON.stringify(oldStreamingIds) != JSON.stringify(newStreamingIds)) {
+                if (newStreamingIds.length == 0)
                     $('.widget-streaming').addClass('hidden');
                 else
                     $('.widget-streaming').removeClass('hidden');
@@ -307,23 +310,23 @@ $(function() {
                 });
 
                 // скрываем все элементы
-                rows.animate({opacity: 0}, 400, 'swing');
+                rowsStreaming.animate({opacity: 0}, 400, 'swing');
 
                 setTimeout(function() {
                     // удаляем пропавшие
-                    for (var i in oldIds) {
-                        if (newIds.indexOf(oldIds[ i ]) == -1) {
-                            rows.eq(i).remove();
+                    for (var i in oldStreamingIds) {
+                        if (newStreamingIds.indexOf(oldStreamingIds[ i ]) == -1) {
+                            rowsStreaming.eq(i).remove();
                         }
                     }
 
-                    rows = $('.widget-streaming').find('.video-item');
-                    oldIds = $.makeArray(rows.map(function() {
+                    rowsStreaming = $('.widget-streaming').find('.video-item');
+                    oldStreamingIds = $.makeArray(rowsStreaming.map(function() {
                         return parseInt($(this).attr('data-id'));
                     }));
 
-                    for (var i in newIds) {
-                        if (oldIds.indexOf(newIds[ i ]) == -1) {
+                    for (var i in newStreamingIds) {
+                        if (oldStreamingIds.indexOf(newStreamingIds[ i ]) == -1) {
                             // добавляем новый элемент
                             var newRow = $('<div class="video-item" data-id="' + newStreaming[ i ].id + '">\n' +
                                 '<a href="/channel/' + newStreaming[ i ].channel.id + '" class="channel-name">' + newStreaming[ i ].channel.name + '</a>\n' +
@@ -338,17 +341,17 @@ $(function() {
                             else
                                 newRow.insertAfter($('.widget-streaming .video-list .video-item').eq(i - 1));
 
-                            rows = $('.widget-streaming').find('.video-item');
+                            rowsStreaming = $('.widget-streaming').find('.video-item');
                         } else {
                             // изменяем позицию элемента
-                            if (oldIds.indexOf(newIds[ i ]) != i) {
+                            if (oldStreamingIds.indexOf(newStreamingIds[ i ]) != i) {
                                 if (i == 0)
-                                    rows.eq(oldIds.indexOf(newIds[ i ])).prependTo($('.widget-streaming .video-list'));
+                                    rowsStreaming.eq(oldStreamingIds.indexOf(newStreamingIds[ i ])).prependTo($('.widget-streaming .video-list'));
                                 else
-                                    rows.eq(oldIds.indexOf(newIds[ i ])).insertAfter($('.widget-streaming .video-list .video-item').eq(i - 1));
+                                    rowsStreaming.eq(oldStreamingIds.indexOf(newStreamingIds[ i ])).insertAfter($('.widget-streaming .video-list .video-item').eq(i - 1));
 
-                                rows = $('.widget-streaming').find('.video-item');
-                                oldIds = $.makeArray(rows.map(function() {
+                                rowsStreaming = $('.widget-streaming').find('.video-item');
+                                oldStreamingIds = $.makeArray(rowsStreaming.map(function() {
                                     return parseInt($(this).attr('data-id'));
                                 }));
                             }
@@ -357,7 +360,7 @@ $(function() {
 
                     // делаем анимацию высоты
                     var height = 0;
-                    rows.each(function() {
+                    rowsStreaming.each(function() {
                         height += $(this).outerHeight() + 5;
                     });
 
@@ -368,7 +371,7 @@ $(function() {
                     });
 
                     // показываем все элементы
-                    rows.animate({opacity: 1}, 400, 'swing', function() {
+                    rowsStreaming.animate({opacity: 1}, 400, 'swing', function() {
                         $(this).removeAttr('style');
                     });
                 }, 500);

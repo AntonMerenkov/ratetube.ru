@@ -78,10 +78,10 @@ $(function() {
                     '</div>\n' +
                     '<div class="video-info">\n' +
                         '<div class="channel-info">\n' +
-                            '<a href="' + channelLink.attr('href') + '">\n' +
+                            (channelLink.attr('href') != '/' ? '<a href="' + channelLink.attr('href') + '">\n' +
                                 '<div class="channel-image" style=\'' + channelLink.attr('style') + '\'></div>\n' +
                                 '<div class="channel-name">' + channelLink.attr('title') + '</div>\n' +
-                            '</a>\n' +
+                            '</a>\n' : '') +
                         '</div>\n' +
                         '<div class="name">\n' +
                             '<a href="' + link.attr('href') + '" target="_blank">' + link.text() + '</a>\n' +

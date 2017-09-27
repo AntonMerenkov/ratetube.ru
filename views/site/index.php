@@ -110,7 +110,8 @@ $statisticsDataProvider = new ArrayDataProvider([
                         'https://www.youtube.com/watch?v=' . $data[ 'video_link' ],
                         [
                             'data-image' => $data[ 'image_url' ],
-                            'target' => '_blank'
+                            'target' => '_blank',
+                            'class' => $data[ 'ad' ] ? 'ad' : '',
                         ]
                     ) . '</div>
                     
