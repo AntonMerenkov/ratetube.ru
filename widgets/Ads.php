@@ -33,7 +33,7 @@ class Ads extends Widget
             Yii::beginProfile('Виджет «Реклама»');
 
             $adModels = Yii::$app->cache->getOrSet('ads', function() {
-                return \app\models\Ads::find()->all();
+                return \app\models\Ads::find()->where(['active' => 1])->all();
             }, 600);
 
             $ads = array_fill_keys($this->positions, []);

@@ -13,6 +13,7 @@ use yii\web\UploadedFile;
  * @property string $name
  * @property integer $position
  * @property string $url
+ * @property integer $active
  */
 class Ads extends \yii\db\ActiveRecord
 {
@@ -53,9 +54,10 @@ class Ads extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'position', 'imageFile'], 'required'],
+            [['imageFile'], 'required', 'on' => 'create'],
+            [['name', 'position'], 'required'],
             [['imageFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg', 'on' => 'create'],
-            [['position'], 'integer'],
+            [['position', 'active'], 'integer'],
             [['uuid'], 'string', 'max' => 64],
             [['name', 'url'], 'string', 'max' => 255],
             [['url'], 'url'],
@@ -74,6 +76,7 @@ class Ads extends \yii\db\ActiveRecord
             'name' => 'Название',
             'position' => 'Позиция',
             'url' => 'URL',
+            'active' => 'Активен',
         ];
     }
 
@@ -149,5 +152,15 @@ class Ads extends \yii\db\ActiveRecord
         unlink($this->getPath());
 
         Yii::$app->cache->delete('ads');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        $this->active = 1;
     }
 }

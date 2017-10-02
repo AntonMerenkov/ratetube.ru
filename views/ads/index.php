@@ -47,6 +47,19 @@ $this->params['breadcrumbs'][] = $this->title;
                     return array_sum(ArrayHelper::map($model->adStatistics, 'id', 'views'));
                 },
             ],
+            [
+                'attribute' => 'active',
+                'format' => 'raw',
+                'value' => function($model) {
+                    if ($model->active)
+                        return '<i class="glyphicon glyphicon-ok text-success"></i>';
+                    else
+                        return '<i class="glyphicon glyphicon-remove text-danger"></i>';
+                },
+                'contentOptions' => [
+                    'class' => 'text-center'
+                ]
+            ],
 
             [
                 'class' => 'yii\grid\ActionColumn',

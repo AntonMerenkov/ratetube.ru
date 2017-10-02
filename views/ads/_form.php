@@ -23,6 +23,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'url')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'active')->checkbox() ?>
+
     <br>
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Добавить' : 'Сохранить', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
