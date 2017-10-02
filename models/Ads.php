@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use voskobovich\linker\LinkerBehavior;
+use voskobovich\linker\updaters\ManyToManySmartUpdater;
 use Yii;
 use yii\web\UploadedFile;
 
@@ -14,6 +16,8 @@ use yii\web\UploadedFile;
  * @property integer $position
  * @property string $url
  * @property integer $active
+ *
+ * @property Categories[] $categories
  */
 class Ads extends \yii\db\ActiveRecord
 {
@@ -61,6 +65,27 @@ class Ads extends \yii\db\ActiveRecord
             [['uuid'], 'string', 'max' => 64],
             [['name', 'url'], 'string', 'max' => 255],
             [['url'], 'url'],
+            [['categoriesIds'], 'each', 'rule' => ['integer']]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => LinkerBehavior::className(),
+                'relations' => [
+                    'categoriesIds' => [
+                        'categories',
+                        'updater' => [
+                            'class' => ManyToManySmartUpdater::className()
+                        ]
+                    ]
+                ],
+            ],
         ];
     }
 
@@ -77,6 +102,7 @@ class Ads extends \yii\db\ActiveRecord
             'position' => 'Позиция',
             'url' => 'URL',
             'active' => 'Активен',
+            'categoriesIds' => 'Показывать в категориях',
         ];
     }
 
@@ -162,5 +188,21 @@ class Ads extends \yii\db\ActiveRecord
         parent::init();
 
         $this->active = 1;
+    }
+
+    /**
+     * Получение категорий.
+     *
+     * @return $this
+     */
+    public function getCategories()
+    {
+        return $this->hasMany(
+            Categories::className(),
+            ['id' => 'category_id']
+        )->viaTable(
+            '{{%ads_categories}}',
+            ['ad_id' => 'id']
+        );
     }
 }

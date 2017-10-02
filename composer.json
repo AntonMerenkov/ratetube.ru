@@ -22,7 +22,8 @@
         "sjaakp/yii2-gcharts": "*",
         "thatsus/jquery-circle-progress": "^1.1",
         "uran1980/yii2-jquery-essential": "dev-master",
-        "yiisoft/yii2-sphinx": "^2.0"
+        "yiisoft/yii2-sphinx": "^2.0",
+        "voskobovich/yii2-linker-behavior": "^4.0"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

@@ -3,6 +3,7 @@
 namespace app\widgets;
 
 use app\components\Statistics;
+use app\models\Categories;
 use app\models\Channels;
 use backend\components\Backups;
 use Yii;
@@ -32,8 +33,27 @@ class Ads extends Widget
         } else {
             Yii::beginProfile('Виджет «Реклама»');
 
-            $adModels = Yii::$app->cache->getOrSet('ads', function() {
-                return \app\models\Ads::find()->where(['active' => 1])->all();
+            $categoryId = Yii::$app->request->get('category_id', null);
+            $cacheId = 'ads-' . implode('-', [
+                $categoryId
+            ]);
+
+            $adModels = Yii::$app->cache->getOrSet($cacheId, function() use ($categoryId) {
+                $ads = \app\models\Ads::find()->where(['active' => 1])->all();
+
+                if (!is_null($categoryId)) {
+                    $category = Categories::find()->where(['code' => $categoryId])->one();
+
+                    if ($categoryId) {
+                        $id = $category->id;
+
+                        $ads = array_values(array_filter($ads, function($item) use ($id) {
+                            return empty($item->categoriesIds) || in_array($id, $item->categoriesIds);
+                        }));
+                    }
+                }
+
+                return $ads;
             }, 600);
 
             $ads = array_fill_keys($this->positions, []);

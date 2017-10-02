@@ -32,6 +32,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format' => 'raw',
                 'value' => '<img src="' . Url::to(['ads/file', 'uuid' => $model->uuid, 'no_stat' => 1]) . '"">'
             ],
+            [
+                'attribute' => 'categoriesIds',
+                'format' => 'raw',
+                'value' => empty($model->categoriesIds) ? '<span class="text-muted">Во всех категориях</span>' : '<ul>' . implode('', array_map(function($item) {
+                    return '<li>' . $item->name . '</li>';
+                }, $model->categories)) . '</ul>',
+            ],
         ],
     ]) ?>
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "20e1f6137bb8221f52e4c0000d985085",
+    "content-hash": "1e63790d0a2bfb251f17ec6644fb9683",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -721,7 +721,66 @@
                 "yii2",
                 "yii2-jquery-essential"
             ],
-            "time": "2017-05-27T13:51:15+00:00"
+            "time": "2015-03-14T21:40:00+00:00"
+        },
+        {
+            "name": "voskobovich/yii2-linker-behavior",
+            "version": "4.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/voskobovich/yii2-linker-behavior.git",
+                "reference": "4eafb2335eb546df1c1915a0d7468c0d1f7df2f9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/voskobovich/yii2-linker-behavior/zipball/4eafb2335eb546df1c1915a0d7468c0d1f7df2f9",
+                "reference": "4eafb2335eb546df1c1915a0d7468c0d1f7df2f9",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "yiisoft/yii2": "^2"
+            },
+            "require-dev": {
+                "codeception/codeception": "*",
+                "yiisoft/yii2-codeception": "^2"
+            },
+            "type": "yii2-behavior",
+            "autoload": {
+                "psr-4": {
+                    "voskobovich\\linker\\": "src",
+                    "voskobovich\\linker\\interfaces\\": "src/interfaces",
+                    "voskobovich\\linker\\updaters\\": "src/updaters"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vitaly Voskobovich",
+                    "email": "vitaly@voskobovich.com",
+                    "homepage": "http://voskobovich.com"
+                },
+                {
+                    "name": "Konstantin Sirotkin",
+                    "email": "beowulfenator@gmail.com",
+                    "homepage": "http://beowulfenator.github.io"
+                }
+            ],
+            "description": "This behavior makes it easy to maintain many-to-many and one-to-many relations in your ActiveRecord models.",
+            "homepage": "https://github.com/voskobovich/yii2-linker-behavior",
+            "keywords": [
+                "Active Record",
+                "Behavior",
+                "ar",
+                "many-to-many",
+                "one-to-many",
+                "relations",
+                "yii2"
+            ],
+            "time": "2017-02-26T08:12:40+00:00"
         },
         {
             "name": "yiisoft/yii2",
