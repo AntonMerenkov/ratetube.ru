@@ -70,11 +70,6 @@ $(function() {
 
         var textColor = RGBvalues.color(cell.css('color'));
 
-        /*console.debug(RGBvalues.color('rgb(52, 86, 120)'));
-        console.debug(RGBvalues.color('#345678'));
-        console.debug(RGBvalues.color('rgba(52, 86, 120, 0.67)'));
-        console.debug(RGBvalues.color('#357'));*/
-
         cell.attr('data-animation', 1).animate({'background-color': 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0.1)'}, 300, function() {
             cell.css({
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 0)',
