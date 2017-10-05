@@ -48,9 +48,9 @@ class Statistics
      */
     public static $timeTypes = [
         self::QUERY_TIME_MINUTE => '10 минут',
-        self::QUERY_TIME_WEEK => 'неделя',
         self::QUERY_TIME_HOUR => 'час',
         self::QUERY_TIME_DAY => 'день',
+        self::QUERY_TIME_WEEK => 'неделя',
         self::QUERY_TIME_MONTH => 'месяц',
     ];
 

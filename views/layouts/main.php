@@ -41,66 +41,39 @@ AppAsset::register($this);
                     <img src="/img/logo.png">
                 </a>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-8 col-xs-6">
                 <div class="nav-block">
-                    <div id="categories">
+                    <div id="timeframes">
                         <nav>
                             <?
-                            $categories = Categories::getDb()->cache(function ($db) {
-                                return Categories::find()->all();
-                            });
+                            $statisticTypes = [];
+
+                            foreach (Statistics::$timeTypes as $id => $name)
+                                $statisticTypes[] = [
+                                    'label' => $name,
+                                    'url' => ['/site/ajax-set-time', 'id' => $id],
+                                    'options' => [
+                                        'data-id' => $id
+                                    ],
+                                    'active' => Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR) == $id
+                                ];
 
                             echo Nav::widget([
-                                'items' => ArrayHelper::map($categories, 'id', function($item) {
-                                    return [
-                                        'label' => $item->name,
-                                        'url' => ['/site/index', 'category_id' => $item->code]
-                                    ];
-                                }),
+                                'options' => ['class' => ''],
+                                'items' => $statisticTypes,
                             ]);
                             ?>
                         </nav>
                     </div>
-                    <div id="tags">
-                        <?= PopularTags::widget(); ?>
-
-                        <div id="search">
-                            <form action="<?=Url::to([
-                                'site/index',
-                                "category_id" => Yii::$app->request->get('category_id', null),
-                                "channel_id" => Yii::$app->request->get('channel_id', null),
-                            ]) ?>" method="get">
-                                <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
-                                <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
-                            </form>
-                        </div>
-                    </div>
+                    <? if (isset($this->blocks['refresh-block']))
+                        echo $this->blocks['refresh-block']; ?>
                 </div>
-                <? if (isset($this->blocks['refresh-block']))
-                    echo $this->blocks['refresh-block']; ?>
             </div>
             <div class="col-md-2 col-xs-6">
-                <div id="timeframes">
-                    <nav>
-                        <?
-                        $statisticTypes = [];
-
-                        foreach (Statistics::$timeTypes as $id => $name)
-                            $statisticTypes[] = [
-                                'label' => $name,
-                                'url' => ['/site/ajax-set-time', 'id' => $id],
-                                'options' => [
-                                    'data-id' => $id
-                                ],
-                                'active' => Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR) == $id
-                            ];
-
-                        echo Nav::widget([
-                            'options' => ['class' => ''],
-                            'items' => $statisticTypes,
-                        ]);
-                        ?>
-                    </nav>
+                <div class="contact-list">
+                    <div class="contact-item email">
+                        <a href="mailto:<?=Yii::$app->params[ 'email' ] ?>"><?=Yii::$app->params[ 'email' ] ?></a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,6 +84,39 @@ AppAsset::register($this);
     <div class="container">
         <div class="row">
             <div class="col-md-2">
+                <!--<div id="categories">
+                    <nav>
+                        <?/*
+                        $categories = Categories::getDb()->cache(function ($db) {
+                            return Categories::find()->all();
+                        });
+
+                        echo Nav::widget([
+                            'items' => ArrayHelper::map($categories, 'id', function($item) {
+                                return [
+                                    'label' => $item->name,
+                                    'url' => ['/site/index', 'category_id' => $item->code]
+                                ];
+                            }),
+                        ]);
+                        */?>
+                    </nav>
+                </div>
+                <div id="tags">
+                    <?/*= PopularTags::widget(); */?>
+
+                    <div id="search">
+                        <form action="<?/*=Url::to([
+                            'site/index',
+                            "category_id" => Yii::$app->request->get('category_id', null),
+                            "channel_id" => Yii::$app->request->get('channel_id', null),
+                        ]) */?>" method="get">
+                            <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
+                            <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
+                        </form>
+                    </div>
+                </div>-->
+
                 <?= TopChannels::widget() ?>
 
                 <?= Ads::widget([

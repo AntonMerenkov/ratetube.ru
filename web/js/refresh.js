@@ -334,7 +334,7 @@ $(function() {
                             // добавляем новый элемент
                             var newRow = $('<div class="video-item" data-id="' + newStreaming[ i ].id + '">\n' +
                                 '<a href="/channel/' + newStreaming[ i ].channel.id + '" class="channel-name">' + newStreaming[ i ].channel.name + '</a>\n' +
-                                '<iframe width="204" height="121" src="https://www.youtube.com/embed/' + newStreaming[ i ].video_link + '" frameborder="0" allowfullscreen></iframe>\n'
+                                '<iframe width="204" height="121" src="https://www.youtube.com/embed/' + newStreaming[ i ].video_link + '" frameborder="0" allowfullscreen></iframe>\n' +
                                 '<a href="https://www.youtube.com/watch?v=' + newStreaming[ i ].video_link + '" class="link" target="_blank">\n' +
                                 '<div class="name">' + newStreaming[ i ].name + '</div>\n' +
                                 '</a>\n' +
@@ -410,7 +410,7 @@ $(function() {
     $('#refresh-progress').circleProgress({
         startAngle: -Math.PI / 6 * 3,
         value: 1,
-        size: 58,
+        size: 45,
         fill: {
             color: "#67c1f5"
         },
