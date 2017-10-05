@@ -14,7 +14,7 @@ use yii\helpers\Url;
         <?=implode('<br>', $errors) ?>
     </div>
 <? else : ?>
-    <div class="<?=$options[ 'class' ] ?>">
+    <div class="<?=$options[ 'class' ] ?>" style="display: block !important;">
         <? foreach ($ads as $position => $model) : ?>
             <div data-position="<?=$position ?>">
                 <? if ($model instanceof \app\models\Ads) : ?>
