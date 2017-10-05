@@ -121,6 +121,15 @@ $(function() {
                 return parseInt(item.id);
             });
 
+            // проставляем channel там, где его нет
+            for (var i in newData)
+                if (newData[ i ].channel == undefined)
+                    newData[ i ].channel = {
+                        id: '',
+                        name: '',
+                        image_url: ''
+                    };
+
             // анимация
             // если данные не изменились - ничего не делаем
             if (JSON.stringify(oldIdsCheck) != JSON.stringify(newIds)) {
