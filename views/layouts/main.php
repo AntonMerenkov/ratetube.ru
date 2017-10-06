@@ -147,7 +147,7 @@ $categories = Categories::getDb()->cache(function ($db) {
                     </form>
                 </div>
 
-                <?= TopVideos::widget() ?>
+                <?//= TopVideos::widget() ?>
 
                 <?= Ads::widget([
                     'positions' => [

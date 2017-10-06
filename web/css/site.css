@@ -343,11 +343,11 @@ main > .container > .row > * > .block {
 
     .container > .row > .col-md-8,
     .container > .row > .col-lg-8 {
-        width: calc(66.66666667% - 35px);
+        width: calc(66.66666667% - 65px);
     }
 
     .container > .row > .col-lg-2:last-child {
-        width: calc(16.66666667% + 25px);
+        width: calc(16.66666667% + 55px);
     }
 }
 
