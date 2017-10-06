@@ -107,4 +107,19 @@ $(function() {
             if ((new Date()).getTime() - visibilityDate > 60000)
                 window.location.reload();
     });
+
+    /**
+     * Мобильное меню
+     */
+    $('#mobile-menu .btn').click(function(e) {
+        e.preventDefault();
+
+        if ($('#mobile-menu').find('.content').is(':visible')) {
+            $('#mobile-menu').find('.content').slideUp();
+            $(this).find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+        } else {
+            $('#mobile-menu').find('.content').slideDown();
+            $(this).find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+        }
+    });
 });

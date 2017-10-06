@@ -19,6 +19,11 @@ use app\assets\AppAsset;
 use app\widgets\TopChannels;
 
 AppAsset::register($this);
+
+$categories = Categories::getDb()->cache(function ($db) {
+    return Categories::find()->all();
+});
+
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -77,20 +82,12 @@ AppAsset::register($this);
                 </div>
             </div>
         </div>
-    </div>
-</header>
-
-<main>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-2">
-                <!--<div id="categories">
+        <div id="mobile-menu">
+            <button class="btn btn-warning btn-block"><i class="glyphicon glyphicon-chevron-down"></i> Меню</button>
+            <div class="content" style="display: block">
+                <div class="categories">
                     <nav>
-                        <?/*
-                        $categories = Categories::getDb()->cache(function ($db) {
-                            return Categories::find()->all();
-                        });
-
+                        <?
                         echo Nav::widget([
                             'items' => ArrayHelper::map($categories, 'id', function($item) {
                                 return [
@@ -99,10 +96,29 @@ AppAsset::register($this);
                                 ];
                             }),
                         ]);
-                        */?>
+                        ?>
                     </nav>
                 </div>
-                <div id="tags">
+                <div class="search">
+                    <form action="<?=Url::to([
+                        'site/index',
+                        "category_id" => Yii::$app->request->get('category_id', null),
+                        "channel_id" => Yii::$app->request->get('channel_id', null),
+                    ]) ?>" method="get">
+                        <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
+                        <a href="#"><i class="glyphicon glyphicon-search"></i></a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <!--<div id="tags">
                     <?/*= PopularTags::widget(); */?>
 
                     <div id="search">
@@ -116,6 +132,21 @@ AppAsset::register($this);
                         </form>
                     </div>
                 </div>-->
+
+                <div class="widget widget-categories">
+                    <nav>
+                        <?
+                        echo Nav::widget([
+                            'items' => ArrayHelper::map($categories, 'id', function($item) {
+                                return [
+                                    'label' => $item->name,
+                                    'url' => ['/site/index', 'category_id' => $item->code]
+                                ];
+                            }),
+                        ]);
+                        ?>
+                    </nav>
+                </div>
 
                 <?= TopChannels::widget() ?>
 

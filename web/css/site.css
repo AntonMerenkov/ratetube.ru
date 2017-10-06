@@ -127,57 +127,8 @@ header .contact-item.email {
     background-position-x: right;
 }
 
-#categories {
-    font-size: 20px;
-    color: #ffb962;
-    border-bottom: 2px solid #ffb962;
-    line-height: 1;
-}
-
-#categories ul {
-    margin: 0 0 -3px;
-    padding: 0;
-    list-style: none;
-}
-
-#categories li {
-    display: inline-block;
-    padding-bottom: 5px;
-    margin-right: 8px;
-}
-
-#categories li a {
-    color: inherit;
-    display: block;
-    padding: 5px 10px;
-}
-
-#categories li:last-child {
-    margin-left: 0;
-}
-
-/*#categories li.active {
-    background: url('../img/categories_active.png') bottom center no-repeat;
-}*/
-
-#categories li.active a,
-#categories li a:hover,
-#categories li a:focus {
-    background: rgba(255, 185, 98, 0.25);
-    border-radius: 6px;
-}
-
-#categories li.active a {
-    padding: 5px 10px;
-}
-
-#categories li.active,
-#categories li.active + li {
-    margin-left: 10px;
-}
-
-#categories li:first-child {
-    margin-left: 0;
+#mobile-menu {
+    display: none;
 }
 
 #tags {
@@ -500,6 +451,29 @@ main > .container > .row > * > .block {
     color: #8f98a0;
     font-weight: 300;
     margin-bottom: 20px;
+}
+
+.widget-categories {
+    padding: 0;
+}
+
+.widget-categories li {
+    margin: 3px 0;
+}
+
+.widget-categories li a {
+    text-align: center;
+    display: block;
+    font-size: 18px;
+    color: #ffb962;
+    padding: 3px 15px
+}
+
+.widget-categories li.active a,
+.widget-categories li a:hover,
+.widget-categories li a:focus {
+    background-color: #ffb962;
+    color: #171a21;
 }
 
 .widget-ad a {
@@ -1124,14 +1098,6 @@ article p {
         width: calc(83.33333333% - 30px);
     }
 
-    #categories {
-        font-size: 18px;
-    }
-
-    #categories li {
-        margin-right: 5px;
-    }
-
     #tags {
         font-size: 14px;
     }
@@ -1269,14 +1235,6 @@ article p {
         margin-left: -30px;
     }
 
-    #categories {
-        font-size: 16px;
-    }
-
-    #categories li {
-        margin-right: 5px;
-    }
-
     #tags {
         font-size: 14px;
     }
@@ -1306,6 +1264,10 @@ article p {
         float: left;
         width: 50%;
         padding: 15px;
+    }
+
+    .widget-top-channels .channel-item:nth-child(2n+1) {
+        clear: left;
     }
 
     .widget-top-channels .channel-item + .channel-item {
@@ -1349,6 +1311,100 @@ article p {
     body {
         background-image: url('../img/background_white.jpg');
         background-color: #415464;
+    }
+
+    header {
+        height: auto;
+        padding-bottom: 10px;
+    }
+
+    #mobile-menu {
+        display: block;
+        margin-top: 5px;
+    }
+
+    #mobile-menu .btn {
+        border: 2px solid #f1b05e;
+        text-transform: uppercase;
+        font-size: 16px;
+        color: #ffb962 !important;
+        height: 28px;
+        padding: 2px 10px;
+        background-color: transparent !important;
+    }
+
+    #mobile-menu .btn:hover,
+    #mobile-menu .btn:focus,
+    #mobile-menu .btn:active {
+        background-color: #f1b05e !important;
+        color: #171a21 !important;
+    }
+
+    #mobile-menu .search {
+        margin-top: 10px;
+        position: relative;
+    }
+
+    #mobile-menu .search a {
+        display: inline-block;
+        color: #67c1f5;
+        padding: 5px 10px;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    #mobile-menu .search a:hover,
+    #mobile-menu .search.active a {
+        text-decoration: none;
+    }
+
+    #mobile-menu .search input {
+        background-color: #264155;
+        border: 1px solid #67c1f5;
+        font-size: 16px;
+        padding: 4px 10px;
+        height: 28px;
+    }
+
+    #mobile-menu .search input::placeholder {
+        color: #67c1f5;
+    }
+
+    #mobile-menu .search input:focus {
+        box-shadow: none;
+    }
+
+    #mobile-menu .categories {
+        margin-top: 10px;
+    }
+
+    #mobile-menu .categories li {
+        float: left;
+        width: 50%;
+    }
+
+    #mobile-menu .categories li:nth-child(2n+1) {
+        clear: left;
+    }
+
+    #mobile-menu .categories li a {
+        font-size: 16px;
+        color: #ffb962;
+        padding: 3px 10px;
+        border-radius: 4px;
+        display: block;
+    }
+
+    #mobile-menu .categories li a:hover,
+    #mobile-menu .categories li a:focus,
+    #mobile-menu .categories li.active a {
+        background-color: #f1b05e;
+        color: #171a21;
+    }
+
+    .widget-categories {
+        display: none;
     }
 
     #news-table {

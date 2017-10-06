@@ -368,7 +368,7 @@ class Statistics
         }
 
         return [
-            'data' => $data,
+            'data' => is_array($data) ? $data : [],
             'pagination' => [
                 'count' => $count,
                 'page' => $page,
