@@ -190,7 +190,7 @@ $categories = Categories::getDb()->cache(function ($db) {
             </div>
             <div class="col-md-8">
                 <div class="row">
-                    <div class="col-md-4 col-sm-6">
+                    <div class="col-lg-3 col-md-4">
                         <nav>
                             <ul>
                                 <li><a href="#">Статистика</a></li>
@@ -198,7 +198,7 @@ $categories = Categories::getDb()->cache(function ($db) {
                             </ul>
                         </nav>
                     </div>
-                    <div class="col-md-8 col-sm-6">
+                    <div class="col-lg-9 col-md-8">
                         <nav>
                             <?=Nav::widget([
                                 'options' => ['class' => ''],

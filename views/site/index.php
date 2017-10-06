@@ -187,34 +187,27 @@ $statisticsDataProvider = new ArrayDataProvider([
 ]); ?>
 
 <? if ($statisticsQueryData[ 'pagination' ][ 'pageCount' ] > 1) : ?>
-    <nav>
-        <ul class="pagination">
-            <?
-            $pages = array_fill($statisticsQueryData[ 'pagination' ][ 'page' ] - 2, 5, 1) +
-                array_fill(1, 5, 1) +
-                array_fill($statisticsQueryData[ 'pagination' ][ 'pageCount' ] - 2, 3, 1);
-
-            foreach ($pages as $key => $value)
-                if ($key < 1 || $key > $statisticsQueryData[ 'pagination' ][ 'pageCount' ])
-                    unset($pages[ $key ]);
-
-            ksort($pages);
-            $pages = array_keys($pages);
-            ?>
-
-            <? for ($i = 0; $i <= count($pages) - 1; $i++) : ?>
-                <li<? if ($statisticsQueryData[ 'pagination' ][ 'page' ] == $pages[ $i ]) : ?> class="active"<? endif; ?>>
-                    <a href="<?= Yii::$app->urlManager->createUrl([
-                        "site/index" ,
-                        "category_id" => Yii::$app->request->get('category_id', null),
-                        "channel_id" => Yii::$app->request->get('channel_id', null),
-                        "query" => Yii::$app->request->get('query', null),
-                        "page" => $pages[ $i ] == 1 ? null : $pages[ $i ]]) ?>"><?=$pages[ $i ] ?></a>
-                </li>
-                <? if (isset($pages[ $i + 1 ]) && $pages[ $i ] + 1 < $pages[ $i + 1 ]) : ?>
-                    <li class="disabled"><a href="#"><span aria-hidden="true">...</span></a></li>
-                <? endif; ?>
-            <? endfor; ?>
-        </ul>
-    </nav>
+    <div class="pagination">
+        <a href="<?= ($statisticsQueryData[ 'pagination' ][ 'page' ] == 1 ? '#' : Yii::$app->urlManager->createUrl([
+            "site/index" ,
+            "category_id" => Yii::$app->request->get('category_id', null),
+            "channel_id" => Yii::$app->request->get('channel_id', null),
+            "query" => Yii::$app->request->get('query', null),
+            "page" => $statisticsQueryData[ 'pagination' ][ 'page' ] - 1 == 1 ? null : $statisticsQueryData[ 'pagination' ][ 'page' ] - 1])) ?>" class="prev"
+            <? if ($statisticsQueryData[ 'pagination' ][ 'page' ] == 1) : ?>disabled="disabled"<? endif; ?>>
+            <i class="glyphicon glyphicon-menu-left"></i>
+            <i class="glyphicon glyphicon-menu-left"></i>
+        </a>
+        <div class="page">Страница <?=$statisticsQueryData[ 'pagination' ][ 'page' ] ?></div>
+        <a href="<?= ($statisticsQueryData[ 'pagination' ][ 'page' ] == $statisticsQueryData[ 'pagination' ][ 'pageCount' ] ? '#' : Yii::$app->urlManager->createUrl([
+            "site/index" ,
+            "category_id" => Yii::$app->request->get('category_id', null),
+            "channel_id" => Yii::$app->request->get('channel_id', null),
+            "query" => Yii::$app->request->get('query', null),
+            "page" => $statisticsQueryData[ 'pagination' ][ 'page' ] + 1])) ?>" class="next"
+           <? if ($statisticsQueryData[ 'pagination' ][ 'page' ] == $statisticsQueryData[ 'pagination' ][ 'pageCount' ]) : ?>disabled="disabled"<? endif; ?>>
+            <i class="glyphicon glyphicon-menu-right"></i>
+            <i class="glyphicon glyphicon-menu-right"></i>
+        </a>
+    </div>
 <? endif; ?>
