@@ -20,6 +20,7 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'lib/flexslider/flexslider.css',
+        'lib/jqcloud/jqcloud.min.css',
         'css/site.css',
     ];
     public $js = [
@@ -28,6 +29,7 @@ class AppAsset extends AssetBundle
         'lib/jquery-circle-progress/circle-progress.js',
         'lib/share42/share42.js',
         'lib/visibility/visibility.min.js',
+        'lib/jqcloud/jqcloud.min.js',
         'js/scripts.js'
     ];
     public $depends = [

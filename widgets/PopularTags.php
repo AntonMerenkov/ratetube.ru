@@ -10,6 +10,7 @@ use backend\components\Backups;
 use Yii;
 use yii\base\Widget;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /**
  * Class PopularTags
@@ -19,7 +20,7 @@ use yii\helpers\ArrayHelper;
  */
 class PopularTags extends Widget
 {
-    public $count = 5;
+    public $count = 15;
     public $slice = 50;
 
     const TAGS_CACHE_KEY = 'tags_list';
@@ -28,9 +29,11 @@ class PopularTags extends Widget
     {
         Yii::beginProfile('Виджет «Популярные тэги»');
 
-        $cacheKey = self::TAGS_CACHE_KEY .
-            '-' . Yii::$app->request->get('category_id', '') .
-            '-' . (int) Yii::$app->request->get('channel_id', 0);
+        $cacheKey = self::TAGS_CACHE_KEY . '-' . implode('-', [
+            Yii::$app->request->get('category_id', ''),
+            (int) Yii::$app->request->get('channel_id', 0),
+            $this->count
+        ]);
 
         $resultTags = Yii::$app->cache->getOrSet($cacheKey . '-rand', function() use ($cacheKey) {
             $tagsData = Yii::$app->cache->getOrSet($cacheKey, function() {
@@ -125,6 +128,15 @@ class PopularTags extends Widget
         foreach ($resultTags as $id => $tag)
             if (!is_null($query) && (mb_strtolower($tag[ 'text' ]) == mb_strtolower($query)))
                 $resultTags[ $id ][ 'active' ] = true;
+
+        foreach ($resultTags as $id => $tag) {
+            $resultTags[ $id ][ 'link' ] = Url::to([
+                'site/index',
+                "category_id" => Yii::$app->request->get('category_id', null),
+                "channel_id" => Yii::$app->request->get('channel_id', null),
+                "query" => $tag[ 'text' ]
+            ]);
+        }
 
         Yii::endProfile('Виджет «Популярные тэги»');
 

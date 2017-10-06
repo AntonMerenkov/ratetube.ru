@@ -122,4 +122,25 @@ $(function() {
             $(this).find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
         }
     });
+
+    /**
+     * Перемещение виджета Топ-5 видео в нужную позицию
+     */
+    $(window).resize(function() {
+        if ($(window).width() <= 1199) {
+            if ($('main .col-md-2:first-child .widget-top-videos').length > 0)
+                $('main .col-md-2:first-child .widget-top-videos').detach().insertAfter($('main .col-lg-2:last-child .widget-streaming'));
+
+            if ($('main .col-lg-2:last-child .widget-top-channels').length > 0)
+                $('main .col-lg-2:last-child .widget-top-channels').detach().insertAfter($('main .col-md-2:first-child .widget-search'));
+        } else {
+            if ($('main .col-lg-2:last-child .widget-top-videos').length > 0)
+                $('main .col-lg-2:last-child .widget-top-videos').detach().insertAfter($('main .col-md-2:first-child .widget-search'));
+
+            if ($('main .col-md-2:first-child .widget-top-channels').length > 0)
+                $('main .col-md-2:first-child .widget-top-channels').detach().insertBefore($('main .col-lg-2:last-child .widget-streaming'));
+        }
+    });
+
+    $(window).trigger('resize');
 });

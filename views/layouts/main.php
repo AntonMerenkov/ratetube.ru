@@ -84,7 +84,7 @@ $categories = Categories::getDb()->cache(function ($db) {
         </div>
         <div id="mobile-menu">
             <button class="btn btn-warning btn-block"><i class="glyphicon glyphicon-chevron-down"></i> Меню</button>
-            <div class="content" style="display: block">
+            <div class="content" style="display: none">
                 <div class="categories">
                     <nav>
                         <?
@@ -118,21 +118,6 @@ $categories = Categories::getDb()->cache(function ($db) {
     <div class="container">
         <div class="row">
             <div class="col-md-2">
-                <!--<div id="tags">
-                    <?/*= PopularTags::widget(); */?>
-
-                    <div id="search">
-                        <form action="<?/*=Url::to([
-                            'site/index',
-                            "category_id" => Yii::$app->request->get('category_id', null),
-                            "channel_id" => Yii::$app->request->get('channel_id', null),
-                        ]) */?>" method="get">
-                            <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?">
-                            <a href="#"><i class="glyphicon glyphicon-search"></i> Найти</a>
-                        </form>
-                    </div>
-                </div>-->
-
                 <div class="widget widget-categories">
                     <nav>
                         <?
@@ -148,7 +133,21 @@ $categories = Categories::getDb()->cache(function ($db) {
                     </nav>
                 </div>
 
-                <?= TopChannels::widget() ?>
+                <?= PopularTags::widget(); ?>
+
+                <div class="widget widget-search">
+                    <div class="widget-header">Поиск</div>
+                    <form action="<?=Url::to([
+                        'site/index',
+                        "category_id" => Yii::$app->request->get('category_id', null),
+                        "channel_id" => Yii::$app->request->get('channel_id', null),
+                    ]) ?>" method="get">
+                        <input type="text" name="query" class="form-control">
+                        <a href="#"><i class="glyphicon glyphicon-search"></i></a>
+                    </form>
+                </div>
+
+                <?= TopVideos::widget() ?>
 
                 <?= Ads::widget([
                     'positions' => [
@@ -163,8 +162,8 @@ $categories = Categories::getDb()->cache(function ($db) {
                 <?=$content ?>
             </div>
             <div class="col-lg-2">
+                <?= TopChannels::widget() ?>
                 <?= Streaming::widget() ?>
-                <?= TopVideos::widget() ?>
 
                 <?= Ads::widget([
                     'positions' => [
