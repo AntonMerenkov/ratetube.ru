@@ -91,7 +91,7 @@ class Curl
         $this->curlMulti = curl_multi_init();
         $this->curlMultiHandles = [];
 
-        foreach ($urlArray as $url) {
+        foreach ($urlArray as $id => $url) {
             $curl = curl_init();
 
             $this->setCurlDefaultParams($curl);
@@ -99,7 +99,7 @@ class Curl
 
             curl_multi_add_handle($this->curlMulti, $curl);
 
-            $this->curlMultiHandles[] = $curl;
+            $this->curlMultiHandles[ $id ] = $curl;
         }
 
         $running = null;
@@ -107,8 +107,8 @@ class Curl
             curl_multi_exec($this->curlMulti, $running);
         } while ($running > 0);
 
-        foreach ($this->curlMultiHandles as $channel) {
-            $response[] = curl_multi_getcontent($channel);
+        foreach ($this->curlMultiHandles as $id => $channel) {
+            $response[ $id ] = curl_multi_getcontent($channel);
             curl_multi_remove_handle($this->curlMulti, $channel);
         }
 

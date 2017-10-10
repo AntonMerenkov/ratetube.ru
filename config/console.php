@@ -1,5 +1,7 @@
 <?php
 
+use app\components\YoutubeAPI;
+
 $params = require(__DIR__ . '/params.php');
 $db = require(__DIR__ . '/db.php');
 
@@ -26,6 +28,12 @@ $config = [
                     'logFile' =>  '@runtime/logs/agent.log',
                     'logVars' => [],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['api-keys'],
+                    'logFile' =>  '@runtime/logs/api-keys.log',
+                    'logVars' => [],
+                ],
             ],
         ],
         'db' => $db,
@@ -39,6 +47,9 @@ $config = [
         ],
     ],
     */
+    'on afterAction' => function () {
+        YoutubeAPI::saveData();
+    },
 ];
 
 if (YII_ENV_DEV) {

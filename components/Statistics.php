@@ -128,6 +128,9 @@ class Statistics
             $response = json_decode($response, true);
 
             if (isset($response[ 'error' ])) {
+                // TODO: убрать
+                file_put_contents(dirname(__FILE__) . '/error.log', print_r($response[ 'error' ], true));
+
                 return [
                     'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
                 ];

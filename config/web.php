@@ -1,5 +1,7 @@
 <?php
 
+use app\components\YoutubeAPI;
+
 $params = require(__DIR__ . '/params.php');
 
 $config = [
@@ -30,11 +32,18 @@ $config = [
             'useFileTransport' => true,
         ],
         'log' => [
-            'traceLevel' => YII_DEBUG ? 3 : 0,
+            //'traceLevel' => YII_DEBUG ? 3 : 0,
+            'traceLevel' => 0,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['api-keys'],
+                    'logFile' =>  '@runtime/logs/api-keys.log',
+                    'logVars' => [],
                 ],
             ],
         ],
@@ -71,6 +80,9 @@ $config = [
         'curl' => 'app\components\Curl',
     ],
     'params' => $params,
+    'on afterAction' => function () {
+        YoutubeAPI::saveData();
+    },
 ];
 
 if (YII_ENV_DEV) {

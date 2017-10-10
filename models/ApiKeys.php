@@ -11,6 +11,7 @@ use Yii;
  * @property string $key
  *
  * @property ApiKeyStatistics[] $apiKeyStatistics
+ * @property ApiKeyStatistics $lastStatistics
  */
 class ApiKeys extends \yii\db\ActiveRecord
 {
@@ -29,6 +30,7 @@ class ApiKeys extends \yii\db\ActiveRecord
     {
         return [
             [['key'], 'required'],
+            [['key'], 'unique'],
             [['key'], 'string', 'max' => 255],
         ];
     }
@@ -50,6 +52,15 @@ class ApiKeys extends \yii\db\ActiveRecord
     public function getApiKeyStatistics()
     {
         return $this->hasMany(ApiKeyStatistics::className(), ['api_key_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLastStatistics()
+    {
+        return $this->hasOne(ApiKeyStatistics::className(), ['api_key_id' => 'id'])
+            ->orderBy(['date' => SORT_DESC]);
     }
 
     /**
