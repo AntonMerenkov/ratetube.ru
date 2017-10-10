@@ -49,6 +49,7 @@ AdminAsset::register($this);
             ['label' => 'Каналы', 'url' => ['/channels/index']],
             ['label' => 'Реклама', 'url' => ['/ads/index']],
             ['label' => 'Позиции', 'url' => ['/positions/index']],
+            ['label' => 'YouTube API', 'url' => ['/api-keys/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(

@@ -1126,17 +1126,18 @@ article p {
     #timeframes ul {
         display: flex;
         flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     #timeframes li:nth-child(1) {
-        width: calc(60% - 5px);
+        width: calc(60% - 7px);
         position: static;
         margin-left: 0;
         order: 1;
     }
 
     #timeframes li:nth-child(2) {
-        width: calc(30% - 5px);
+        width: calc(30% - 7px);
         position: static;
         margin-left: 0;
         order: 3;
