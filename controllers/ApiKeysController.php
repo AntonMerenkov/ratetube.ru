@@ -77,6 +77,8 @@ class ApiKeysController extends Controller
         if (!empty($statisticsData)) {
             $minDate = new DateTime(key($statisticsData));
             $currentDate = new DateTime();
+            if ($currentDate < new DateTime(date('d.m.Y') . ' 10:10:00'))
+                $currentDate->sub(new DateInterval('P1D'));
 
             while ($minDate <= $currentDate) {
                 if (!array_key_exists($minDate->format('d.m.Y'), $statisticsData))

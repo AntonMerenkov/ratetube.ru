@@ -1,5 +1,6 @@
 <?php
 
+use app\components\YoutubeAPI;
 use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
@@ -27,6 +28,8 @@ $this->params['breadcrumbs'][] = $this->title;
     <? if ($statisticsProvider->count > 0) : ?>
         <h3>Статистика</h3>
 
+        <p class="help-block">Подсчет ведется с 10:00 текущего дня до 10:00 следующего дня.</p>
+
         <?= GridView::widget([
             'dataProvider' => $statisticsProvider,
             'formatter' => [
@@ -35,7 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             'summary' => false,
             'rowOptions' => function($item) {
-                if ($item[ 'quota' ] >= 1000000)
+                if ($item[ 'quota' ] >= YoutubeAPI::MAX_QUOTA_VALUE)
                     return [
                         'class' => 'danger'
                     ];
@@ -50,15 +53,16 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'quota',
                     'header' => 'Использовано квот',
+                    'format' => 'raw',
                     'value' => function($item) {
-                        return Yii::$app->formatter->asDecimal(min($item[ 'quota' ], 1000000));
+                        return Yii::$app->formatter->asDecimal(min($item[ 'quota' ], YoutubeAPI::MAX_QUOTA_VALUE));
                     },
                 ],
                 [
                     'attribute' => 'quota_percent',
                     'header' => '%',
                     'value' => function($item) {
-                        return Yii::$app->formatter->asPercent(min($item[ 'quota' ], 1000000) / 1000000);
+                        return Yii::$app->formatter->asPercent(min($item[ 'quota' ], YoutubeAPI::MAX_QUOTA_VALUE) / YoutubeAPI::MAX_QUOTA_VALUE);
                     },
                 ],
             ],

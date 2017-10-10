@@ -31,6 +31,8 @@ class YoutubeAPI
 
     const MAX_RESULTS = 50; // максимальное кол-во результатов на 1 страницу
 
+    const MAX_QUOTA_VALUE = 1000000; // мксимальная квота
+
     /**
      * @var array Ключи для доступа к API
      * [
@@ -273,7 +275,7 @@ class YoutubeAPI
 
         // отфильтровываем ключи, у которых уже кончилась квота
         $keys = array_filter(self::$keys, function($item) {
-            return $item[ 'enabled' ] && $item[ 'quota' ] < 1000000;
+            return $item[ 'enabled' ] && $item[ 'quota' ] < self::MAX_QUOTA_VALUE;
         });
 
         if (empty($keys)) {
@@ -326,7 +328,7 @@ class YoutubeAPI
                     $quota = $key->lastStatistics->quota;
             }
 
-            if ($quota >= 1000000)
+            if ($quota >= self::MAX_QUOTA_VALUE)
                 continue;
 
             self::$keys[] = [
@@ -410,7 +412,7 @@ class YoutubeAPI
                 }
 
                 if ($key[ 'permanent' ])
-                    ApiKeyStatistics::updateAll(['quota' => 1000000], ['id' => $model->id]);
+                    ApiKeyStatistics::updateAll(['quota' => self::MAX_QUOTA_VALUE], ['id' => $model->id]);
                 else
                     ApiKeyStatistics::updateAllCounters(['quota' => $key[ 'quota_diff' ]], ['id' => $model->id]);
 
