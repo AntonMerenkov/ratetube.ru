@@ -185,8 +185,9 @@ class ApiKeysController extends Controller
      */
     public function actionQueryData()
     {
-        return Json::encode([
-            'status' => isset($_POST[ 'key' ]) ? ApiKeys::validateKey($_POST[ 'key' ]) : false,
+        return Json::encode(isset($_POST[ 'key' ]) && $_POST[ 'key' ] != '' ? ApiKeys::validateKey($_POST[ 'key' ]) : [
+            'status' => 0,
+            'error' => 'Укажите ключ.'
         ]);
     }
 }

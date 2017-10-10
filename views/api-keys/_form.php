@@ -27,7 +27,7 @@ use yii\widgets\ActiveForm;
                         .text('Ключ API действителен.');
                 } else {
                     $('#message').removeClass('hidden').removeClass('alert-success').addClass('alert-danger')
-                        .text('Ключ API недействителен.')
+                        .text(data.error)
                 }
             });
         });

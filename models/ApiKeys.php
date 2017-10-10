@@ -68,7 +68,7 @@ class ApiKeys extends \yii\db\ActiveRecord
      * Проверка API-ключа.
      *
      * @param $key
-     * @return bool
+     * @return bool|array
      */
     public static function validateKey($key)
     {
@@ -78,10 +78,19 @@ class ApiKeys extends \yii\db\ActiveRecord
                 'key' => $key
             )));
 
-        // TODO: вывести ошибку
-
         $result = json_decode($res, true);
 
-        return is_array($result) && isset($result[ 'items' ]);
+        if (isset($result[ 'error' ]))
+            return [
+                'status' => 0,
+                'error' => $result[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
+            ];
+
+        return is_array($result) && isset($result[ 'items' ]) ? [
+            'status' => 1
+        ] : [
+            'status' => 0,
+            'error' => 'Ошибка',
+        ];
     }
 }
