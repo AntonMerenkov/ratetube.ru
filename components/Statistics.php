@@ -112,37 +112,16 @@ class Statistics
     public static function getByVideoIds($videoIds)
     {
         $result = [];
-        $urlArray = [];
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
 
-        foreach (array_chunk($videoIds, 50) as $videoIdsChunk)
-            $urlArray[] = 'https://www.googleapis.com/youtube/v3/videos?' . http_build_query(array(
-                    'part' => 'statistics,liveStreamingDetails',
-                    'maxResults' => 50,
-                    'id' => implode(',', $videoIdsChunk),
-                    'key' => Yii::$app->params[ 'apiKey' ]
-                ));
+        if ($response == false)
+            return [];
 
-        $responseArray = Yii::$app->curl->queryMultiple($urlArray);
+        foreach ($response as $item) {
+            $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
 
-        foreach ($responseArray as $response) {
-            $response = json_decode($response, true);
-
-            if (isset($response[ 'error' ])) {
-                // TODO: убрать
-                file_put_contents(dirname(__FILE__) . '/error.log', print_r($response[ 'error' ], true));
-
-                return [
-                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
-                ];
-            }
-
-            if (isset($response[ 'items' ]))
-                foreach ($response[ 'items' ] as $item) {
-                    $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
-
-                    if (isset($item[ 'liveStreamingDetails' ][ 'concurrentViewers' ]))
-                        $result[ $item[ 'id' ] ][ 'viewers' ] = $item[ 'liveStreamingDetails' ][ 'concurrentViewers' ];
-                }
+            if (isset($item[ 'liveStreamingDetails' ][ 'concurrentViewers' ]))
+                $result[ $item[ 'id' ] ][ 'viewers' ] = $item[ 'liveStreamingDetails' ][ 'concurrentViewers' ];
         }
 
         return $result;

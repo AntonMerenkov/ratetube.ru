@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\components\Statistics;
+use app\components\YoutubeAPI;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\sphinx\Query;
@@ -96,50 +97,25 @@ class Videos extends \yii\db\ActiveRecord
     {
         $videoIds = [];
 
-        $channelQueryData = array_map(function($item) {
-            return [
-                'id' => $item,
-                'pageToken' => ''
+        $result = YoutubeAPI::query('search', [
+            'channelId' => $channelIds,
+            'type' => 'video',
+            'order' => 'viewCount',
+        ], [
+            'snippet'
+        ], YoutubeAPI::QUERY_PAGES);
+
+        if ($result === false)
+            return [];
+
+        foreach ($result as $item)
+            $videoIds[ $item[ 'id' ][ 'videoId' ] ] = [
+                'id' => $item[ 'id' ][ 'videoId' ],
+                'title' => $item[ 'snippet' ][ 'title' ],
+                'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
+                'channel_id' => $item[ 'snippet' ][ 'channelId' ],
+                'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
             ];
-        }, array_values($channelIds));
-
-        do {
-            $urlArray = array_map(function($item) {
-                return 'https://www.googleapis.com/youtube/v3/search?' . http_build_query([
-                    'part' => 'snippet',
-                    'channelId' => $item[ 'id' ],
-                    'maxResults' => 50,
-                    'type' => 'video',
-                    'order' => 'viewCount',
-                    'key' => Yii::$app->params[ 'apiKey' ]
-                ] + ($item[ 'pageToken' ] != '' ? ['pageToken' => $item[ 'pageToken' ]] : []));
-            }, $channelQueryData);
-
-            $responseArray = Yii::$app->curl->queryMultiple($urlArray);
-
-            foreach ($responseArray as $id => $response) {
-                $response = json_decode($response, true);
-
-                if (!empty($response[ 'items' ]))
-                    $videoIds = array_merge($videoIds, array_combine(array_map(function($item) {
-                        return $item[ 'id' ][ 'videoId' ];
-                    }, $response[ 'items' ]), array_map(function($item) use ($channelQueryData, $id) {
-                        return [
-                            'id' => $item[ 'id' ][ 'videoId' ],
-                            'title' => $item[ 'snippet' ][ 'title' ],
-                            'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
-                            'channel_id' => $channelQueryData[ $id ][ 'id' ],
-                            'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
-                        ];
-                    }, $response[ 'items' ])));
-
-                $channelQueryData[ $id ][ 'pageToken' ] = $response[ 'nextPageToken' ];
-            }
-
-            $channelQueryData = array_values(array_filter($channelQueryData, function($item) {
-                return $item[ 'pageToken' ] != '';
-            }));
-        } while (!empty($channelQueryData));
 
         return $videoIds;
     }
@@ -190,24 +166,15 @@ class Videos extends \yii\db\ActiveRecord
 
         $videoId = $matches[ 1 ];
 
-        $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/videos?' . http_build_query(array(
-                'part' => 'snippet,statistics',
-                'id' => $videoId,
-                'key' => Yii::$app->params[ 'apiKey' ]
-            )));
+        $result = YoutubeAPI::query('videos', ['id' => $videoId], ['snippet', 'statistics']);
 
-        $result = json_decode($res, true);
-
-        if (isset($result[ 'error' ][ 'message' ]))
-            return ['error' => 'Ошибка YouTube: ' . $result[ 'error' ][ 'message' ]];
-
-        if (!isset($result[ 'items' ][ 0 ]))
+        if (!empty($result))
             return ['error' => 'Видео не найдено. Возможно, ссылка на видео является неверной.'];
 
         return [
-            'id' => $result[ 'items' ][ 0 ][ 'id' ],
-            'name' => $result[ 'items' ][ 0 ][ 'snippet' ][ 'title' ],
-            'image' => $result[ 'items' ][ 0 ][ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ],
+            'id' => $result[ 0 ][ 'id' ],
+            'name' => $result[ 0 ][ 'snippet' ][ 'title' ],
+            'image' => $result[ 0 ][ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ],
         ];
     }
 }

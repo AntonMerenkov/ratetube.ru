@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use app\components\YoutubeAPI;
 use app\models\Categories;
 use app\models\Channels;
 use app\models\Positions;
@@ -353,33 +354,14 @@ class AgentController extends Controller
 
         $channelIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
+        $response = YoutubeAPI::query('channels', ['id' => $channelIds], ['statistics'], YoutubeAPI::QUERY_MULTIPLE);
+
+        if ($response == false)
+            return false;
+
         $result = [];
-        $urlArray = [];
-
-        // делаем запрос на получение статистики по каналам
-        foreach (array_chunk($channelIds, 50) as $channelIdsChunk)
-            $urlArray[] = 'https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-                    'part' => 'statistics',
-                    'maxResults' => 50,
-                    'id' => implode(',', $channelIdsChunk),
-                    'key' => Yii::$app->params[ 'apiKey' ]
-                ));
-
-        $responseArray = Yii::$app->curl->queryMultiple($urlArray);
-
-        foreach ($responseArray as $response) {
-            $response = json_decode($response, true);
-
-            if (isset($response[ 'error' ])) {
-                return [
-                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
-                ];
-            }
-
-            if (isset($response[ 'items' ]))
-                foreach ($response[ 'items' ] as $item)
-                    $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
-        }
+        foreach ($response as $item)
+            $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
 
         $transaction = Yii::$app->db->beginTransaction();
 
@@ -496,37 +478,21 @@ class AgentController extends Controller
         $urlArray = [];
 
         // делаем запрос на получение статистики по каналам
-        foreach (array_chunk($videoIds, 50) as $videoIdsChunk)
-            $urlArray[] = 'https://www.googleapis.com/youtube/v3/videos?' . http_build_query(array(
-                    'part' => 'snippet',
-                    'maxResults' => 50,
-                    'id' => implode(',', $videoIdsChunk),
-                    'key' => Yii::$app->params[ 'apiKey' ]
-                ));
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
 
-        $responseArray = Yii::$app->curl->queryMultiple($urlArray);
+        if ($response == false)
+            return false;
 
-        foreach ($responseArray as $response) {
-            $response = json_decode($response, true);
-
-            if (isset($response[ 'error' ])) {
-                return [
-                    'error' => $response[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
-                ];
-            }
-
-            if (isset($response[ 'items' ]))
-                foreach ($response[ 'items' ] as $item)
-                    $newTags[ array_search($item[ 'id' ], $videoIds) ] = [
-                        Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
-                        Tags::TYPE_CHANNEL => [
-                            $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
-                        ],
-                        Tags::TYPE_TITLE => [
-                            $this->processUnicode($item[ 'snippet' ][ 'title' ])
-                        ],
-                    ];
-        }
+        foreach ($response as $item)
+            $newTags[ array_search($item[ 'id' ], $videoIds) ] = [
+                Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
+                Tags::TYPE_CHANNEL => [
+                    $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
+                ],
+                Tags::TYPE_TITLE => [
+                    $this->processUnicode($item[ 'snippet' ][ 'title' ])
+                ],
+            ];
 
         // формируем массив старых тэгов
         $oldTags = [];

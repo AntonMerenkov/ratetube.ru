@@ -11,14 +11,6 @@ $this->title = '#' . $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'YouTube API', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
-ini_set('memory_limit', '512M');
-?><pre><?print_r(\app\components\YoutubeAPI::query('search', [
-        'channelId' => array_slice(\yii\helpers\ArrayHelper::map(\app\models\Channels::find()->all(), 'id', 'channel_link'), 0, 1),
-        'type' => 'video',
-        'order' => 'viewCount',
-    ], [
-        'snippet'
-    ], \app\components\YoutubeAPI::QUERY_PAGES))?></pre><?
 ?>
 <div class="api-keys-view">
 

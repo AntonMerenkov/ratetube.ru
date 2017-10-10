@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\YoutubeAPI;
 use Yii;
 
 /**
@@ -150,26 +151,16 @@ class Channels extends \yii\db\ActiveRecord
         if (preg_match('#/user/(.+)/#i', $url, $matches) || preg_match('#/user/(.+)$#i', $url, $matches)) {
             $userId = $matches[ 1 ];
 
-            $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-                    'part' => 'snippet,statistics',
-                    'forUsername' => $userId,
-                    'key' => Yii::$app->params[ 'apiKey' ]
-                )));
+            $result = YoutubeAPI::query('channels', ['forUsername' => $userId], ['snippet', 'statistics']);
         } else if (preg_match('#/channel/(.+)/#i', $url, $matches) || preg_match('#/channel/(.+)$#i', $url, $matches)) {
             $channelId = $matches[ 1 ];
 
-            $res = Yii::$app->curl->querySingle('https://www.googleapis.com/youtube/v3/channels?' . http_build_query(array(
-                'part' => 'snippet,statistics',
-                'id' => $channelId,
-                'key' => Yii::$app->params[ 'apiKey' ]
-            )));
+            $result = YoutubeAPI::query('channels', ['id' => $channelId], ['snippet', 'statistics']);
         } else {
             return ['error' => 'Данный URL не является ссылкой на канал пользователя.'];
         }
 
-        $result = json_decode($res, true);
-
-        if (!empty($result[ 'items' ]))
+        if (!empty($result))
             return reset(array_map(function($item) {
                 return [
                     'id' => $item[ 'id' ],
@@ -177,8 +168,8 @@ class Channels extends \yii\db\ActiveRecord
                     'image' => $item[ 'snippet' ][ 'thumbnails' ][ 'default' ][ 'url' ],
                     'subscribers_count' => $item[ 'statistics' ][ 'subscriberCount' ],
                 ];
-            }, $result[ 'items' ]));
+            }, $result));
         else
-            return ['error' => 'Ошибка YouTube: ' . $result[ 'error' ][ 'message' ]];
+            return ['error' => 'Канал не найден.'];
     }
 }

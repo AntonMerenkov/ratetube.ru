@@ -104,7 +104,10 @@ class YoutubeAPI
 
                 $result = json_decode($res, true);
 
-                if (is_array($result) && !isset($result[ 'error' ])) {
+                if (!is_array($result))
+                    continue;
+
+                if (!isset($result[ 'error' ])) {
                     Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
                         Yii::$app->formatter->asDecimal(self::getQuotaValue() - $quotaValue) . ', время - ' .
                         Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'api-keys');
@@ -113,7 +116,8 @@ class YoutubeAPI
                 }
 
                 // если есть ошибка - запрещаем API-ключ и выполняем еще один запрос, пока не вернется результат или пока не кончатся ключи
-                self::disableKey($key);
+                Yii::error('Ошибка YouTube: ' . $result[ 'error' ][ 'errors' ][ 0 ][ 'message' ], 'api-keys');
+                self::disableKey($key, $result[ 'error' ][ 'errors' ][ 0 ][ 'reason' ] == 'quotaExceeded');
 
                 $key = self::getKey($method, $parts);
             } while ($key !== false);
@@ -155,11 +159,15 @@ class YoutubeAPI
 
                 // если что-то не загрузилось - запрещаем ключи и формируем новые запросы
                 foreach ($urlArray as $id => $url) {
-                    if (isset($responseArray[ $id ]) && !isset($responseArray[ $id ][ 'error' ])) {
+                    if (!isset($responseArray[ $id ]))
+                        continue;
+
+                    if (!isset($responseArray[ $id ][ 'error' ])) {
                         $resultArray[ $id ] = $responseArray[ $id ][ 'items' ];
                         unset($urlArray[ $id ]);
                     } else {
-                        self::disableKey($keysArray[ $id ]);
+                        Yii::error('Ошибка YouTube: ' . $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'message' ], 'api-keys');
+                        self::disableKey($keysArray[ $id ], $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'reason' ] == 'quotaExceeded');
                     }
                 }
             } while (!empty($urlArray));
@@ -212,7 +220,10 @@ class YoutubeAPI
 
                 // если что-то не загрузилось - запрещаем ключи и формируем новые запросы
                 foreach ($urlArray as $id => $url) {
-                    if (isset($responseArray[ $id ]) && !isset($responseArray[ $id ][ 'error' ])) {
+                    if (!isset($responseArray[ $id ]))
+                        continue;
+
+                    if (!isset($responseArray[ $id ][ 'error' ])) {
                         foreach ($responseArray[ $id ][ 'items' ] as $item)
                             $resultArray[ $id ][] = $item;
 
@@ -222,7 +233,8 @@ class YoutubeAPI
                         if ($pageTokens[ $id ] == '')
                             unset($urlArray[ $id ]);
                     } else {
-                        self::disableKey($keysArray[ $id ]);
+                        Yii::error('Ошибка YouTube: ' . $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'message' ], 'api-keys');
+                        self::disableKey($keysArray[ $id ], $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'reason' ] == 'quotaExceeded');
                     }
                 }
             } while (!empty($urlArray));
@@ -331,12 +343,17 @@ class YoutubeAPI
      * Запрет пользования ключом по причине израсходования квоты.
      *
      * @param $key
+     * @param bool $permanent
      */
-    private static function disableKey($key)
+    private static function disableKey($key, $permanent = false)
     {
         foreach (self::$keys as $id => $value) {
             if ($value[ 'key' ] == $key) {
                 self::$keys[ $id ][ 'enabled' ] = false;
+
+                if ($permanent)
+                    self::$keys[ $id ][ 'permanent' ] = true;
+
                 return;
             }
         }
@@ -365,8 +382,6 @@ class YoutubeAPI
         if (empty(self::$keys))
             return;
 
-        // пока запрещать временно (не добавлять значение в БД)
-        // TODO: после отладки можно сохранять значение 1000000 в БД
         $keyModels = ArrayHelper::map(ApiKeys::find()->all(), 'id', function($item) {
             return $item;
         });
@@ -394,7 +409,10 @@ class YoutubeAPI
                     $model->save();
                 }
 
-                ApiKeyStatistics::updateAllCounters(['quota' => $key[ 'quota_diff' ]], ['id' => $model->id]);
+                if ($key[ 'permanent' ])
+                    ApiKeyStatistics::updateAll(['quota' => 1000000], ['id' => $model->id]);
+                else
+                    ApiKeyStatistics::updateAllCounters(['quota' => $key[ 'quota_diff' ]], ['id' => $model->id]);
 
                 self::$keys[ $id ][ 'quota_diff' ] = 0;
             }

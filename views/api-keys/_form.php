@@ -37,6 +37,10 @@ use yii\widgets\ActiveForm;
         });
     </script>
 
+    <? if ($model->isNewRecord) : ?>
+        <p class="help-block">Для получения API-ключа зарегистрируйтесь по адресу <a href="https://console.developers.google.com/">https://console.developers.google.com/</a> и создайте ключ YouTube Data API.</a></p>
+    <? endif; ?>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Добавить' : 'Изменить', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

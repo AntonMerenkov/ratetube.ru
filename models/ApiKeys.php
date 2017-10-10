@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\YoutubeAPI;
 use Yii;
 
 /**
@@ -76,6 +77,8 @@ class ApiKeys extends \yii\db\ActiveRecord
                 'id' => 'test',
                 'key' => $key
             )));
+
+        // TODO: вывести ошибку
 
         $result = json_decode($res, true);
 
