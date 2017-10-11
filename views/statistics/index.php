@@ -90,7 +90,13 @@ foreach ($statisticsQueryData['data'] as $item)
                     'height' => '400px',
                     'dataProvider' => $videosDataProvider,
                     'columns' => [
-                        'datetime:datetime',
+                        [
+                            'attribute' => 'datetime',
+                            'type' => 'datetime',
+                            'value' => function($model) {
+                                return Yii::$app->formatter->asDatetime($model->datetime, 'php:c');
+                            },
+                        ],
                         'duration'
                     ],
                     'options' => [
@@ -105,7 +111,13 @@ foreach ($statisticsQueryData['data'] as $item)
                     'height' => '400px',
                     'dataProvider' => $statisticsDataProvider,
                     'columns' => [
-                        'datetime:datetime',
+                        [
+                            'attribute' => 'datetime',
+                            'type' => 'datetime',
+                            'value' => function($model) {
+                                return Yii::$app->formatter->asDatetime($model->datetime, 'php:c');
+                            },
+                        ],
                         'duration'
                     ],
                     'options' => [
@@ -196,8 +208,20 @@ foreach ($statisticsQueryData['data'] as $item)
                                 'columns' => [
                                     'timeframe:string',
                                     'name:string',
-                                    'start_date:datetime',
-                                    'end_date:datetime',
+                                    [
+                                        'attribute' => 'start_date',
+                                        'type' => 'datetime',
+                                        'value' => function($model) {
+                                            return Yii::$app->formatter->asDatetime($model[ 'start_date' ], 'php:c');
+                                        },
+                                    ],
+                                    [
+                                        'attribute' => 'end_date',
+                                        'type' => 'datetime',
+                                        'value' => function($model) {
+                                            return Yii::$app->formatter->asDatetime($model[ 'end_date' ], 'php:c');
+                                        },
+                                    ],
                                 ],
                                 'options' => [
                                     'timeline' => [
