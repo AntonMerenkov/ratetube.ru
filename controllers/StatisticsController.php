@@ -2,9 +2,13 @@
 
 namespace app\controllers;
 
+use app\components\YoutubeAPI;
+use app\models\ApiKeys;
 use app\models\Categories;
 use app\models\Profiling;
 use app\components\Statistics;
+use DateInterval;
+use DateTime;
 use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
@@ -53,6 +57,29 @@ class StatisticsController extends Controller
      */
     public function actionIndex()
     {
+        // использование API-ключей
+        $keys = ApiKeys::find()->all();
+        $keysError = null;
+        if (!empty($keys)) {
+            $currentDate = new DateTime();
+            if ($currentDate < new DateTime(date('d.m.Y') . ' ' . YoutubeAPI::QUOTA_REFRESH_TIME))
+                $currentDate->sub(new DateInterval('P1D'));
+
+            $keysFilled = array_map(function($item) use ($currentDate) {
+                if (is_null($item->lastStatistics))
+                    return false;
+
+                return ($item->lastStatistics->date == $currentDate->format('Y-m-d')) &&
+                ($item->lastStatistics->quota >= YoutubeAPI::MAX_QUOTA_VALUE) ? 1 : 0;
+            }, $keys);
+
+            if (count($keysFilled) == array_sum($keysFilled))
+                $keysError = 'В данный момент квота по всем ключам израсходована, запросы к YouTube API невозможны.<br>
+                    Добавьте еще ключей YouTube API.';
+        } else {
+            $keysError = 'Ни одного ключа не добавлено.';
+        }
+
         // агенты (за 30 дней)
         $profilingData = Profiling::find()->where([
             '>', 'datetime', date('Y-m-d H:i:s', time() - 86400 * 14)
@@ -175,6 +202,7 @@ class StatisticsController extends Controller
         }
 
         return $this->render('index', [
+            'keysError' => $keysError,
             'videosDataProvider' => $videosDataProvider,
             'statisticsDataProvider' => $statisticsDataProvider,
             'statisticsQueryData' => $statisticsQueryData,

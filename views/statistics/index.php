@@ -1,6 +1,7 @@
 <?php
 
 /* @var $this yii\web\View */
+/* @var $keysError string|null */
 /* @var $videosDataProvider yii\data\ActiveDataProvider */
 /* @var $statisticsDataProvider yii\data\ActiveDataProvider */
 /* @var $profilingDataProvider yii\data\ActiveDataProvider */
@@ -69,6 +70,13 @@ foreach ($statisticsQueryData['data'] as $item)
                 </div>
             </div>
         </div>
+
+        <? if (!is_null($keysError)) : ?>
+            <div class="alert alert-danger text-left">
+                <h4><i class="glyphicon glyphicon-remove-sign"></i> Ошибка</h4>
+                <?=$keysError ?>
+            </div>
+        <? endif; ?>
     </div>
 
     <div class="body-content">

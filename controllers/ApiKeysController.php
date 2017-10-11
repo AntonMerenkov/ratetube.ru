@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\components\YoutubeAPI;
 use app\models\ApiKeyStatistics;
 use DateInterval;
 use DateTime;
@@ -77,7 +78,7 @@ class ApiKeysController extends Controller
         if (!empty($statisticsData)) {
             $minDate = new DateTime(key($statisticsData));
             $currentDate = new DateTime();
-            if ($currentDate < new DateTime(date('d.m.Y') . ' 10:10:00'))
+            if ($currentDate < new DateTime(date('d.m.Y') . ' ' . YoutubeAPI::QUOTA_REFRESH_TIME))
                 $currentDate->sub(new DateInterval('P1D'));
 
             while ($minDate <= $currentDate) {

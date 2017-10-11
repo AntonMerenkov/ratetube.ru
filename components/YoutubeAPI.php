@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: amerenkov
- * Date: 10.10.17
- * Time: 18:33
- */
 
 namespace app\components;
 use app\models\ApiKeys;
@@ -31,7 +25,8 @@ class YoutubeAPI
 
     const MAX_RESULTS = 50; // максимальное кол-во результатов на 1 страницу
 
-    const MAX_QUOTA_VALUE = 1000000; // мксимальная квота
+    const MAX_QUOTA_VALUE = 1000000; // максимальная квота
+    const QUOTA_REFRESH_TIME = '10:10:00';
 
     /**
      * @var array Ключи для доступа к API
@@ -321,7 +316,7 @@ class YoutubeAPI
             if (!is_null($key->lastStatistics)) {
                 $statDate = new DateTime($key->lastStatistics->date);
                 $currentDate = new DateTime();
-                if ($currentDate < new DateTime(date('d.m.Y') . ' 10:10:00'))
+                if ($currentDate < new DateTime(date('d.m.Y') . ' ' . YoutubeAPI::QUOTA_REFRESH_TIME))
                     $currentDate->sub(new DateInterval('P1D'));
 
                 if ($statDate->format('d.m.Y') == $currentDate->format('d.m.Y'))
@@ -393,7 +388,7 @@ class YoutubeAPI
                 $model = $keyModels[ $key[ 'id' ] ]->lastStatistics;
 
                 $currentDate = new DateTime();
-                if ($currentDate < new DateTime(date('d.m.Y') . ' 10:10:00'))
+                if ($currentDate < new DateTime(date('d.m.Y') . ' ' . YoutubeAPI::QUOTA_REFRESH_TIME))
                     $currentDate->sub(new DateInterval('P1D'));
 
                 if (!is_null($model)) {
