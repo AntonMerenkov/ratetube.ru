@@ -29,12 +29,6 @@ class ChannelsController extends Controller
     public function behaviors()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [

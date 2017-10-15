@@ -50,6 +50,7 @@ AdminAsset::register($this);
             ['label' => 'Реклама', 'url' => ['/ads/index']],
             ['label' => 'Позиции', 'url' => ['/positions/index']],
             ['label' => 'YouTube API', 'url' => ['/api-keys/index']],
+            ['label' => 'Сервера', 'url' => ['/slaves/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
