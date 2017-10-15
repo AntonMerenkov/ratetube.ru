@@ -2,6 +2,8 @@
 
 namespace app\controllers;
 
+use app\components\HighloadAPI;
+use app\components\YoutubeAPI;
 use app\models\Categories;
 use app\components\Statistics;
 use app\models\Channels;
@@ -261,5 +263,21 @@ class SiteController extends Controller
         Yii::$app->user->logout();
 
         return $this->goHome();
+    }
+
+    public function actionTest()
+    {
+        die();
+        $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
+
+        $time = microtime(true);
+        echo '<h3>Обычный</h3>';
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
+        ?><pre><?print_r(microtime(true) - $time)?> сек.</pre><?
+
+        $time = microtime(true);
+        echo '<h3>Highload</h3>';
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
+        ?><pre><?print_r(microtime(true) - $time)?> сек.</pre><?
     }
 }

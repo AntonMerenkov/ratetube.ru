@@ -45,6 +45,12 @@ $config = [
                     'logFile' =>  '@runtime/logs/api-keys.log',
                     'logVars' => [],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['highload'],
+                    'logFile' =>  '@runtime/logs/highload.log',
+                    'logVars' => [],
+                ],
             ],
         ],
         'sphinx' => [

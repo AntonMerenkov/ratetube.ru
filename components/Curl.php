@@ -43,11 +43,20 @@ class Curl
      * Одиночный запрос.
      *
      * @param $url
+     * @param array $post
      * @return mixed
      */
-    public function querySingle($url)
+    public function querySingle($url, $post = [])
     {
         curl_setopt($this->curl, CURLOPT_URL, $url);
+
+        if (!empty($post)) {
+            curl_setopt($this->curl, CURLOPT_POST, true);
+            curl_setopt($this->curl, CURLOPT_POSTFIELDS, http_build_query($post));
+        } else {
+            curl_setopt($this->curl, CURLOPT_POST, false);
+        }
+
         return curl_exec($this->curl);
     }
 
@@ -55,25 +64,27 @@ class Curl
      * Множественный запрос.
      *
      * @param $urlArray
+     * @param array $post
      * @return array
      */
-    public function queryMultiple($urlArray)
+    public function queryMultiple($urlArray, $post = [])
     {
-        return $this->queryMultipleCurlMulti($urlArray);
+        return $this->queryMultipleCurlMulti($urlArray, $post);
     }
 
     /**
      * Множественный запрос - выполнение одного запроса в цикле.
      *
      * @param $urlArray
+     * @param array $post
      * @return array
      */
-    private function queryMultipleCycle($urlArray)
+    private function queryMultipleCycle($urlArray, $post = [])
     {
         $response = [];
 
-        foreach ($urlArray as $url)
-            $response[] = $this->querySingle($url);
+        foreach ($urlArray as $id => $url)
+            $response[] = $this->querySingle($url, $post[ $id ]);
 
         return $response;
     }
@@ -82,9 +93,10 @@ class Curl
      * Множественный запрос - curl_multi.
      *
      * @param $urlArray
+     * @param array $post
      * @return array
      */
-    private function queryMultipleCurlMulti($urlArray)
+    private function queryMultipleCurlMulti($urlArray, $post = [])
     {
         $response = [];
 
@@ -96,6 +108,11 @@ class Curl
 
             $this->setCurlDefaultParams($curl);
             curl_setopt($curl, CURLOPT_URL, $url);
+
+            if (!empty($post[ $id ])) {
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($post[ $id ]));
+            }
 
             curl_multi_add_handle($this->curlMulti, $curl);
 

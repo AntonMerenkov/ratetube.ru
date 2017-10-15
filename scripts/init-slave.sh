@@ -153,7 +153,7 @@ chown -R nginx:nginx /var/www
 # Установка Composer
 cd /tmp
 curl -sS https://getcomposer.org/installer | php
-sudo mv composer.phar /usr/local/bin/composer
+mv composer.phar /usr/local/bin/composer
 chmod +x /usr/local/bin/composer
 mkdir -p /root/.config/composer
 echo '{

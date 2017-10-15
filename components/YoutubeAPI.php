@@ -38,7 +38,7 @@ class YoutubeAPI
      *  'enabled'
      * ]
      */
-    private static $keys = [];
+    public static $keys = [];
 
     /**
      * @var array Стоимость запросов.
@@ -361,7 +361,7 @@ class YoutubeAPI
      *
      * @return int
      */
-    private function getQuotaValue()
+    public static function getQuotaValue()
     {
         self::loadKeys();
 
