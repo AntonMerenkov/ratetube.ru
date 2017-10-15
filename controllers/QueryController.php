@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 use yii\filters\AccessControl;
+use yii\helpers\Json;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -17,10 +18,14 @@ class QueryController extends \yii\web\Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'denyCallback' => function ($rule, $action) {
-                    if (\Yii::$app->id != 'ratetube-slave')
-                        throw new ForbiddenHttpException('Нет доступа.');
-                }
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            return \Yii::$app->id == 'ratetube-slave';
+                        }
+                    ],
+                ],
             ],
         ];
     }
@@ -32,17 +37,25 @@ class QueryController extends \yii\web\Controller
      */
     public function actionIndex()
     {
-        echo 'YouTube API';
+        // валидация ключа авторизации
+
+        // загрузка переданных API-ключей
+
+        // выполнение запроса
+
+        // возвращение данных о расходе квоты
     }
 
     /**
      * Проверка соединения.
      *
+     * @param null $key
      * @return string
      */
-    public function actionTest()
+    public function actionTest($key = null)
     {
-        echo 'test';
+        return Json::encode([
+            'status' => ($key == \Yii::$app->request->cookieValidationKey ? 1 : 0)
+        ]);
     }
-
 }

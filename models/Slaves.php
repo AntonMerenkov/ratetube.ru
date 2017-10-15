@@ -27,6 +27,7 @@ class Slaves extends \yii\db\ActiveRecord
     {
         return [
             [['ip'], 'required'],
+            [['ip'], 'unique'],
             [['ip'], 'string', 'max' => 15],
         ];
     }
@@ -40,5 +41,36 @@ class Slaves extends \yii\db\ActiveRecord
             'id' => 'ID',
             'ip' => 'IP-адрес',
         ];
+    }
+
+    /**
+     * Проверка подчиненного сервера.
+     *
+     * @param $ip
+     * @return bool|array
+     */
+    public static function validateServer($ip)
+    {
+        if (!filter_var($ip, FILTER_VALIDATE_IP))
+            return [
+                'status' => 0,
+                'error' => 'IP-адрес задан неверно.'
+            ];
+
+        $res = Yii::$app->curl->querySingle('http://' . $ip . '/test?' . http_build_query([
+            'key' => \Yii::$app->request->cookieValidationKey
+        ]));
+
+        $result = json_decode($res, true);
+
+        if (isset($result[ 'status' ]) && $result[ 'status' ] == 1)
+            return [
+                'status' => 1,
+            ];
+        else
+            return [
+                'status' => 0,
+                'error' => 'Данный сервер настроен неверно.' . print_r($result, true)
+            ];
     }
 }

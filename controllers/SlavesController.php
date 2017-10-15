@@ -6,6 +6,7 @@ use Yii;
 use app\models\Slaves;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
+use yii\helpers\Json;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -119,5 +120,18 @@ class SlavesController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    /**
+     * Валидация подчиненного сервера.
+     *
+     * @return string
+     */
+    public function actionQueryData()
+    {
+        return Json::encode(isset($_POST[ 'ip' ]) && $_POST[ 'ip' ] != '' ? Slaves::validateServer($_POST[ 'ip' ]) : [
+            'status' => 0,
+            'error' => 'Укажите IP-адрес.'
+        ]);
     }
 }
