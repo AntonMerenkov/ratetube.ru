@@ -225,7 +225,7 @@ class YoutubeAPI
                             $resultArray[ $id ][] = $item;
 
                         // формируем запросы на загрузку новых страниц
-                        $pageTokens[ $id ] = $responseArray[ $id ][ 'nextPageToken' ];
+                        $pageTokens[ $id ] = isset($responseArray[ $id ][ 'nextPageToken' ]) ? $responseArray[ $id ][ 'nextPageToken' ] : '';
 
                         if ($pageTokens[ $id ] == '')
                             unset($urlArray[ $id ]);

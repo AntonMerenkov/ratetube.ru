@@ -554,17 +554,67 @@ class AgentController extends Controller
         ini_set('memory_limit', '1024M');
 
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
+        $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
-        $time = microtime(true);
+        /**
+         * Одиночный запрос
+         */
+        echo "==== Одиночный запрос ====\n";
+
         echo "Обычный\n";
-        //$response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        $response = YoutubeAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
-        echo (microtime(true) - $time) . " сек.\n";
-
         $time = microtime(true);
+        $response = YoutubeAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
         echo "Highload\n";
-        //$response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        $time = microtime(true);
         $response = HighloadAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
-        echo (microtime(true) - $time) . " сек.\n";
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "\n";
+
+        /**
+         * Множественный запрос
+         */
+        echo "==== Множественный запрос ====\n";
+
+        echo "Обычный\n";
+        $time = microtime(true);
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "Highload\n";
+        $time = microtime(true);
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "\n";
+
+        /**
+         * Постраничный запрос
+         */
+        echo "==== Постраничный запрос ====\n";
+
+        echo "Обычный\n";
+        $time = microtime(true);
+        $response = YoutubeAPI::query('search', [
+            'channelId' => $channelsIds,
+            'type' => 'video',
+            'order' => 'viewCount',
+        ], [
+            'snippet'
+        ], YoutubeAPI::QUERY_PAGES);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "Highload\n";
+        $time = microtime(true);
+        $response = HighloadAPI::query('search', [
+            'channelId' => $channelsIds,
+            'type' => 'video',
+            'order' => 'viewCount',
+        ], [
+            'snippet'
+        ], YoutubeAPI::QUERY_PAGES);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
     }
 }
