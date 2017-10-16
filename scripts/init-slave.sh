@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Установка последней версии libcurl
+echo "[CityFan]
+name=City Fan Repo
+baseurl=http://www.city-fan.org/ftp/contrib/yum-repo/rhel\$releasever/\$basearch/
+enabled=1
+gpgcheck=0
+" > /etc/yum.repos.d/city-fan.repo
+
 # Обновление системы
 yum -y update
 
@@ -13,7 +21,7 @@ systemctl start nginx
 systemctl enable nginx
 
 # Установка PHP-FPM
-yum -y install php71w php71w-fpm php71w-common php71w-gd php71w-mbstring php71w-xml php71w-mcrypt php71w-mysql php71w-opcache php71w-cli
+yum -y install php71w php71w-fpm php71w-common php71w-gd php71w-mbstring php71w-xml php71w-mcrypt php71w-mysql php71w-opcache php71w-cli curl
 systemctl start php-fpm
 systemctl enable php-fpm
 
@@ -93,6 +101,8 @@ http {
 
 # Запуск PHP-FPM от пользователя nginx
 sed -i "s/listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm\/php-fpm.sock/g" /etc/php-fpm.d/www.conf
+sed -i "s/pm = dynamic/pm = static/g" /etc/php-fpm.d/www.conf
+sed -i "s/pm.max_children = 50/pm.max_children = 1/g" /etc/php-fpm.d/www.conf
 sed -i "s/user = apache/user = nginx/g" /etc/php-fpm.d/www.conf
 sed -i "s/group = apache/group = nginx/g" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.owner = nobody/listen.owner = nginx/g" /etc/php-fpm.d/www.conf

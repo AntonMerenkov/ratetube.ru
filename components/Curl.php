@@ -57,7 +57,10 @@ class Curl
             curl_setopt($this->curl, CURLOPT_POST, false);
         }
 
-        return curl_exec($this->curl);
+        $data = curl_exec($this->curl);
+        //print_r(curl_getinfo($this->curl));
+
+        return $data;
     }
 
     /**
@@ -84,7 +87,7 @@ class Curl
         $response = [];
 
         foreach ($urlArray as $id => $url)
-            $response[] = $this->querySingle($url, $post[ $id ]);
+            $response[ $id ] = $this->querySingle($url, isset($post[ $id ]) ? $post[ $id ] : []);
 
         return $response;
     }
@@ -112,6 +115,7 @@ class Curl
             if (!empty($post[ $id ])) {
                 curl_setopt($curl, CURLOPT_POST, true);
                 curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($post[ $id ]));
+                curl_setopt($curl, CURLOPT_TIMEOUT, 60);
             }
 
             curl_multi_add_handle($this->curlMulti, $curl);
@@ -119,9 +123,12 @@ class Curl
             $this->curlMultiHandles[ $id ] = $curl;
         }
 
+        curl_multi_setopt($this->curlMulti, CURLMOPT_PIPELINING, 3);
+
         $running = null;
         do {
             curl_multi_exec($this->curlMulti, $running);
+            curl_multi_select($this->curlMulti);
         } while ($running > 0);
 
         foreach ($this->curlMultiHandles as $id => $channel) {
@@ -138,16 +145,26 @@ class Curl
      * Множественный запрос - mcurl.
      *
      * @param $urlArray
+     * @param array $post
      * @return array
      */
-    private function queryMultipleMCurl($urlArray)
+    private function queryMultipleMCurl($urlArray, $post = [])
     {
         $client = new Client();
 
-        foreach ($urlArray as $url) {
-            $client->add([CURLOPT_URL => $url]);
+        foreach ($urlArray as $id => $url) {
+            if (isset($post[ $id ]))
+                $client->add([CURLOPT_URL => $url], [
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => $post[ $id ]
+                ]);
+            else
+                $client->add([CURLOPT_URL => $url]);
         }
 
-        return $client->all();
+        return array_map(function($item) {
+            return $item->getBody();
+        }, $client->all());
     }
 }

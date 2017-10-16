@@ -2,6 +2,7 @@
 
 namespace app\components;
 use app\models\Slaves;
+use Exception;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
@@ -14,6 +15,22 @@ use yii\helpers\Json;
  */
 class HighloadAPI
 {
+    /**
+     * Получение ключа валидации (для консоли).
+     *
+     * @return mixed
+     */
+    private static function getValidationKey()
+    {
+        try {
+            $config = require(Yii::getAlias('@app') . '/config/web.php');
+        } catch (Exception $e) {
+
+        }
+
+        return $config[ 'components' ][ 'request' ][ 'cookieValidationKey' ];
+    }
+
     /**
      * Запрос к YouTube Data API.
      *
@@ -37,7 +54,7 @@ class HighloadAPI
         if (empty($slaveList))
             return YoutubeAPI::query($method, $params, $parts, $type);
 
-        $validationKey = \Yii::$app->request->cookieValidationKey;
+        $validationKey = self::getValidationKey();
 
         if ($type == YoutubeAPI::QUERY_DEFAULT) {
             // TODO: выбираем случайный сервер и делаем запрос через него, если не работает - следующий
@@ -55,7 +72,7 @@ class HighloadAPI
             foreach ($serverChunks as $id => $data)
                 $postData[ $id ] = [
                     'method' => $method,
-                    'params' => ['id' => $data] + $params,
+                    'params' => gzcompress(json_encode(['id' => $data] + $params)),
                     'parts' => $parts,
                     'type' => $type,
                     'key' => $validationKey,
@@ -97,13 +114,22 @@ class HighloadAPI
                         break;
                 }
 
+                $qTime = microtime(true);
                 $responsePart = array_map(function($item) {
-                    return Json::decode($item, true);
+                    try {
+                        $uncompressed = gzuncompress($item);
+                        return json_decode($uncompressed, true) + [ 'length' => strlen($item) ];
+                    } catch (Exception $e) {
+                        return false;
+                    }
                 }, \Yii::$app->curl->queryMultiple($urlArray, $postArray));
+                echo "Запрос: " . round(microtime(true) - $qTime, 2) . " сек.\n";
 
                 foreach ($responsePart as $id => $value)
                     if (isset($value[ 'result' ])) {
                         $response[ $id ] = $value[ 'result' ];
+
+                        echo "Время обработки сервером: " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем - " . (round($value[ 'length' ] / 1024 / 1024)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -119,16 +145,18 @@ class HighloadAPI
                     }
             }
 
-            Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', время - ' .
-                Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
-
-            return array_reduce($response, function($carry, $item) {
+            $result = array_reduce($response, function($carry, $item) {
                 foreach ($item as $value)
                     $carry[] = $value;
 
                 return $carry;
             }, []);
+
+            Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', время - ' .
+                Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
+
+            return $result;
         } else if ($type == YoutubeAPI::QUERY_PAGES) {
             // TODO: разделяем на несколько запросов
         }

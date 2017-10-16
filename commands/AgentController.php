@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
 use app\models\Categories;
 use app\models\Channels;
@@ -544,5 +545,24 @@ class AgentController extends Controller
             ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($delIds)]) .
             ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
+    }
+
+    public function actionTest()
+    {
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '1024M');
+
+        $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
+
+        /*$time = microtime(true);
+        echo "Обычный\n";
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        echo (microtime(true) - $time) . " сек.\n";*/
+
+        $time = microtime(true);
+        echo "Highload\n";
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        echo (microtime(true) - $time) . " сек.\n";
     }
 }
