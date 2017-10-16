@@ -1,6 +1,7 @@
 <?php
 
 namespace app\components;
+use app\models\SlaveProfiling;
 use app\models\Slaves;
 use Exception;
 use Yii;
@@ -15,6 +16,11 @@ use yii\helpers\Json;
  */
 class HighloadAPI
 {
+    /**
+     * @var array Данные профилировщика Highload-запросов.
+     */
+    private static $profilingData = [];
+
     /**
      * Получение ключа валидации (для консоли).
      *
@@ -80,7 +86,18 @@ class HighloadAPI
                         $value = json_decode($uncompressed, true) + [ 'length' => strlen($response) ];
                         $result = $value[ 'result' ];
 
-                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        self::$profilingData[] = [
+                            'slave_id' => $serverId,
+                            'datetime' => date('Y-m-d H:i:s', $time),
+                            'duration' => $value[ 'time' ],
+                            'size' => round($value[ 'length' ] / 1024 / 1024, 2),
+                            'count' => 1,
+                            'type' => $type,
+                            'method' => $method,
+                            'parts' => implode(',', $parts),
+                        ];
+
+                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -158,7 +175,6 @@ class HighloadAPI
                         break;
                 }
 
-                $qTime = microtime(true);
                 $responsePart = array_map(function($item) {
                     try {
                         $uncompressed = gzuncompress($item);
@@ -167,13 +183,23 @@ class HighloadAPI
                         return false;
                     }
                 }, \Yii::$app->curl->queryMultiple($urlArray, $postArray));
-                echo "Запрос: " . round(microtime(true) - $qTime, 2) . " сек.\n";
 
                 foreach ($responsePart as $id => $value)
                     if (isset($value[ 'result' ])) {
                         $response[ $id ] = $value[ 'result' ];
 
-                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        self::$profilingData[] = [
+                            'slave_id' => $slaveIds[ $id ],
+                            'datetime' => date('Y-m-d H:i:s', $time),
+                            'duration' => $value[ 'time' ],
+                            'size' => round($value[ 'length' ] / 1024 / 1024, 2),
+                            'count' => count($value[ 'result' ]),
+                            'type' => $type,
+                            'method' => $method,
+                            'parts' => implode(',', $parts),
+                        ];
+
+                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -256,7 +282,6 @@ class HighloadAPI
                         break;
                 }
 
-                $qTime = microtime(true);
                 $responsePart = array_map(function($item) {
                     try {
                         $uncompressed = gzuncompress($item);
@@ -265,13 +290,23 @@ class HighloadAPI
                         return false;
                     }
                 }, \Yii::$app->curl->queryMultiple($urlArray, $postArray));
-                echo "Запрос: " . round(microtime(true) - $qTime, 2) . " сек.\n";
 
                 foreach ($responsePart as $id => $value)
                     if (isset($value[ 'result' ])) {
                         $response[ $id ] = $value[ 'result' ];
 
-                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        self::$profilingData[] = [
+                            'slave_id' => $slaveIds[ $id ],
+                            'datetime' => date('Y-m-d H:i:s', $time),
+                            'duration' => $value[ 'time' ],
+                            'size' => round($value[ 'length' ] / 1024 / 1024, 2),
+                            'count' => count($value[ 'result' ]),
+                            'type' => $type,
+                            'method' => $method,
+                            'parts' => implode(',', $parts),
+                        ];
+
+                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -302,5 +337,14 @@ class HighloadAPI
         }
 
         return false;
+    }
+
+    /**
+     * Сохранение данных профилировщика.
+     */
+    public static function saveData()
+    {
+        if (!empty(self::$profilingData))
+            Yii::$app->db->createCommand()->batchInsert(SlaveProfiling::tableName(), array_keys(self::$profilingData[ 0 ]), self::$profilingData)->execute();
     }
 }

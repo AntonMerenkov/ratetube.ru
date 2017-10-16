@@ -1,5 +1,6 @@
 <?php
 
+use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
 
 $params = require(__DIR__ . '/params.php');
@@ -34,6 +35,12 @@ $config = [
                     'logFile' =>  '@runtime/logs/api-keys.log',
                     'logVars' => [],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'categories' => ['highload'],
+                    'logFile' =>  '@runtime/logs/highload.log',
+                    'logVars' => [],
+                ],
             ],
         ],
         'db' => $db,
@@ -49,6 +56,7 @@ $config = [
     */
     'on afterAction' => function () {
         YoutubeAPI::saveData();
+        HighloadAPI::saveData();
     },
 ];
 

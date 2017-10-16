@@ -547,6 +547,9 @@ class AgentController extends Controller
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
+    /**
+     * Тестирование HighloadAPI.
+     */
     public function actionTest()
     {
         set_time_limit(0);
@@ -556,9 +559,22 @@ class AgentController extends Controller
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
         $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
-        /**
-         * Одиночный запрос
-         */
+        // Запрос на получение статистики
+        echo "==== Запрос на получение статистики ====\n";
+
+        echo "Обычный\n";
+        $time = microtime(true);
+        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "Highload\n";
+        $time = microtime(true);
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
+        echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        echo "\n";
+
+        // Одиночный запрос
         echo "==== Одиночный запрос ====\n";
 
         echo "Обычный\n";
@@ -573,9 +589,7 @@ class AgentController extends Controller
 
         echo "\n";
 
-        /**
-         * Множественный запрос
-         */
+        /*// Множественный запрос
         echo "==== Множественный запрос ====\n";
 
         echo "Обычный\n";
@@ -590,9 +604,7 @@ class AgentController extends Controller
 
         echo "\n";
 
-        /**
-         * Постраничный запрос
-         */
+        // Постраничный запрос
         echo "==== Постраничный запрос ====\n";
 
         echo "Обычный\n";
@@ -615,6 +627,6 @@ class AgentController extends Controller
         ], [
             'snippet'
         ], YoutubeAPI::QUERY_PAGES);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
+        echo round(microtime(true) - $time, 2) . " сек.\n";*/
     }
 }

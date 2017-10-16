@@ -1,5 +1,6 @@
 <?php
 
+use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
 
 $params = require(__DIR__ . '/params.php');
@@ -88,6 +89,7 @@ $config = [
     'params' => $params,
     'on afterAction' => function () {
         YoutubeAPI::saveData();
+        HighloadAPI::saveData();
     },
 ];
 
