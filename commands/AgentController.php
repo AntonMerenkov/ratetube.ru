@@ -355,7 +355,7 @@ class AgentController extends Controller
 
         $channelIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
-        $response = YoutubeAPI::query('channels', ['id' => $channelIds], ['statistics'], YoutubeAPI::QUERY_MULTIPLE);
+        $response = HighloadAPI::query('channels', ['id' => $channelIds], ['statistics'], YoutubeAPI::QUERY_MULTIPLE);
 
         if ($response == false)
             return false;
@@ -479,7 +479,7 @@ class AgentController extends Controller
         $urlArray = [];
 
         // делаем запрос на получение статистики по каналам
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
 
         if ($response == false)
             return false;
@@ -552,6 +552,8 @@ class AgentController extends Controller
      */
     public function actionTest()
     {
+        return false;
+
         set_time_limit(0);
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '1024M');
@@ -572,7 +574,7 @@ class AgentController extends Controller
         $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
         echo round(microtime(true) - $time, 2) . " сек.\n";
 
-        echo "\n";
+        /*echo "\n";
 
         // Одиночный запрос
         echo "==== Одиночный запрос ====\n";
@@ -589,7 +591,7 @@ class AgentController extends Controller
 
         echo "\n";
 
-        /*// Множественный запрос
+        // Множественный запрос
         echo "==== Множественный запрос ====\n";
 
         echo "Обычный\n";

@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\HighloadAPI;
 use app\components\Statistics;
 use app\components\YoutubeAPI;
 use Yii;
@@ -97,7 +98,7 @@ class Videos extends \yii\db\ActiveRecord
     {
         $videoIds = [];
 
-        $result = YoutubeAPI::query('search', [
+        $result = HighloadAPI::query('search', [
             'channelId' => $channelIds,
             'type' => 'video',
             'order' => 'viewCount',
@@ -166,7 +167,7 @@ class Videos extends \yii\db\ActiveRecord
 
         $videoId = $matches[ 1 ];
 
-        $result = YoutubeAPI::query('videos', ['id' => $videoId], ['snippet', 'statistics']);
+        $result = HighloadAPI::query('videos', ['id' => $videoId], ['snippet', 'statistics']);
 
         if (!empty($result))
             return ['error' => 'Видео не найдено. Возможно, ссылка на видео является неверной.'];

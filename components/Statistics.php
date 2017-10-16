@@ -112,7 +112,7 @@ class Statistics
     public static function getByVideoIds($videoIds)
     {
         $result = [];
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
+        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
 
         if ($response == false)
             return [];

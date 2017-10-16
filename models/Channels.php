@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
 use Yii;
 
@@ -151,11 +152,11 @@ class Channels extends \yii\db\ActiveRecord
         if (preg_match('#/user/(.+)/#i', $url, $matches) || preg_match('#/user/(.+)$#i', $url, $matches)) {
             $userId = $matches[ 1 ];
 
-            $result = YoutubeAPI::query('channels', ['forUsername' => $userId], ['snippet', 'statistics']);
+            $result = HighloadAPI::query('channels', ['forUsername' => $userId], ['snippet', 'statistics']);
         } else if (preg_match('#/channel/(.+)/#i', $url, $matches) || preg_match('#/channel/(.+)$#i', $url, $matches)) {
             $channelId = $matches[ 1 ];
 
-            $result = YoutubeAPI::query('channels', ['id' => $channelId], ['snippet', 'statistics']);
+            $result = HighloadAPI::query('channels', ['id' => $channelId], ['snippet', 'statistics']);
         } else {
             return ['error' => 'Данный URL не является ссылкой на канал пользователя.'];
         }

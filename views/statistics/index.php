@@ -195,8 +195,10 @@ foreach ($statisticsQueryData['data'] as $item)
                                     return [
                                         'timeframe' => Statistics::$timeTypes[ $key ],
                                         'name' => '',
-                                        'start_date' => $item[ 0 ],
-                                        'end_date' => $item[ 1 ]
+                                        'start_date' => date('Y-m-d', strtotime($item[ 0 ])) . 'T' . date('H:i:s', strtotime($item[ 0 ])) . '+07:00',
+                                        'end_date' => date('Y-m-d', strtotime($item[ 1 ])) . 'T' . date('H:i:s', strtotime($item[ 1 ])) . '+07:00',
+                                        //'start_date' => $item[ 0 ],
+                                        //'end_date' => $item[ 1 ]
                                     ];
                                 }, $data),
                                 'pagination' => false,
