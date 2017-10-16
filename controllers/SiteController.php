@@ -264,23 +264,4 @@ class SiteController extends Controller
 
         return $this->goHome();
     }
-
-    public function actionTest()
-    {
-        set_time_limit(0);
-        ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '1024M');
-
-        $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
-
-        $time = microtime(true);
-        echo '<h3>Обычный</h3>';
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        ?><pre><?print_r(microtime(true) - $time)?> сек.</pre><?
-
-        $time = microtime(true);
-        echo '<h3>Highload</h3>';
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        ?><pre><?print_r(microtime(true) - $time)?> сек.</pre><?
-    }
 }

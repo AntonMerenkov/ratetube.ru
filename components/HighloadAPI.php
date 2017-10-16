@@ -57,7 +57,47 @@ class HighloadAPI
         $validationKey = self::getValidationKey();
 
         if ($type == YoutubeAPI::QUERY_DEFAULT) {
-            // TODO: выбираем случайный сервер и делаем запрос через него, если не работает - следующий
+            $result = null;
+
+            while (is_null($result)) {
+                if (empty($slaveList)) {
+                    $result = YoutubeAPI::query($method, $params, $parts, $type);
+                } else {
+                    // выбираем случайный сервер и делаем запрос через него, если не работает - следующий
+                    $serverId = array_rand($slaveList, 1);
+
+                    $response = Yii::$app->curl->querySingle('http://' . $slaveList[ $serverId ] . '/', [
+                        'method' => $method,
+                        'params' => $params,
+                        'parts' => $parts,
+                        'type' => $type,
+                        'key' => $validationKey,
+                        'apiKeys' => YoutubeAPI::$keys
+                    ]);
+
+                    try {
+                        $uncompressed = gzuncompress($response);
+                        $value = json_decode($uncompressed, true) + [ 'length' => strlen($response) ];
+                        $result = $value[ 'result' ];
+
+                        echo "Время обработки сервером: " . $value[ 'time' ] . " сек. (объем - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+
+                        foreach ($value[ 'keys' ] as $keyId => $keyData) {
+                            if (!$keyData[ 'enabled' ])
+                                YoutubeAPI::$keys[ $keyId ][ 'enabled' ] = false;
+
+                            if ($keyData[ 'quota_diff' ] > 0) {
+                                YoutubeAPI::$keys[ $keyId ][ 'quota' ] += $keyData[ 'quota_diff' ];
+                                YoutubeAPI::$keys[ $keyId ][ 'quota_diff' ] += $keyData[ 'quota_diff' ];
+                            }
+                        }
+                    } catch (Exception $e) {
+                        unset($slaveList[ $serverId ]);
+                    }
+                }
+            }
+
+            return $result;
         } else if ($type == YoutubeAPI::QUERY_MULTIPLE) {
             // разделяем запросы на несколько серверов
             $idChunks = array_chunk(array_chunk($params[ 'id' ], YoutubeAPI::MAX_RESULTS), count($slaveList));
@@ -72,7 +112,7 @@ class HighloadAPI
             foreach ($serverChunks as $id => $data)
                 $postData[ $id ] = [
                     'method' => $method,
-                    'params' => gzcompress(json_encode(['id' => $data] + $params)),
+                    'params' => ['id' => $data] + $params,
                     'parts' => $parts,
                     'type' => $type,
                     'key' => $validationKey,
@@ -129,7 +169,7 @@ class HighloadAPI
                     if (isset($value[ 'result' ])) {
                         $response[ $id ] = $value[ 'result' ];
 
-                        echo "Время обработки сервером: " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем - " . (round($value[ 'length' ] / 1024 / 1024)) . " МБ)\n";
+                        echo "Время обработки сервером: " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])

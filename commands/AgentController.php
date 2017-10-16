@@ -555,14 +555,16 @@ class AgentController extends Controller
 
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
 
-        /*$time = microtime(true);
+        $time = microtime(true);
         echo "Обычный\n";
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        echo (microtime(true) - $time) . " сек.\n";*/
+        //$response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        $response = YoutubeAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
+        echo (microtime(true) - $time) . " сек.\n";
 
         $time = microtime(true);
         echo "Highload\n";
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        //$response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        $response = HighloadAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
         echo (microtime(true) - $time) . " сек.\n";
     }
 }

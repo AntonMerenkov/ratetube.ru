@@ -52,15 +52,13 @@ class QueryController extends \yii\web\Controller
         // загрузка переданных API-ключей
         YoutubeAPI::$keys = $_POST[ 'apiKeys' ];
 
-        $_POST[ 'params' ] = json_decode(gzuncompress($_POST[ 'params' ]), true);
-
         // выполнение запроса
         $result = YoutubeAPI::query($_POST[ 'method' ], $_POST[ 'params' ], $_POST[ 'parts' ], $_POST[ 'type' ]);
 
         // возвращение результата и данных о расходе квоты
         $data = json_encode([
             'ip' => $_SERVER[ 'SERVER_ADDR'],
-            'time' => round(microtime(true) - $time),
+            'time' => round(microtime(true) - $time, 2),
             'result' => $result,
             'keys' => YoutubeAPI::$keys
         ]);
