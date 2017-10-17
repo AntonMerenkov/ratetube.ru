@@ -51,6 +51,7 @@ AdminAsset::register($this);
             ['label' => 'Позиции', 'url' => ['/positions/index']],
             ['label' => 'YouTube API', 'url' => ['/api-keys/index']],
             ['label' => 'Сервера', 'url' => ['/slaves/index']],
+            ['label' => 'Журналы', 'url' => ['/logreader/default/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(

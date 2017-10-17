@@ -10,7 +10,10 @@ $config = [
     'basePath' => dirname(__DIR__),
     'language' => 'ru',
     'sourceLanguage' => 'ru',
-    'bootstrap' => ['log'],
+    'bootstrap' => [
+        'log',
+        'logreader'
+    ],
     'components' => [
         'request' => [
             'cookieValidationKey' => 'XLVFEHM1hG6t52DMKUeBUJkVDDDXigN0',
@@ -68,6 +71,8 @@ $config = [
             'rules' => [
                 'category/<category_id:[\d\w-_]+>' => 'site/index',
                 'channel/<channel_id:[\d\w-_]+>' => 'site/index',
+                'admin/logreader' => 'logreader/default/index',
+                'admin/logreader/<action>' => 'logreader/default/<action>',
                 'ajax/get-statistics/category/<category_id:[\d\w-_]+>' => 'site/ajax-get-statistics',
                 'ajax/get-statistics/channel/<channel_id:[\d\w-_]+>' => 'site/ajax-get-statistics',
                 'ajax/get-statistics' => 'site/ajax-get-statistics',
@@ -85,6 +90,21 @@ $config = [
             ],
         ],
         'curl' => 'app\components\Curl',
+    ],
+    'modules' => [
+        'logreader' => [
+            'class' => 'zhuravljov\yii\logreader\Module',
+            'controllerMap' => [
+                'default' => [
+                    'class' => 'app\controllers\LogsController',
+                ],
+            ],
+            'aliases' => [
+                'Основной журнал' => '@app/runtime/logs/app.log',
+                'Highload-запросы' => '@app/runtime/logs/highload.log',
+                'Использование API-ключей' => '@app/runtime/logs/api-keys.log',
+            ],
+        ],
     ],
     'params' => $params,
     'on afterAction' => function () {
