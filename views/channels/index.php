@@ -135,6 +135,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         'class' => 'btn btn-success',
                     ]
                 ); ?>
+
+                <?=Html::a(
+                    '<i class="glyphicon glyphicon-plus"></i> Добавить список каналов',
+                    \yii\helpers\Url::toRoute(['create-list', 'category_id' => $category->id]),
+                    [
+                        'class' => 'btn btn-success',
+                    ]
+                ); ?>
             <? endif; ?>
         </div>
     </div>

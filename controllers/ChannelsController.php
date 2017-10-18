@@ -109,6 +109,39 @@ class ChannelsController extends Controller
     }
 
     /**
+     * Creates a new Channels models.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @param $category_id
+     * @return mixed
+     */
+    public function actionCreateList($category_id)
+    {
+        $count = count(Yii::$app->request->post('Channels', []));
+        $channels = [ new Channels() ];
+        for ($i = 1; $i < $count; $i++) {
+            $channels[ $i ] = new Channels();
+            $channels[ $i ]->category_id = $category_id;
+        }
+
+        Channels::loadMultiple($channels, Yii::$app->request->post());
+        array_walk($channels, function($item) use ($category_id) {
+            $item->category_id = $category_id;
+        });
+
+        if (Channels::validateMultiple($channels)) {
+            foreach ($channels as $channel)
+                $channel->save();
+
+            return $this->redirect(['index', 'id' => $category_id]);
+        } else {
+            return $this->render('create-list', [
+                'channels' => $channels,
+                'category_id' => $category_id
+            ]);
+        }
+    }
+
+    /**
      * Updates an existing Channels model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -135,9 +168,10 @@ class ChannelsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['index', 'id' => $model->category_id]);
     }
 
     /**
