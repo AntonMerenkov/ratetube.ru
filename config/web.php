@@ -90,6 +90,13 @@ $config = [
             ],
         ],
         'curl' => 'app\components\Curl',
+        'view' => [
+            'theme' => [
+                'pathMap' => [
+                    '@zhuravljov/yii/logreader/views' => '@app/views_logreader'
+                ],
+            ],
+        ],
     ],
     'modules' => [
         'logreader' => [
