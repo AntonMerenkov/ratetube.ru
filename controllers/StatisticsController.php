@@ -135,7 +135,9 @@ class StatisticsController extends Controller
         ]);
 
         // статистика по запросам
-        $statisticsQueryData = Statistics::getStatistics();
+        $statisticsQueryData = Statistics::getStatistics(1, [
+            'noCache' => true
+        ]);
 
         // размер таблиц БД
         $tableSizeData = Statistics::getTableSizeData();

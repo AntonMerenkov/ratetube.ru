@@ -4,6 +4,7 @@ namespace app\components;
 
 use app\models\StatisticsMinute;
 use app\models\Videos;
+use SplPriorityQueue;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -137,6 +138,7 @@ class Statistics
      *      'timeType' - Принудительная установка таймфрейма
      *      'sortType' - Принудительная установка сортировки
      *      'fullData' - Выдача без постраничной разбивки (boolean)
+     *      'noCache' - Не использовать кэш
      * @return array
      */
     public static function getStatistics($page = 1, $filter = [])
@@ -191,7 +193,7 @@ class Statistics
         $positionsSql = "SELECT p.video_id, p.position FROM positions p";
 
         // для демо-режима не использовать кэш
-        if (Yii::$app->controller->route == 'statistics/index')
+        if ($filter[ 'noCache' ])
             Yii::$app->cache->delete($cacheId);
 
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $positionsSql, $sortType, $filter, $cacheId) {
@@ -223,6 +225,7 @@ class Statistics
                 }, $prevTimeData2), $prevTimeData2);
             }
 
+            Yii::beginProfile('Составление массива videoData');
             foreach ($videoData as $id => $value) {
                 $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
                 unset($videoData[ $id ][ 'channel_id' ]);
@@ -243,6 +246,7 @@ class Statistics
                         $prevTimeData[ $id ][ 'views' ] - $prevTimeData2[ $id ][ 'views' ] : 0);
                 }
             }
+            Yii::endProfile('Составление массива videoData');
 
             if (!empty($positionsData)) {
                 $positionsData = array_filter($positionsData, function($item) use ($videoData) {
@@ -266,7 +270,27 @@ class Statistics
 
             // вычисление позиций по views_diff (для полных данных - не вычислять)
             if (!$filter[ 'fullData' ]) {
-                usort($videoData, function($a, $b) {
+                $videoIds = array_map(function($item) {
+                    return [
+                        $item[ 'views_diff' ],
+                        $item[ 'views' ]
+                    ];
+                }, $videoData);
+
+                uasort($videoIds, function($a, $b) {
+                    if ($a[ 0 ] != $b[ 0 ])
+                        return $b[ 0 ] - $a[ 0 ];
+                    else
+                        return $b[ 1 ] - $a[ 1 ];
+                });
+
+                $videoIds = array_keys($videoIds);
+
+                $lastPositions = array_map(function($item) use ($videoData) {
+                    return $videoData[ $item ][ 'id' ];
+                }, $videoIds);
+
+                /*usort($videoData, function($a, $b) {
                     if ($a[ 'views_diff' ] != $b[ 'views_diff' ])
                         return $b[ 'views_diff' ] - $a[ 'views_diff' ];
                     else
@@ -274,8 +298,29 @@ class Statistics
                 });
                 $lastPositions = array_map(function($item) {
                     return $item[ 'id' ];
+                }, $videoData);*/
+
+                $videoIds = array_map(function($item) {
+                    return [
+                        $item[ 'views_diff2' ],
+                        $item[ 'views2' ]
+                    ];
                 }, $videoData);
-                usort($videoData, function($a, $b) {
+
+                uasort($videoIds, function($a, $b) {
+                    if ($a[ 0 ] != $b[ 0 ])
+                        return $b[ 0 ] - $a[ 0 ];
+                    else
+                        return $b[ 1 ] - $a[ 1 ];
+                });
+
+                $videoIds = array_keys($videoIds);
+
+                $prevPositions = array_map(function($item) use ($videoData) {
+                    return $videoData[ $item ][ 'id' ];
+                }, $videoIds);
+
+                /*usort($videoData, function($a, $b) {
                     if ($a[ 'views_diff2' ] != $b[ 'views_diff2' ])
                         return $b[ 'views_diff2' ] - $a[ 'views_diff2' ];
                     else
@@ -283,7 +328,7 @@ class Statistics
                 });
                 $prevPositions = array_map(function($item) {
                     return $item[ 'id' ];
-                }, $videoData);
+                }, $videoData);*/
 
                 Yii::beginProfile('Сопоставление позиций');
                 $lastPositions = array_flip($lastPositions);
@@ -300,12 +345,33 @@ class Statistics
                 Yii::endProfile('Сопоставление позиций');
             }
 
-            usort($videoData, function($a, $b) use ($sortType) {
+            // сортируем ограниченный объем данных, затем map
+            $videoIds = array_map(function($item) use ($sortType) {
+                return [
+                    $item[ $sortType ],
+                    $item[ 'views' ]
+                ];
+            }, $videoData);
+
+            uasort($videoIds, function($a, $b) {
+                if ($a[ 0 ] != $b[ 0 ])
+                    return $b[ 0 ] - $a[ 0 ];
+                else
+                    return $b[ 1 ] - $a[ 1 ];
+            });
+
+            $videoIds = array_keys($videoIds);
+
+            $videoData = array_map(function($item) use ($videoData) {
+                return $videoData[ $item ];
+            }, $videoIds);
+
+            /*usort($videoData, function($a, $b) use ($sortType) {
                 if ($a[ $sortType ] != $b[ $sortType ])
                     return $b[ $sortType ] - $a[ $sortType ];
                 else
                     return $b[ 'views' ] - $a[ 'views' ];
-            });
+            });*/
 
             Yii::endProfile('Сортировка');
 

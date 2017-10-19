@@ -9,6 +9,7 @@ use app\models\Channels;
 use app\models\Positions;
 use app\models\Profiling;
 use app\components\Statistics;
+use app\models\StatisticsMinute;
 use app\models\Tags;
 use app\models\Videos;
 use app\widgets\PopularTags;
@@ -175,6 +176,16 @@ class AgentController extends Controller
 
                     Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[ 0 ]), $values)->execute();
                 }
+            }
+
+            // обновляем кешированную статистику
+            foreach (Statistics::$timeTypes as $type => $name) {
+                $statistics = Statistics::getStatistics(1, [
+                    'timeType' => $type,
+                    'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
+                ]);
+
+                unset($statistics);
             }
 
             $profiling->duration = round(microtime(true) - $time, 2);
@@ -550,7 +561,7 @@ class AgentController extends Controller
     /**
      * Тестирование HighloadAPI.
      */
-    public function actionTest()
+    public function actionTestHighload()
     {
         return false;
 
@@ -630,5 +641,27 @@ class AgentController extends Controller
             'snippet'
         ], YoutubeAPI::QUERY_PAGES);
         echo round(microtime(true) - $time, 2) . " сек.\n";*/
+    }
+
+    public function actionTestStatistics()
+    {
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '1024M');
+        $time = microtime(true);
+
+        $statistics = Statistics::getStatistics(1, [
+            'timeType' => Statistics::QUERY_TIME_HOUR,
+            'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
+            'noCache' => true,
+        ]);
+
+        echo "--- Время подробно ---\n";
+        foreach (Yii::getLogger()->getProfiling() as $item)
+            echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
+
+        echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
+        echo round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+        echo round(microtime(true) - $time, 2) . " сек.\n";
     }
 }
