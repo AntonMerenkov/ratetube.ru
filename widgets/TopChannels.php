@@ -39,7 +39,8 @@ class TopChannels extends Widget
         $statistics = Statistics::getStatistics(1, [
             'timeType' => $this->interval,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'fullData' => true
+            'fullData' => true,
+            'findCached' => true,
         ]);
 
         // строим статистику

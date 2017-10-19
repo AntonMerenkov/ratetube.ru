@@ -139,6 +139,7 @@ class Statistics
      *      'sortType' - Принудительная установка сортировки
      *      'fullData' - Выдача без постраничной разбивки (boolean)
      *      'noCache' - Не использовать кэш
+     *      'findCached' - Выбрать предыдущие данные из кэша
      * @return array
      */
     public static function getStatistics($page = 1, $filter = [])
@@ -172,6 +173,26 @@ class Statistics
                 $sortType,
                 $timeType
         ]);
+
+        // если указано "Выбрать из кэша"
+        if ($filter[ 'findCached' ] && !Yii::$app->cache->exists($cacheId)) {
+            $dates = Yii::$app->db->createCommand('select DISTINCT(datetime) from ' . $tableName . ' ORDER BY datetime desc LIMIT 10')->queryColumn();
+
+            foreach ($dates as $date) {
+                $newCacheId = 'statistics-' . implode('-', [
+                    date('Y-m-d-H-i-s', strtotime($date)),
+                    (int) $filter[ 'category_id' ],
+                    (int) $filter[ 'channel_id' ],
+                    $sortType,
+                    $timeType
+                ]);
+
+                if (Yii::$app->cache->exists($newCacheId)) {
+                    $cacheId = $newCacheId;
+                    break;
+                }
+            }
+        }
 
         // 5 отдельных запросов получаются быстрее единого
         $videoSql = "SELECT v.id, v.name, v.video_link, v.image_url, v.channel_id

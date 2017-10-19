@@ -26,7 +26,9 @@ class TopVideos extends Widget
         if ($this->count <= 0)
             $this->count = 5;
 
-        $statistics = Statistics::getStatistics();
+        $statistics = Statistics::getStatistics(1, [
+            'findCached' => true,
+        ]);
 
         $videos = array_slice($statistics[ 'data' ], 0, $this->count);
 

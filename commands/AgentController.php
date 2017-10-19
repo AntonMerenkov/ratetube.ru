@@ -651,9 +651,9 @@ class AgentController extends Controller
         $time = microtime(true);
 
         $statistics = Statistics::getStatistics(1, [
-            'timeType' => Statistics::QUERY_TIME_HOUR,
+            'timeType' => Statistics::QUERY_TIME_WEEK,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'noCache' => true,
+            'findCached' => true,
         ]);
 
         echo "--- Время подробно ---\n";
