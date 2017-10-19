@@ -11,6 +11,7 @@ use app\models\Channels;
 use app\models\ChannelsSearch;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -127,6 +128,18 @@ class ChannelsController extends Controller
         array_walk($channels, function($item) use ($category_id) {
             $item->category_id = $category_id;
         });
+
+        // проверка на уникальность среди данных
+        $ids = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
+        foreach ($channels as $id => $channel)
+            if (in_array($channel->channel_link, $ids))
+                unset($channels[ $id ]);
+            else
+                $ids[] = $channel->channel_link;
+
+        $channels = array_values($channels);
+        if (empty($channels))
+            $channels = [ new Channels() ];
 
         if (Channels::validateMultiple($channels)) {
             foreach ($channels as $channel)
