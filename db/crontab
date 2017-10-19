@@ -1,8 +1,10 @@
 */30 * * * * flock -n /tmp/agent-update-videos.lock -c "php /var/www/html/yii agent/update-videos"
-0 * * * * flock -n /tmp/agent-flush-statistics.lock -c "php /var/www/html/yii agent/flush-statistics"
+2 * * * * flock -n /tmp/agent-flush-statistics.lock -c "php /var/www/html/yii agent/flush-statistics"
 */5 * * * * flock -n /tmp/agent-update-statistics.lock -c "php /var/www/html/yii agent/update-statistics"
-5 * * * * flock -n /tmp/agent-flush-videos.lock -c "php /var/www/html/yii agent/flush-videos"
-0 */2 * * * flock -n /tmp/agent-update-subscribers -c "php /var/www/html/yii agent/update-subscribers"
-0 */12 * * * flock -n /tmp/agent-update-tags -c "php /var/www/html/yii agent/update-tags"
+7 * * * * flock -n /tmp/agent-flush-videos.lock -c "php /var/www/html/yii agent/flush-videos"
+12 */2 * * * flock -n /tmp/agent-update-subscribers -c "php /var/www/html/yii agent/update-subscribers"
+17 */12 * * * flock -n /tmp/agent-update-tags -c "php /var/www/html/yii agent/update-tags"
+7 * * * * flock -n /tmp/update-quota -c "php /var/www/html/yii agent/update-quota"
 @hourly /usr/bin/indexer --rotate --config /etc/sphinx/sphinx.conf --all
 * * * * * /root/mariadb_restart.sh > /dev/null
+0 3 * * * /var/www/html/yii cache/flush-all

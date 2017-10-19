@@ -4,6 +4,8 @@ namespace app\commands;
 
 use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
+use app\models\ApiKeys;
+use app\models\ApiKeyStatistics;
 use app\models\Categories;
 use app\models\Channels;
 use app\models\Positions;
@@ -13,6 +15,8 @@ use app\models\StatisticsMinute;
 use app\models\Tags;
 use app\models\Videos;
 use app\widgets\PopularTags;
+use DateInterval;
+use DateTime;
 use yii\console\Controller;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -27,6 +31,7 @@ class AgentController extends Controller
      */
     public function init()
     {
+        set_time_limit(0);
         ini_set('memory_limit', '1024M');
     }
 
@@ -559,15 +564,62 @@ class AgentController extends Controller
     }
 
     /**
+     * Обновление квот.
+     */
+    public function actionUpdateQuota()
+    {
+        $time = microtime(true);
+
+        $apiKeys = array_filter(ApiKeys::find()->all(), function($item) {
+            return !is_null($item->lastStatistics) && $item->lastStatistics->quota < YoutubeAPI::MAX_QUOTA_VALUE;
+        });
+
+        $ids = [];
+        foreach ($apiKeys as $id => $apiKey) {
+            $data = ApiKeys::validateKey($apiKey->key);
+
+            if ($data[ 'status' ] == false && isset($data[ 'errorReason' ]) && $data[ 'errorReason' ] == 'dailyLimitExceeded') {
+                $model = $apiKey->lastStatistics;
+
+                $currentDate = new DateTime();
+                if ($currentDate < new DateTime(date('d.m.Y') . ' ' . YoutubeAPI::QUOTA_REFRESH_TIME))
+                    $currentDate->sub(new DateInterval('P1D'));
+
+                if (!is_null($model)) {
+                    $statDate = new DateTime($model->date);
+
+                    if ($statDate->format('d.m.Y') != $currentDate->format('d.m.Y'))
+                        $model = null;
+                }
+
+                if (is_null($model)) {
+                    $model = new ApiKeyStatistics();
+                    $model->api_key_id = $apiKey->id;
+                    $model->quota = 0;
+                    $model->date = $currentDate->format('Y-m-d');
+                    $model->save();
+                }
+
+                $ids[] = $model->id;
+            }
+        }
+
+        if (!empty($ids)) {
+            ApiKeyStatistics::updateAll(['quota' => YoutubeAPI::MAX_QUOTA_VALUE], ['id' => $ids]);
+
+            Yii::error("Квота исчерпана для " . Yii::t('app', '{n, plural, one{# ключа} other{# ключей}}', ['n' => count($ids)]) .
+                ", " . Yii::t('app', '{n, plural, one{остался # ключ} few{осталось # ключа} other{осталось # ключей}}', ['n' => count($apiKeys) - count($ids)]) .
+                ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+                " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
+        }
+    }
+
+    /**
      * Тестирование HighloadAPI.
      */
     public function actionTestHighload()
     {
         return false;
-
-        set_time_limit(0);
-        ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '1024M');
 
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
         $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
@@ -645,9 +697,6 @@ class AgentController extends Controller
 
     public function actionTestStatistics()
     {
-        set_time_limit(0);
-        ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '1024M');
         $time = microtime(true);
 
         $statistics = Statistics::getStatistics(1, [

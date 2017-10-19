@@ -110,6 +110,7 @@ $config = [
                 'Основной журнал' => '@app/runtime/logs/app.log',
                 'Highload-запросы' => '@app/runtime/logs/highload.log',
                 'Использование API-ключей' => '@app/runtime/logs/api-keys.log',
+                'Выполнение агентов' => '@app/runtime/logs/agent.log',
             ],
         ],
     ],

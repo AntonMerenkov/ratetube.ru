@@ -83,7 +83,8 @@ class ApiKeys extends \yii\db\ActiveRecord
         if (isset($result[ 'error' ]))
             return [
                 'status' => 0,
-                'error' => $result[ 'error' ][ 'errors' ][ 0 ][ 'message' ]
+                'error' => $result[ 'error' ][ 'errors' ][ 0 ][ 'message' ],
+                'errorReason' => $result[ 'error' ][ 'errors' ][ 0 ][ 'reason' ],
             ];
 
         return is_array($result) && isset($result[ 'items' ]) ? [

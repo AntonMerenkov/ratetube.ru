@@ -406,12 +406,6 @@ class YoutubeAPI
                     $model->save();
                 }
 
-                // TODO: после отладки можно включить
-                /*if ($key[ 'permanent' ])
-                    ApiKeyStatistics::updateAll(['quota' => self::MAX_QUOTA_VALUE], ['id' => $model->id]);
-                else
-                    ApiKeyStatistics::updateAllCounters(['quota' => $key[ 'quota_diff' ]], ['id' => $model->id]);*/
-
                 ApiKeyStatistics::updateAllCounters(['quota' => $key[ 'quota_diff' ]], ['id' => $model->id]);
 
                 self::$keys[ $id ][ 'quota_diff' ] = 0;

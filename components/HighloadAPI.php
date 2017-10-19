@@ -115,7 +115,8 @@ class HighloadAPI
             }
 
             Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', время - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', ответов - ' .
+                count($result) . ', время - ' .
                 Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
 
             return $result;
@@ -223,18 +224,22 @@ class HighloadAPI
             }, []);
 
             Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', время - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', ответов - ' .
+                count($result) . ', время - ' .
                 Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
 
             return $result;
         } else if ($type == YoutubeAPI::QUERY_PAGES) {
-            // разделяем запросы на несколько серверов по channelId
-            $idChunks = array_chunk($params[ 'channelId' ], count($slaveList));
+            // разделяем запросы на несколько серверов по channelId, но не более 10
+            // иначе запрос не выполняется
+            /*$idChunks = array_chunk($params[ 'channelId' ], count($slaveList));
 
             $serverChunks = [];
             foreach ($idChunks as $idChunk)
                 foreach ($idChunk as $id => $value)
-                    $serverChunks[ $id ][] = $value;
+                    $serverChunks[ $id ][] = $value;*/
+
+            $serverChunks = array_chunk($params[ 'channelId' ], 10);
 
             $postData = [];
             foreach ($serverChunks as $id => $data)
@@ -323,14 +328,16 @@ class HighloadAPI
             }
 
             $result = array_reduce($response, function($carry, $item) {
-                foreach ($item as $value)
-                    $carry[] = $value;
+                if (is_array($item))
+                    foreach ($item as $value)
+                        $carry[] = $value;
 
                 return $carry;
             }, []);
 
             Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', время - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', ответов - ' .
+                count($result) . ', время - ' .
                 Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
 
             return $result;
