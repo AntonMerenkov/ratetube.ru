@@ -18,8 +18,8 @@ use yii\widgets\ActiveForm;
     <div id="message" class="alert hidden"></div>
 
     <script>
-        $('#slaves-key').keyup(function() {
-            $.post('/admin/slaves/query-data', {key: $(this).val()}).success(function(data) {
+        $('#apikeys-key').keyup(function() {
+            $.post('/admin/api-keys/query-data', {key: $(this).val()}).success(function(data) {
                 data = $.parseJSON(data);
 
                 if (data.status == 1) {
