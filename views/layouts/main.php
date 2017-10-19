@@ -235,6 +235,8 @@ $categories = Categories::getDb()->cache(function ($db) {
             </div>
         </div>
     </div>
+
+    <? include dirname(__FILE__) . '/metrics.php' ?>
 </footer>
 
 <?php $this->endBody() ?>

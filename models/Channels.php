@@ -56,6 +56,7 @@ class Channels extends \yii\db\ActiveRecord
         return [
             [['name', 'url', 'channel_link', 'category_id'], 'required'],
             [['url'], 'string'],
+            [['channel_link'], 'unique'],
             [['category_id'], 'integer'],
             [['name', 'image_url'], 'string', 'max' => 255],
             [['channel_link'], 'string', 'max' => 128],
