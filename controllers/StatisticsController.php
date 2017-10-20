@@ -51,6 +51,8 @@ class StatisticsController extends Controller
      */
     public function actionIndex()
     {
+        ini_set('memory_limit', '1024M');
+
         // использование API-ключей
         $keys = ApiKeys::find()->all();
         $keysError = null;

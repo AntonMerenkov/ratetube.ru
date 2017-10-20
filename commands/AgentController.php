@@ -190,80 +190,142 @@ class AgentController extends Controller
         $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
 
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
-        $videoStatistics = Statistics::getByVideoIds($videoIds);
 
-        if (isset($videoStatistics[ 'error' ])) {
-            Yii::warning($videoStatistics[ 'error' ], 'agent');
-            return true;
+        // пытаемся загрузить данные из кэша
+        $cachedData = [];
+        $cachedDir = false;
+        if (file_exists(Yii::getAlias('@runtime/highload_cache/' . $this->action->id))) {
+            $directories = glob(Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/*'));
+
+            if (!empty($directories)) {
+                $cachedDir = $directories[ 0 ];
+                foreach (glob($cachedDir . '/*') as $file)
+                    $cachedData[ basename($file) ] = unserialize(file_get_contents($file));
+            }
         }
 
-        $transaction = Yii::$app->db->beginTransaction();
+        if (empty($cachedData)) {
+            // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
+            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //    return true;
 
-        try {
-            // находим время последней записи статистики в каждую таблицу
-            $lastQueryTime = array_map(function ($item) {
-                return 0;
-            }, Statistics::$tableModels);
+            $cachedData = HighloadAPI::query('videos', [
+                'id' => $videoIds
+            ], [
+                'statistics',
+                'liveStreamingDetails'
+            ], YoutubeAPI::QUERY_MULTIPLE);
 
-            foreach (array_keys($lastQueryTime) as $key) {
-                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
-                $lastQueryTime[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName())->queryScalar();
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+
+            if (!file_exists($cachedDir))
+                mkdir($cachedDir, 0777, true);
+
+            foreach ($cachedData as $id => $data) {
+                file_put_contents($cachedDir . '/' . $id, serialize($data));
+            }
+        }
+
+        $cachedTimestamp = end(explode('/', $cachedDir));
+        $addedIntervals = [];
+        $addedCount = 0;
+
+        // находим время последней записи статистики в каждую таблицу
+        $lastQueryTime = array_map(function ($item) {
+            return 0;
+        }, Statistics::$tableModels);
+
+        foreach (array_keys($lastQueryTime) as $key) {
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+            $lastQueryTime[ $key ] = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableModel::tableName() . ' WHERE datetime < "' .
+                date('Y-m-d H:i:s', $cachedTimestamp) . '"')->queryScalar();
+        }
+
+        $videoIds = array_flip($videoIds);
+
+        foreach ($cachedData as $id => $result) {
+            $result = unserialize(gzuncompress($result));
+
+            $videoStatistics = [];
+            foreach ($result as $item) {
+                $videoStatistics[ $item[ 'id' ] ] = $item[ 'statistics' ];
+
+                if (isset($item[ 'liveStreamingDetails' ][ 'concurrentViewers' ]))
+                    $videoStatistics[ $item[ 'id' ] ][ 'viewers' ] = $item[ 'liveStreamingDetails' ][ 'concurrentViewers' ];
             }
 
-            $addedIntervals = [];
-            foreach (array_keys($lastQueryTime) as $key) {
-                if (!$force)
-                    if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
-                        continue;
+            $transaction = Yii::$app->db->beginTransaction();
 
-                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+            try {
+                foreach (array_keys($lastQueryTime) as $key) {
+                    if (!$force)
+                        if (time() - strtotime($lastQueryTime[ $key ]) < Statistics::$appendInterval[ $key ])
+                            continue;
 
-                $values = [];
+                    $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
 
-                foreach ($videoStatistics as $videoId => $videoData) {
-                    if (!in_array($videoId, $videoIds))
-                        continue;
+                    $values = [];
 
-                    $values[] = [
-                        'datetime' => date('Y-m-d H:i:s', strtotime($profiling->datetime)),
-                        'video_id' => array_search($videoId, $videoIds),
-                        'views' => $videoData[ 'viewCount' ],
-                        'likes' => $videoData[ 'likeCount' ],
-                        'dislikes' => $videoData[ 'dislikeCount' ],
-                        'viewers' => $videoData[ 'viewers' ],
-                    ];
+                    foreach ($videoStatistics as $videoId => $videoData) {
+                        if (!isset($videoIds[ $videoId ]))
+                            continue;
+
+                        $values[] = [
+                            'datetime' => date('Y-m-d H:i:s', $cachedTimestamp),
+                            'video_id' => $videoIds[ $videoId ],
+                            'views' => $videoData[ 'viewCount' ],
+                            'likes' => $videoData[ 'likeCount' ],
+                            'dislikes' => $videoData[ 'dislikeCount' ],
+                            'viewers' => $videoData[ 'viewers' ],
+                        ];
+                    }
+
+                    if (!empty($values)) {
+                        $addedIntervals[] = strtoupper(substr($key, 0, 1));
+                        $addedCount += count($values);
+
+                        Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[ 0 ]), $values)->execute();
+                    }
                 }
 
-                if (!empty($values)) {
-                    $addedIntervals[] = strtoupper(substr($key, 0, 1));
+                $transaction->commit();
 
-                    Yii::$app->db->createCommand()->batchInsert($tableModel::tableName(), array_keys($values[ 0 ]), $values)->execute();
-                }
+                unset($cachedData[ $id ]);
+                unlink($cachedDir . '/' . $id);
+
+                if (count(glob($cachedDir . '/*')) == 0)
+                    rmdir($cachedDir);
+
+                echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                throw $e;
             }
+        }
 
-            // обновляем кешированную статистику
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
+        $profiling->save();
+
+        $addedIntervals = array_unique($addedIntervals);
+        Yii::info("Получена статистика для " . $addedCount . " видео, интервалы: " .
+            implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
+
+        // обновляем кешированную статистику
+        if (!empty($addedIntervals)) {
             foreach (Statistics::$timeTypes as $type => $name) {
+                echo "Обновляем статистику для интервала " . $name . "\n";
+
                 $statistics = Statistics::getStatistics(1, [
                     'timeType' => $type,
                     'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
                 ]);
 
+                echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
                 unset($statistics);
             }
-
-            $profiling->duration = round(microtime(true) - $time, 2);
-            $profiling->memory = memory_get_usage() / 1024 / 1024;
-            $profiling->save();
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            throw $e;
         }
-
-        Yii::info("Получена статистика для " . count($videoIds) . " видео, интервалы: " .
-            implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
-            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -429,32 +491,76 @@ class AgentController extends Controller
 
         $channelIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
-        $response = HighloadAPI::query('channels', ['id' => $channelIds], ['statistics'], YoutubeAPI::QUERY_MULTIPLE);
+        // пытаемся загрузить данные из кэша
+        $cachedData = [];
+        $cachedDir = false;
+        if (file_exists(Yii::getAlias('@runtime/highload_cache/' . $this->action->id))) {
+            $directories = glob(Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/*'));
 
-        if ($response == false)
-            return false;
+            if (!empty($directories)) {
+                $cachedDir = $directories[ 0 ];
+                foreach (glob($cachedDir . '/*') as $file)
+                    $cachedData[ basename($file) ] = unserialize(file_get_contents($file));
+            }
+        }
 
-        $result = [];
-        foreach ($response as $item)
-            $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
+        if (empty($cachedData)) {
+            // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
+            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //    return true;
 
-        $transaction = Yii::$app->db->beginTransaction();
-
-        foreach ($channelIds as $id => $channelId) {
-            Channels::updateAll([
-                'subscribers_count' => (int)$result[ $channelId ][ 'subscriberCount' ]
+            $cachedData = HighloadAPI::query('channels', [
+                'id' => $channelIds
             ], [
-                'id' => $id
-            ]);
+                'statistics'
+            ], YoutubeAPI::QUERY_MULTIPLE);
+
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+
+            if (!file_exists($cachedDir))
+                mkdir($cachedDir, 0777, true);
+
+            foreach ($cachedData as $id => $data) {
+                file_put_contents($cachedDir . '/' . $id, serialize($data));
+            }
+        }
+
+        $addedChannels = 0;
+        foreach ($cachedData as $id => $result) {
+            $result = unserialize(gzuncompress($result));
+
+            $subscribersData = [];
+            foreach ($result as $item)
+                $subscribersData[ $item[ 'id' ] ] = $item[ 'statistics' ];
+
+            $transaction = Yii::$app->db->beginTransaction();
+
+            foreach ($channelIds as $channelId => $channelLink) {
+                Channels::updateAll([
+                    'subscribers_count' => (int) $result[ $channelLink ][ 'subscriberCount' ]
+                ], [
+                    'id' => $channelId
+                ]);
+            }
+
+            $addedChannels += count($channelIds);
+
+            $transaction->commit();
+
+            unset($cachedData[ $id ]);
+            unlink($cachedDir . '/' . $id);
+
+            if (count(glob($cachedDir . '/*')) == 0)
+                rmdir($cachedDir);
+
+            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         }
 
         $profiling->duration = round(microtime(true) - $time, 2);
         $profiling->memory = memory_get_usage() / 1024 / 1024;
         $profiling->save();
 
-        $transaction->commit();
-
-        Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => count($result)]) .
+        Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => $addedChannels]) .
             ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
@@ -552,71 +658,128 @@ class AgentController extends Controller
         $newTags = [];
         $urlArray = [];
 
-        // делаем запрос на получение статистики по каналам
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
+        // пытаемся загрузить данные из кэша
+        $cachedData = [];
+        $cachedDir = false;
+        if (file_exists(Yii::getAlias('@runtime/highload_cache/' . $this->action->id))) {
+            $directories = glob(Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/*'));
 
-        if ($response == false)
-            return false;
+            if (!empty($directories)) {
+                $cachedDir = $directories[ 0 ];
+                foreach (glob($cachedDir . '/*') as $file)
+                    $cachedData[ basename($file) ] = unserialize(file_get_contents($file));
+            }
+        }
 
-        foreach ($response as $item)
-            $newTags[ array_search($item[ 'id' ], $videoIds) ] = [
-                Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
-                Tags::TYPE_CHANNEL => [
-                    $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
-                ],
-                Tags::TYPE_TITLE => [
-                    $this->processUnicode($item[ 'snippet' ][ 'title' ])
-                ],
-            ];
+        if (empty($cachedData)) {
+            // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
+            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //    return true;
+
+            $cachedData = HighloadAPI::query('videos', [
+                'id' => $videoIds
+            ], [
+                'snippet'
+            ], YoutubeAPI::QUERY_MULTIPLE);
+
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+
+            if (!file_exists($cachedDir))
+                mkdir($cachedDir, 0777, true);
+
+            foreach ($cachedData as $id => $data) {
+                file_put_contents($cachedDir . '/' . $id, serialize($data));
+            }
+        }
 
         // формируем массив старых тэгов
         $oldTags = [];
         foreach ($tags as $tag)
             $oldTags[ $tag->video_id ][ (int)$tag->type ][ $tag->id ] = $tag->text;
 
-        $transaction = Yii::$app->db->beginTransaction();
+        $videoIds = array_flip($videoIds);
 
-        // проанализировать тэги, добавить отсутствующие и удалить ненужные
-        $delIds = [];
-        $addData = [];
-        foreach ($videoIds as $videoId => $videoLink) {
-            if (!isset($oldTags[ $videoId ]) && !isset($newTags[ $videoId ]))
-                continue;
+        echo "Начинаем обработку [" . round(microtime(true) - $time, 2) . "]\n";
 
-            foreach (Tags::$weights as $type => $weight) {
-                if (!isset($oldTags[ $videoId ][ $type ]) && !isset($newTags[ $videoId ][ $type ]))
+        $addedTags = 0;
+        $deletedTags = 0;
+        foreach ($cachedData as $id => $result) {
+            $result = unserialize(gzuncompress($result));
+
+            echo "Данные готовы [" . round(microtime(true) - $time, 2) . "]\n";
+
+            $newTags = [];
+            foreach ($result as $item)
+                $newTags[ $videoIds[ $item[ 'id' ] ] ] = [
+                    Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
+                    Tags::TYPE_CHANNEL => [
+                        $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
+                    ],
+                    Tags::TYPE_TITLE => [
+                        $this->processUnicode($item[ 'snippet' ][ 'title' ])
+                    ],
+                ];
+
+            echo "Данные отсортированы [" . round(microtime(true) - $time, 2) . "]\n";
+
+            $transaction = Yii::$app->db->beginTransaction();
+
+            // проанализировать тэги, добавить отсутствующие и удалить ненужные
+            $delIds = [];
+            $addData = [];
+            foreach ($videoIds as $videoLink => $videoId) {
+                if (!isset($oldTags[ $videoId ]) && !isset($newTags[ $videoId ]))
                     continue;
 
-                $addValues = array_diff((array)$newTags[ $videoId ][ $type ], (array)$oldTags[ $videoId ][ $type ]);
-                $delValues = array_diff((array)$oldTags[ $videoId ][ $type ], (array)$newTags[ $videoId ][ $type ]);
+                foreach (Tags::$weights as $type => $weight) {
+                    if (!isset($oldTags[ $videoId ][ $type ]) && !isset($newTags[ $videoId ][ $type ]))
+                        continue;
 
-                $delIds = array_merge($delIds, array_keys($delValues));
+                    $addValues = array_diff((array)$newTags[ $videoId ][ $type ], (array)$oldTags[ $videoId ][ $type ]);
+                    $delValues = array_diff((array)$oldTags[ $videoId ][ $type ], (array)$newTags[ $videoId ][ $type ]);
 
-                foreach ($addValues as $value)
-                    $addData[] = [
-                        'video_id' => $videoId,
-                        'type' => $type,
-                        'text' => $value,
-                    ];
+                    $delIds = array_merge($delIds, array_keys($delValues));
+
+                    foreach ($addValues as $value)
+                        $addData[] = [
+                            'video_id' => $videoId,
+                            'type' => $type,
+                            'text' => $value,
+                        ];
+                }
             }
+
+            echo "Данные разбиты на части [" . round(microtime(true) - $time, 2) . "]\n";
+
+            if (!empty($addData))
+                Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[ 0 ]), $addData)->execute();
+
+            if (!empty($delIds))
+                Tags::deleteAll(['id' => $delIds]);
+
+            $addedTags += count($addData);
+            $deletedTags += count($delIds);
+
+            $transaction->commit();
+
+            unset($cachedData[ $id ]);
+            unlink($cachedDir . '/' . $id);
+
+            if (count(glob($cachedDir . '/*')) == 0)
+                rmdir($cachedDir);
+
+            echo "Данные добавлены в БД [" . round(microtime(true) - $time, 2) . "]\n";
+            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         }
-
-        if (!empty($addData))
-            Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[ 0 ]), $addData)->execute();
-
-        if (!empty($delIds))
-            Tags::deleteAll(['id' => $delIds]);
 
         $profiling->duration = round(microtime(true) - $time, 2);
         $profiling->memory = memory_get_usage() / 1024 / 1024;
         $profiling->save();
 
-        $transaction->commit();
-
         Yii::$app->cache->delete(PopularTags::TAGS_CACHE_KEY);
 
-        Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($addData)]) .
-            ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => count($delIds)]) .
+        Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $addedTags]) .
+            ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $deletedTags]) .
             ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }

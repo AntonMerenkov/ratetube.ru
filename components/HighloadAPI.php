@@ -123,13 +123,15 @@ class HighloadAPI
             return $result;
         } else if ($type == YoutubeAPI::QUERY_MULTIPLE) {
             // разделяем запросы на несколько серверов
-            $idChunks = array_chunk(array_chunk($params[ 'id' ], YoutubeAPI::MAX_RESULTS), count($slaveList));
+            /*$idChunks = array_chunk(array_chunk($params[ 'id' ], YoutubeAPI::MAX_RESULTS), count($slaveList));
 
             $serverChunks = [];
             foreach ($idChunks as $idChunk)
                 foreach ($idChunk as $id => $data)
                     foreach ($data as $value)
-                        $serverChunks[ $id ][] = $value;
+                        $serverChunks[ $id ][] = $value;*/
+
+            $serverChunks = array_chunk($params[ 'id' ], 10000);
 
             $postData = [];
             foreach ($serverChunks as $id => $data)
@@ -180,7 +182,7 @@ class HighloadAPI
                 $responsePart = array_map(function($item) {
                     try {
                         $value = unserialize($item);
-                        $value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
+                        //$value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
                         $value[ 'length'  ] = strlen($item);
 
                         return $value;
@@ -204,7 +206,10 @@ class HighloadAPI
                             'parts' => implode(',', $parts),
                         ];
 
-                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) .
+                            " значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ, #" .
+                            $id . "/" . count($postData) . "память - " .
+                            round(memory_get_usage() / 1024 / 1024, 2) . " МБ)\n";;
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])

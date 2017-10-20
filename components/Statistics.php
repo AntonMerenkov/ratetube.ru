@@ -105,30 +105,6 @@ class Statistics
     const PAGINATION_ROW_COUNT = 50;
 
     /**
-     * Получение статистики по видео при помощи Youtube API.
-     *
-     * @param $videoIds
-     * @return array
-     */
-    public static function getByVideoIds($videoIds)
-    {
-        $result = [];
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
-
-        if ($response == false)
-            return [];
-
-        foreach ($response as $item) {
-            $result[ $item[ 'id' ] ] = $item[ 'statistics' ];
-
-            if (isset($item[ 'liveStreamingDetails' ][ 'concurrentViewers' ]))
-                $result[ $item[ 'id' ] ][ 'viewers' ] = $item[ 'liveStreamingDetails' ][ 'concurrentViewers' ];
-        }
-
-        return $result;
-    }
-
-    /**
      * Получение статистики по видео с постраничной разбивкой
      *
      * @param int $page
