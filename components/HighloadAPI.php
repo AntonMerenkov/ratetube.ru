@@ -82,8 +82,9 @@ class HighloadAPI
                     ]);
 
                     try {
-                        $uncompressed = gzuncompress($response);
-                        $value = json_decode($uncompressed, true) + [ 'length' => strlen($response) ];
+                        $value = unserialize($response);
+                        $value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
+                        $value[ 'length'  ] = strlen($response);
                         $result = $value[ 'result' ];
 
                         self::$profilingData[] = [
@@ -178,8 +179,11 @@ class HighloadAPI
 
                 $responsePart = array_map(function($item) {
                     try {
-                        $uncompressed = gzuncompress($item);
-                        return json_decode($uncompressed, true) + [ 'length' => strlen($item) ];
+                        $value = unserialize($item);
+                        $value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
+                        $value[ 'length'  ] = strlen($item);
+
+                        return $value;
                     } catch (Exception $e) {
                         return false;
                     }
@@ -289,12 +293,19 @@ class HighloadAPI
 
                 $responsePart = array_map(function($item) {
                     try {
-                        $uncompressed = gzuncompress($item);
-                        return json_decode($uncompressed, true) + [ 'length' => strlen($item) ];
+                        $value = unserialize($item);
+                        $value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
+                        $value[ 'length'  ] = strlen($item);
+
+                        return $value;
                     } catch (Exception $e) {
                         return false;
                     }
                 }, \Yii::$app->curl->queryMultiple($urlArray, $postArray));
+
+                /*foreach ($responsePart as $id => $value) {
+                    file_put_contents('/var/www/html/runtime/response/' . $id . '.txt', serialize($value));
+                }*/
 
                 foreach ($responsePart as $id => $value)
                     if (isset($value[ 'result' ])) {
@@ -311,7 +322,9 @@ class HighloadAPI
                             'parts' => implode(',', $parts),
                         ];
 
-                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        /*echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " .
+                            (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ, #" . $id . "/" . count($postData) . ", память - " .
+                            round(memory_get_usage() / 1024 / 1024, 2) . " МБ)\n";*/
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -323,6 +336,7 @@ class HighloadAPI
                             }
                         }
                     } else {
+                        echo "Сервер " . $slaveList[ $slaveIds[ $id ] ] . "выключен.\n";
                         unset($slaveList[ $slaveIds[ $id ] ]);
                     }
             }

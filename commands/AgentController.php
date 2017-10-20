@@ -619,13 +619,11 @@ class AgentController extends Controller
      */
     public function actionTestHighload()
     {
-        return false;
-
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
         $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
         // Запрос на получение статистики
-        echo "==== Запрос на получение статистики ====\n";
+        /*echo "==== Запрос на получение статистики ====\n";
 
         echo "Обычный\n";
         $time = microtime(true);
@@ -637,9 +635,9 @@ class AgentController extends Controller
         $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
         echo round(microtime(true) - $time, 2) . " сек.\n";
 
-        /*echo "\n";
+        echo "\n";*/
 
-        // Одиночный запрос
+        /*// Одиночный запрос
         echo "==== Одиночный запрос ====\n";
 
         echo "Обычный\n";
@@ -650,9 +648,9 @@ class AgentController extends Controller
         echo "Highload\n";
         $time = microtime(true);
         $response = HighloadAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
+        echo round(microtime(true) - $time, 2) . " сек.\n";*/
 
-        echo "\n";
+        /*echo "\n";
 
         // Множественный запрос
         echo "==== Множественный запрос ====\n";
@@ -667,7 +665,7 @@ class AgentController extends Controller
         $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
         echo round(microtime(true) - $time, 2) . " сек.\n";
 
-        echo "\n";
+        echo "\n";*/
 
         // Постраничный запрос
         echo "==== Постраничный запрос ====\n";
@@ -692,7 +690,7 @@ class AgentController extends Controller
         ], [
             'snippet'
         ], YoutubeAPI::QUERY_PAGES);
-        echo round(microtime(true) - $time, 2) . " сек.\n";*/
+        echo round(microtime(true) - $time, 2) . " сек.\n";
     }
 
     public function actionTestStatistics()

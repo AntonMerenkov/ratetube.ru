@@ -26,6 +26,22 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="e8b3e405-728d-4961-b97f-fb05c72d0218" name="ratetube-slave-3" url="http://85.143.175.66">
+        <fileTransfer host="85.143.175.66" port="22" rootFolder="/var/www/html" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="581520aa-89e1-4278-bbc4-83ea51c087ad" name="ratetube-slave-4" url="http://89.223.30.181">
+        <fileTransfer host="89.223.30.181" port="22" rootFolder="/var/www/html" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
