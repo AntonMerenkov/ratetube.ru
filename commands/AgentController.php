@@ -67,52 +67,110 @@ class AgentController extends Controller
         });
 
         $oldVideos = ArrayHelper::map($videoModels, 'id', 'video_link');
-        $newVideoIds = Videos::getByChannelIds($channelsIds);
 
-        $transaction = Videos::getDb()->beginTransaction();
+        // пытаемся загрузить данные из кэша
+        $cachedData = [];
+        $cachedDir = false;
+        if (file_exists(Yii::getAlias('@runtime/highload_cache/' . $this->action->id))) {
+            $directories = glob(Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/*'));
 
-        try {
-            $values = [];
-
-            foreach ($newVideoIds as $videoData) {
-                // обновление картинок видео
-                if (isset($videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]) && $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url == '') {
-                    $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url = $videoData[ 'image_url' ];
-                    $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->save();
-                }
-
-                if (in_array($videoData[ 'id' ], $oldVideos))
-                    continue;
-
-                $channelId = array_search($videoData[ 'channel_id' ], $channelsIds);
-
-                if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400))
-                    continue;
-
-                $values[] = [
-                    'name' => mb_substr($videoData[ 'title' ], 0, 255),
-                    'video_link' => $videoData[ 'id' ],
-                    'channel_id' => $channelId,
-                    'image_url' => $videoData[ 'image_url' ],
-                ];
+            if (!empty($directories)) {
+                $cachedDir = $directories[ 0 ];
+                foreach (glob($cachedDir . '/*') as $file)
+                    $cachedData[ basename($file) ] = unserialize(file_get_contents($file));
             }
-
-            if (!empty($values))
-                Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[ 0 ]), $values)->execute();
-
-            $profiling->duration = round(microtime(true) - $time, 2);
-            $profiling->memory = memory_get_usage() / 1024 / 1024;
-            $profiling->save();
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            throw $e;
         }
 
-        Yii::info("Получено новых видео: " . count(array_diff(array_map(function ($item) {
-                return $item[ 'id' ];
-            }, $newVideoIds), $oldVideos)) .
+        if (empty($cachedData)) {
+            // загрузку новых видео проводим только раз в час, в 15 минут
+            if (date('i', strtotime($profiling->datetime)) != 15)
+                return true;
+
+            $cachedData = HighloadAPI::query('search', [
+                'channelId' => $channelsIds,
+                'type' => 'video',
+                'order' => 'viewCount',
+            ], [
+                'snippet'
+            ], YoutubeAPI::QUERY_PAGES);
+
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+
+            if (!file_exists($cachedDir))
+                mkdir($cachedDir, 0777, true);
+
+            foreach ($cachedData as $id => $data) {
+                file_put_contents($cachedDir . '/' . $id, serialize($data));
+            }
+        }
+
+        $addedCount = 0;
+        foreach ($cachedData as $id => $result) {
+            $result = unserialize(gzuncompress($result));
+
+            $newVideoIds = [];
+            foreach ($result as $item)
+                $newVideoIds[ $item[ 'id' ][ 'videoId' ] ] = [
+                    'id' => $item[ 'id' ][ 'videoId' ],
+                    'title' => $item[ 'snippet' ][ 'title' ],
+                    'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
+                    'channel_id' => $item[ 'snippet' ][ 'channelId' ],
+                    'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
+                ];
+
+            $transaction = Videos::getDb()->beginTransaction();
+
+            try {
+                $values = [];
+
+                foreach ($newVideoIds as $videoData) {
+                    // обновление картинок видео
+                    if (isset($videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]) && $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url == '') {
+                        $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url = $videoData[ 'image_url' ];
+                        $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->save();
+                    }
+
+                    if (in_array($videoData[ 'id' ], $oldVideos))
+                        continue;
+
+                    $channelId = array_search($videoData[ 'channel_id' ], $channelsIds);
+
+                    if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400))
+                        continue;
+
+                    $values[] = [
+                        'name' => mb_substr($videoData[ 'title' ], 0, 255),
+                        'video_link' => $videoData[ 'id' ],
+                        'channel_id' => $channelId,
+                        'image_url' => $videoData[ 'image_url' ],
+                    ];
+                }
+
+                if (!empty($values))
+                    Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[ 0 ]), $values)->execute();
+
+                $transaction->commit();
+
+                $addedCount += count($values);
+
+                unset($cachedData[ $id ]);
+                unlink($cachedDir . '/' . $id);
+
+                if (count(glob($cachedDir . '/*')) == 0)
+                    rmdir($cachedDir);
+
+                //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+        }
+
+        $profiling->duration = round(microtime(true) - $time, 2);
+        $profiling->memory = memory_get_usage() / 1024 / 1024;
+        $profiling->save();
+
+        Yii::info("Получено новых видео: " . $addedCount .
             ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
@@ -668,7 +726,7 @@ class AgentController extends Controller
         echo "\n";*/
 
         // Постраничный запрос
-        echo "==== Постраничный запрос ====\n";
+        /*echo "==== Постраничный запрос ====\n";
 
         echo "Обычный\n";
         $time = microtime(true);
@@ -690,7 +748,7 @@ class AgentController extends Controller
         ], [
             'snippet'
         ], YoutubeAPI::QUERY_PAGES);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
+        echo round(microtime(true) - $time, 2) . " сек.\n";*/
     }
 
     public function actionTestStatistics()

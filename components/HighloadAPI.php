@@ -156,7 +156,7 @@ class HighloadAPI
                             continue;
 
                         $response[ $id ] = [
-                            'result' => YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]),
+                            'result' => gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]))),
                             'keys' => []
                         ];
                     }
@@ -220,19 +220,19 @@ class HighloadAPI
                     }
             }
 
-            $result = array_reduce($response, function($carry, $item) {
+            /*$result = array_reduce($response, function($carry, $item) {
                 foreach ($item as $value)
                     $carry[] = $value;
 
                 return $carry;
-            }, []);
+            }, []);*/
 
             Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', ответов - ' .
-                count($result) . ', время - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', зашифрованных ответов - ' .
+                count($responsePart) . ', время - ' .
                 Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
 
-            return $result;
+            return $response;
         } else if ($type == YoutubeAPI::QUERY_PAGES) {
             // разделяем запросы на несколько серверов по channelId, но не более 10
             // иначе запрос не выполняется
@@ -270,7 +270,7 @@ class HighloadAPI
                             continue;
 
                         $response[ $id ] = [
-                            'result' => YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]),
+                            'result' => gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]))),
                             'keys' => []
                         ];
                     }
@@ -294,7 +294,7 @@ class HighloadAPI
                 $responsePart = array_map(function($item) {
                     try {
                         $value = unserialize($item);
-                        $value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
+                        //$value[ 'result' ] = unserialize(gzuncompress($value[ 'result' ]));
                         $value[ 'length'  ] = strlen($item);
 
                         return $value;
@@ -302,10 +302,6 @@ class HighloadAPI
                         return false;
                     }
                 }, \Yii::$app->curl->queryMultiple($urlArray, $postArray));
-
-                /*foreach ($responsePart as $id => $value) {
-                    file_put_contents('/var/www/html/runtime/response/' . $id . '.txt', serialize($value));
-                }*/
 
                 foreach ($responsePart as $id => $value)
                     if (isset($value[ 'result' ])) {
@@ -322,9 +318,9 @@ class HighloadAPI
                             'parts' => implode(',', $parts),
                         ];
 
-                        /*echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " .
+                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) ." значений, объем данных - " .
                             (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ, #" . $id . "/" . count($postData) . ", память - " .
-                            round(memory_get_usage() / 1024 / 1024, 2) . " МБ)\n";*/
+                            round(memory_get_usage() / 1024 / 1024, 2) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -341,20 +337,20 @@ class HighloadAPI
                     }
             }
 
-            $result = array_reduce($response, function($carry, $item) {
+            /*$result = array_reduce($response, function($carry, $item) {
                 if (is_array($item))
                     foreach ($item as $value)
                         $carry[] = $value;
 
                 return $carry;
-            }, []);
+            }, []);*/
 
             Yii::info('Выполнен запрос "' . $method . '", использовано квот - ' .
-                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', ответов - ' .
-                count($result) . ', время - ' .
+                Yii::$app->formatter->asDecimal(YoutubeAPI::getQuotaValue() - $quotaValue) . ', зашифрованных ответов - ' .
+                count($response) . ', время - ' .
                 Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) . ' сек', 'highload');
 
-            return $result;
+            return $response;
         }
 
         return false;

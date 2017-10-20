@@ -89,39 +89,6 @@ class Videos extends \yii\db\ActiveRecord
     }
 
     /**
-     * Поиск видео на указанных каналах при помощи Youtube API.
-     *
-     * @param $channelIds
-     * @return array
-     */
-    public static function getByChannelIds($channelIds)
-    {
-        $videoIds = [];
-
-        $result = HighloadAPI::query('search', [
-            'channelId' => $channelIds,
-            'type' => 'video',
-            'order' => 'viewCount',
-        ], [
-            'snippet'
-        ], YoutubeAPI::QUERY_PAGES);
-
-        if ($result === false)
-            return [];
-
-        foreach ($result as $item)
-            $videoIds[ $item[ 'id' ][ 'videoId' ] ] = [
-                'id' => $item[ 'id' ][ 'videoId' ],
-                'title' => $item[ 'snippet' ][ 'title' ],
-                'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
-                'channel_id' => $item[ 'snippet' ][ 'channelId' ],
-                'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
-            ];
-
-        return $videoIds;
-    }
-
-    /**
      * Поиск по тэгам.
      * Возвращает ID найденных видео.
      *
