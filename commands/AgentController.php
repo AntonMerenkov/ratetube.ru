@@ -921,7 +921,7 @@ class AgentController extends Controller
         $statistics = Statistics::getStatistics(1, [
             'timeType' => Statistics::QUERY_TIME_WEEK,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'findCached' => true,
+            'noCache' => true,
         ]);
 
         echo "--- Время подробно ---\n";
@@ -929,7 +929,10 @@ class AgentController extends Controller
             echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
 
         echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
+        echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
         echo round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         echo round(microtime(true) - $time, 2) . " сек.\n";
+
+        ?><pre><?print_r($statistics[ 'data' ][ 0 ])?></pre><?
     }
 }

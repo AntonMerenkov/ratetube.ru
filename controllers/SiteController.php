@@ -100,6 +100,8 @@ class SiteController extends Controller
         ])->all(), 'id', 'id');
 
         if (!empty($positionIds)) {
+            $transaction = Yii::$app->db->beginTransaction();
+
             $positionStatistics = ArrayHelper::map(PositionStatistics::find()->where([
                 'position_id' => $positionIds,
                 'date' => date('Y-m-d')
@@ -116,16 +118,13 @@ class SiteController extends Controller
                     $positionStatistics[ $positionId ]->save();
                 }
 
-            foreach ($positionStatistics as $model) {
-                //$model->views++;
-                //$model->save();
-            }
-
             PositionStatistics::updateAllCounters([
                 'views' => 1,
             ], [
                 'id' => ArrayHelper::map($positionStatistics, 'id', 'id')
             ]);
+
+            $transaction->commit();
         }
 
         return $this->render('index', [
