@@ -82,11 +82,32 @@ class SiteController extends Controller
         if (!is_null($channel_id))
             $channel_id = Channels::findOne(['id' => $channel_id])->id;
 
-        $statisticsQueryData = Statistics::getStatistics($page, [
-            'category_id' => $category_id,
-            'channel_id' => $channel_id,
-            'query' => $query,
-        ]);
+        // определение ключа кеширования
+        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
+        $tableName = $tableModel::tableName();
+        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
+
+        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName)->queryScalar();
+        $cacheKey = 'index-' . implode('-', array_map(function($item) {
+            return is_null($item) ? 0 : $item;
+        }, [
+            $category_id,
+            $channel_id,
+            $query,
+            $page,
+            $timeType,
+            $sortType,
+            date('Y-m-d-H-i-s', strtotime($lastDate)),
+        ]));
+
+        $statisticsQueryData = Yii::$app->cache->getOrSet($cacheKey, function() use ($page, $category_id, $channel_id, $query) {
+            return Statistics::getStatistics($page, [
+                'category_id' => $category_id,
+                'channel_id' => $channel_id,
+                'query' => $query,
+            ]);
+        }, 3600 * 3);
 
         // подсчет статистики по позициям видео
         $positionIds = array_map(function($item) {
