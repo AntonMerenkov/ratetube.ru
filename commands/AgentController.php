@@ -818,7 +818,7 @@ class AgentController extends Controller
          * Генерация кэша для статистики
          */
         // TODO: вернуть
-        /*$cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
+        $cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
         if ($cacheHistory === false)
             $cacheHistory = [];
 
@@ -839,13 +839,35 @@ class AgentController extends Controller
             echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
             echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
             unset($statistics);
-        }*/
+
+            break;
+        }
 
         /**
          * Генерация кэша для виджетов
          */
-        TopChannels::updateCache();
-        Streaming::updateCache();
+        $result = TopChannels::updateCache();
+        if ($result)
+            echo "Статистика для виджета TopChannels обновлена, время: " .
+                round(microtime(true) - $this->time, 2) . " сек, память: " .
+                round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+
+        $result = Streaming::updateCache();
+        if ($result)
+            echo "Статистика для виджета Streaming обновлена, время: " .
+                round(microtime(true) - $this->time, 2) . " сек, память: " .
+                round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+
+        $result = PopularTags::updateCache();
+        if ($result)
+            echo "Статистика для виджета PopularTags обновлена, время: " .
+                round(microtime(true) - $this->time, 2) . " сек, память: " .
+                round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+
+        // профайлинг
+        echo "--- Время подробно ---\n";
+        foreach (Yii::getLogger()->getProfiling() as $item)
+            echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
 
         if (!empty($addedIntervals))
             Yii::info("Сгенерирован кэш для интервалов и виджетов " .

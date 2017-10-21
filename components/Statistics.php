@@ -121,6 +121,8 @@ class Statistics
      */
     public static function getStatistics($page = 1, $filter = [])
     {
+        Yii::beginProfile('Подготовка к генерации статистики');
+
         // выбираем нужную таблицу
         $timeType = isset($filter[ 'timeType' ]) ? $filter[ 'timeType' ] :
             Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
@@ -145,8 +147,6 @@ class Statistics
 
         $cacheId = 'statistics-' . implode('-', [
                 date('Y-m-d-H-i-s', strtotime($lastDate)),
-                (int) $filter[ 'category_id' ],
-                (int) $filter[ 'channel_id' ],
                 $sortType,
                 $timeType
         ]);
@@ -171,7 +171,7 @@ class Statistics
                       WHERE v.active = 1
                       " . ($filter[ 'category_id' ] > 0 ? "AND c.category_id = " . $filter[ 'category_id' ] : "") . "
                       " . ($filter[ 'channel_id' ] > 0 ? "AND v.channel_id = " . $filter[ 'channel_id' ] : "");
-        $channelSql = "SELECT c.id, c.name, c.url, c.image_url FROM channels c";
+        $channelSql = "SELECT c.id, c.name, c.url, c.image_url, c.category_id FROM channels c";
         $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
                         WHERE datetime = '" . $lastDate . "'";
@@ -186,6 +186,8 @@ class Statistics
         // для демо-режима не использовать кэш
         if ($filter[ 'noCache' ])
             Yii::$app->cache->delete($cacheId);
+
+        Yii::endProfile('Подготовка к генерации статистики');
 
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $positionsSql, $sortType, $filter, $cacheId) {
             Yii::beginProfile('Генерация статистики [' . $cacheId . ']');
@@ -374,13 +376,39 @@ class Statistics
             Yii::$app->cache->set(self::CACHE_HISTORY_KEY, $cacheHistory);
         }
 
+        Yii::beginProfile('Фильтрация результатов по запросу');
+        // если установлена категория - фильтруем данные
+        if ($filter[ 'category_id' ] > 0) {
+            if (Yii::$app->cache->exists($cacheId . '-cat' . $filter[ 'category_id' ])) {
+                $data = Yii::$app->cache->get($cacheId . '-cat' . $filter[ 'category_id' ]);
+            } else {
+                $data = array_values(array_filter($data, function($item) use ($filter) {
+                    return $item[ 'channel' ][ 'category_id' ] == $filter[ 'category_id' ];
+                }));
+                Yii::$app->cache->set($cacheId . '-cat' . $filter[ 'category_id' ], $data, 86400);
+            }
+        }
+
+        // если установлен канал - фильтруем данные
+        if ($filter[ 'channel_id' ] > 0) {
+            $data = Yii::$app->cache->getOrSet($cacheId . '-ch' . $filter[ 'channel_id' ], function() use ($data, $filter) {
+                return array_values(array_filter($data, function($item) use ($filter) {
+                    return $item[ 'channel' ][ 'id' ] == $filter[ 'channel_id' ];
+                }));
+            }, 86400);
+        }
+
         // если включен поиск, то фильтруем данные
         if (isset($filter[ 'query' ])) {
-            $videoIds = Videos::searchByQuery($filter[ 'query' ]);
-            $data = array_values(array_filter($data, function($item) use ($videoIds) {
-                return in_array($item[ 'id' ], $videoIds);
-            }));
+            $data = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
+                $videoIds = Videos::searchByQuery($filter[ 'query' ]);
+                return array_values(array_filter($data, function($item) use ($videoIds) {
+                    return in_array($item[ 'id' ], $videoIds);
+                }));
+            }, 86400);
         }
+
+        Yii::endProfile('Фильтрация результатов по запросу');
 
         $time = microtime(true) - $time;
 
