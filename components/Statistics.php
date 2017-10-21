@@ -152,7 +152,7 @@ class Statistics
         ]);
 
         // если указано "Выбрать из кэша"
-        if ($filter[ 'findCached' ]/* && !Yii::$app->cache->exists($cacheId)*/) {
+        if ($filter[ 'findCached' ] && !Yii::$app->cache->exists($cacheId)) {
             $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
 
             if (is_array($cacheHistory) && isset($cacheHistory[ $timeType ]) && !empty($cacheHistory[ $timeType ]))
@@ -281,16 +281,6 @@ class Statistics
                     return $videoData[ $item ][ 'id' ];
                 }, $videoIds);
 
-                /*usort($videoData, function($a, $b) {
-                    if ($a[ 'views_diff' ] != $b[ 'views_diff' ])
-                        return $b[ 'views_diff' ] - $a[ 'views_diff' ];
-                    else
-                        return $b[ 'views' ] - $a[ 'views' ];
-                });
-                $lastPositions = array_map(function($item) {
-                    return $item[ 'id' ];
-                }, $videoData);*/
-
                 $videoIds = array_map(function($item) {
                     return [
                         $item[ 'views_diff2' ],
@@ -310,16 +300,6 @@ class Statistics
                 $prevPositions = array_map(function($item) use ($videoData) {
                     return $videoData[ $item ][ 'id' ];
                 }, $videoIds);
-
-                /*usort($videoData, function($a, $b) {
-                    if ($a[ 'views_diff2' ] != $b[ 'views_diff2' ])
-                        return $b[ 'views_diff2' ] - $a[ 'views_diff2' ];
-                    else
-                        return $b[ 'views2' ] - $a[ 'views2' ];
-                });
-                $prevPositions = array_map(function($item) {
-                    return $item[ 'id' ];
-                }, $videoData);*/
 
                 Yii::beginProfile('Сопоставление позиций');
                 $lastPositions = array_flip($lastPositions);
@@ -356,13 +336,6 @@ class Statistics
             $videoData = array_map(function($item) use ($videoData) {
                 return $videoData[ $item ];
             }, $videoIds);
-
-            /*usort($videoData, function($a, $b) use ($sortType) {
-                if ($a[ $sortType ] != $b[ $sortType ])
-                    return $b[ $sortType ] - $a[ $sortType ];
-                else
-                    return $b[ 'views' ] - $a[ 'views' ];
-            });*/
 
             Yii::endProfile('Сортировка');
 

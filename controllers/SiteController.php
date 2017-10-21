@@ -76,39 +76,26 @@ class SiteController extends Controller
      */
     public function actionIndex($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
+        $time = microtime(true);
+
+        Yii::beginProfile('Загрузка статистики');
+
         if (!is_null($category_id))
             $category_id = Categories::findOne(['code' => $category_id])->id;
 
         if (!is_null($channel_id))
             $channel_id = Channels::findOne(['id' => $channel_id])->id;
 
-        // определение ключа кеширования
-        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
-        $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
-        $tableName = $tableModel::tableName();
-        $sortType = Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
+        $statisticsQueryData = Statistics::getStatistics($page, [
+            'category_id' => $category_id,
+            'channel_id' => $channel_id,
+            'query' => $query,
+            'findCached' => true,
+        ]);
 
-        $lastDate = Yii::$app->db->createCommand('select MAX(datetime) from ' . $tableName)->queryScalar();
-        $cacheKey = 'index-' . implode('-', array_map(function($item) {
-            return is_null($item) ? 0 : $item;
-        }, [
-            $category_id,
-            $channel_id,
-            $query,
-            $page,
-            $timeType,
-            $sortType,
-            date('Y-m-d-H-i-s', strtotime($lastDate)),
-        ]));
+        Yii::endProfile('Загрузка статистики');
 
-        $statisticsQueryData = Yii::$app->cache->getOrSet($cacheKey, function() use ($page, $category_id, $channel_id, $query) {
-            return Statistics::getStatistics($page, [
-                'category_id' => $category_id,
-                'channel_id' => $channel_id,
-                'query' => $query,
-                'findCached' => true,
-            ]);
-        }, 3600 * 3);
+        Yii::beginProfile('Загрузка позиций видео');
 
         // подсчет статистики по позициям видео
         $positionIds = array_map(function($item) {
@@ -121,7 +108,11 @@ class SiteController extends Controller
             'video_id' => $positionIds
         ])->all(), 'id', 'id');
 
+        Yii::endProfile('Загрузка позиций видео');
+
         if (!empty($positionIds)) {
+            Yii::beginProfile('Сохранение позиций видео');
+
             $transaction = Yii::$app->db->beginTransaction();
 
             $positionStatistics = ArrayHelper::map(PositionStatistics::find()->where([
@@ -147,6 +138,8 @@ class SiteController extends Controller
             ]);
 
             $transaction->commit();
+
+            Yii::endProfile('Сохранение позиций видео');
         }
 
         return $this->render('index', [
@@ -176,6 +169,7 @@ class SiteController extends Controller
             'category_id' => $category_id,
             'channel_id' => $channel_id,
             'query' => $query,
+            'findCached' => true,
         ]);
 
         // рандомизация данных для анимации

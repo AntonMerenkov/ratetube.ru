@@ -17,22 +17,66 @@ use yii\helpers\ArrayHelper;
  */
 class Streaming extends Widget
 {
-    public $count = 3;
+    public static $count = 3;
+
+    public static $cacheTime = 3600 * 4;
+
+    const CACHE_KEY = 'widget-videos-cache';
+    const CACHE_DATE_KEY = 'widget-videos-cache-date';
+
+    /**
+     * Получение данных для отображения виджета.
+     *
+     * @return array
+     */
+    public static function getData()
+    {
+        $videos = Statistics::getStreaming();
+        $videos = array_slice($videos, 0, self::$count);
+
+        return $videos;
+    }
+
+    /**
+     * Обновление кэша виджета.
+     */
+    public static function updateCache()
+    {
+        $cacheValid = true;
+
+        if (!Yii::$app->cache->exists(self::CACHE_KEY))
+            $cacheValid = false;
+
+        if (time() - Yii::$app->cache->get(self::CACHE_DATE_KEY) > self::$cacheTime)
+            $cacheValid = false;
+
+        if ($cacheValid)
+            return false;
+
+        $data = self::getData();
+        Yii::$app->cache->set(self::CACHE_KEY, $data);
+        Yii::$app->cache->set(self::CACHE_DATE_KEY, time());
+        unset($data);
+
+        return true;
+    }
 
     public function run()
     {
         Yii::beginProfile('Виджет «В эфире»');
 
-        if ($this->count <= 0)
-            $this->count = 3;
+        if (self::$count <= 0)
+            self::$count = 3;
 
-        $videos = Statistics::getStreaming();
-        $videos = array_slice($videos, 0, $this->count);
+        // если нет в кэше - не загружаем виджет вообще
+        $videos = Yii::$app->cache->get(self::CACHE_KEY);
+        if ($videos === false)
+            $videos = [];
 
         Yii::endProfile('Виджет «В эфире»');
 
         return $this->render('streaming', [
-            'count' => (int) $this->count,
+            'count' => (int) self::$count,
             'videos' => $videos,
         ]);
     }

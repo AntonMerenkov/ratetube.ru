@@ -21,49 +21,86 @@ use yii\helpers\ArrayHelper;
  */
 class TopChannels extends Widget
 {
-    public $count = 10;
-    public $interval = Statistics::QUERY_TIME_WEEK;
+    public static $count = 10;
+    public static $interval = Statistics::QUERY_TIME_WEEK;
+    public static $cacheTime = 3600 * 4;
 
-    const CACHE_KEY = 'top-channel-cache';
+    const CACHE_KEY = 'widget-top-channel-cache';
+    const CACHE_DATE_KEY = 'widget-top-channel-cache-date';
+
+    /**
+     * Получение данных для отображения виджета.
+     *
+     * @return array
+     */
+    public static function getData()
+    {
+        // получаем список всех блогеров с кол-вом подписчиков
+        $channels = ArrayHelper::map(Channels::find()->all(), 'id', function($item) {
+            return $item;
+        });
+
+        $statistics = Statistics::getStatistics(1, [
+            'timeType' => self::$interval,
+            'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
+            'fullData' => true,
+            'findCached' => true,
+        ]);
+
+        // строим статистику
+        $viewCount = [];
+        foreach ($statistics[ 'data' ] as $item)
+            $viewCount[ $item[ 'channel' ][ 'id' ] ] += $item[ 'views_diff' ];
+
+        arsort($viewCount);
+
+        $topChannels = [];
+        foreach (array_slice(array_keys($viewCount), 0, self::$count) as $id)
+            $topChannels[] = $channels[ $id ];
+
+        return $topChannels;
+    }
+
+    /**
+     * Обновление кэша виджета.
+     */
+    public static function updateCache()
+    {
+        $cacheValid = true;
+
+        if (!Yii::$app->cache->exists(self::CACHE_KEY))
+            $cacheValid = false;
+
+        if (time() - Yii::$app->cache->get(self::CACHE_DATE_KEY) > self::$cacheTime)
+            $cacheValid = false;
+
+        if ($cacheValid)
+            return false;
+
+        $data = self::getData();
+        Yii::$app->cache->set(self::CACHE_KEY, $data);
+        Yii::$app->cache->set(self::CACHE_DATE_KEY, time());
+        unset($data);
+
+        return true;
+    }
 
     public function run()
     {
         Yii::beginProfile('Виджет «Топ 10 блоггеров»');
 
-        if ($this->count <= 0)
-            $this->count = 10;
+        if (self::$count <= 0)
+            self::$count = 10;
 
-        $topChannels = Yii::$app->cache->getOrSet(self::CACHE_KEY, function() {
-            // получаем список всех блогеров с кол-вом подписчиков
-            $channels = ArrayHelper::map(Channels::find()->all(), 'id', function($item) {
-                return $item;
-            });
-
-            $statistics = Statistics::getStatistics(1, [
-                'timeType' => $this->interval,
-                'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-                'fullData' => true,
-                'findCached' => true,
-            ]);
-
-            // строим статистику
-            $viewCount = [];
-            foreach ($statistics[ 'data' ] as $item)
-                $viewCount[ $item[ 'channel' ][ 'id' ] ] += $item[ 'views_diff' ];
-
-            arsort($viewCount);
-
+        // если нет в кэше - не загружаем виджет вообще
+        $topChannels = Yii::$app->cache->get(self::CACHE_KEY);
+        if ($topChannels === false)
             $topChannels = [];
-            foreach (array_slice(array_keys($viewCount), 0, $this->count) as $id)
-                $topChannels[] = $channels[ $id ];
-
-            return $topChannels;
-        }, 3600 * 4);
 
         Yii::endProfile('Виджет «Топ 10 блоггеров»');
 
         return $this->render('top-channels', [
-            'count' => (int) $this->count,
+            'count' => (int) self::$count,
             'channels' => $topChannels,
         ]);
     }

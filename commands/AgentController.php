@@ -15,6 +15,8 @@ use app\models\StatisticsMinute;
 use app\models\Tags;
 use app\models\Videos;
 use app\widgets\PopularTags;
+use app\widgets\Streaming;
+use app\widgets\TopChannels;
 use DateInterval;
 use DateTime;
 use yii\console\Controller;
@@ -812,38 +814,46 @@ class AgentController extends Controller
      */
     public function actionGenerateCache()
     {
-        $cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
+        /**
+         * Генерация кэша для статистики
+         */
+        // TODO: вернуть
+        /*$cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
         if ($cacheHistory === false)
             $cacheHistory = [];
 
         $addedIntervals = [];
         foreach (Statistics::$timeTypes as $type => $name) {
-            //echo "Обновляем статистику для интервала " . $name . "\n";
+            echo "Обновляем статистику для интервала " . $name . "\n";
 
             $statistics = Statistics::getStatistics(1, [
                 'timeType' => $type,
                 'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
             ]);
 
-            if (!isset($cacheHistory[ $type ]) || !in_array($statistics[ 'db' ][ 'cache_id' ], $cacheHistory[ $type ]))
+            if (!isset($cacheHistory[ $type ]) || !in_array($statistics[ 'db' ][ 'cache_id' ], $cacheHistory[ $type ])) {
+                echo $statistics[ 'db' ][ 'cache_id' ] . "\n";
                 $addedIntervals[] = substr(str_replace('Statistics', '', Statistics::$tableModels[ $type ]), 0, 1);
+            }
 
-            echo $statistics[ 'db' ][ 'cache_id' ] . "\n";
-
-            //echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
-            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
+            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
             unset($statistics);
-        }
+        }*/
+
+        /**
+         * Генерация кэша для виджетов
+         */
+        TopChannels::updateCache();
+        Streaming::updateCache();
 
         if (!empty($addedIntervals))
-            Yii::info("Сгенерирован кэш для интервалов " .
+            Yii::info("Сгенерирован кэш для интервалов и виджетов " .
                 implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
                 " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
         else
             Yii::info("Кэш сгенерирован и существует, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
                 " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
-
-        print_r(Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY));
     }
 
     /**
