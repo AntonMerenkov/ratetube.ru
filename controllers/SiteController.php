@@ -64,6 +64,53 @@ class SiteController extends Controller
     }
 
     /**
+     * Кеширование для экономии памяти - сохраняем 1 страницу.
+     *
+     * @param null $category_id
+     * @param null $channel_id
+     * @param null $query
+     * @param int $page
+     * @internal param $params
+     * @return mixed
+     */
+    private function getCachedStatistics($category_id = null, $channel_id = null, $query = null, $page = 1)
+    {
+        $idArray = [];
+        if (!is_null($page))
+            $idArray[] = 'p' . $page;
+        if (!is_null($category_id))
+            $idArray[] = 'cat' . $category_id;
+        if (!is_null($channel_id))
+            $idArray[] = 'ch' . $channel_id;
+        if (!is_null($query))
+            $idArray[] = 'q' . $query;
+
+        $cacheId = 'index-statistics-' . implode('-', $idArray);
+
+        $data = Yii::$app->cache->getOrSet($cacheId, function() use ($category_id, $channel_id, $query, $page) {
+            Yii::beginProfile('Вычисление статистики');
+            if (!is_null($category_id))
+                $category_id = Categories::findOne(['code' => $category_id])->id;
+
+            if (!is_null($channel_id))
+                $channel_id = Channels::findOne(['id' => $channel_id])->id;
+
+            $data = Statistics::getStatistics($page, [
+                'category_id' => $category_id,
+                'channel_id' => $channel_id,
+                'query' => $query,
+                'findCached' => true,
+            ]);
+
+            Yii::endProfile('Вычисление статистики');
+
+            return $data;
+        }, 300);
+
+        return $data;
+    }
+
+    /**
      * Список видео со статистикой.
      *
      * PS: При внесении дополнительного фильтра изменить self::actionAjaxGetStatistics и #refreshButton.
@@ -79,20 +126,7 @@ class SiteController extends Controller
         $time = microtime(true);
 
         Yii::beginProfile('Загрузка статистики');
-
-        if (!is_null($category_id))
-            $category_id = Categories::findOne(['code' => $category_id])->id;
-
-        if (!is_null($channel_id))
-            $channel_id = Channels::findOne(['id' => $channel_id])->id;
-
-        $statisticsQueryData = Statistics::getStatistics($page, [
-            'category_id' => $category_id,
-            'channel_id' => $channel_id,
-            'query' => $query,
-            'findCached' => true,
-        ]);
-
+        $statisticsQueryData = $this->getCachedStatistics($category_id, $channel_id, $query, $page);
         Yii::endProfile('Загрузка статистики');
 
         Yii::beginProfile('Загрузка позиций видео');
@@ -159,18 +193,7 @@ class SiteController extends Controller
      */
     public function actionAjaxGetStatistics($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
-        if (!is_null($category_id))
-            $category_id = Categories::findOne(['code' => $category_id])->id;
-
-        if (!is_null($channel_id))
-            $channel_id = Channels::findOne(['id' => $channel_id])->id;
-
-        $statisticsQueryData = Statistics::getStatistics($page, [
-            'category_id' => $category_id,
-            'channel_id' => $channel_id,
-            'query' => $query,
-            'findCached' => true,
-        ]);
+        $statisticsQueryData = $this->getCachedStatistics($category_id, $channel_id, $query, $page);
 
         // рандомизация данных для анимации
         $lastTime = strtotime($statisticsQueryData[ 'time' ][ 'from' ]);
