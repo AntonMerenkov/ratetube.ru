@@ -6,8 +6,7 @@ return [
     'username' => 'root',
     'password' => 'me-262-a1',
     'charset' => 'utf8',
-] + (YII_DEBUG ? [] : [
     'enableSchemaCache' => true,
     'schemaCacheDuration' => 3600,
     'schemaCache' => 'cache',
-]);
+];

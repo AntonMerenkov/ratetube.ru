@@ -97,6 +97,9 @@ $config = [
                 ],
             ],
         ],
+        'session' => [
+            'class' => 'yii\web\DbSession',
+        ],
     ],
     'modules' => [
         'logreader' => [
