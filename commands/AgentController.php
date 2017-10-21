@@ -525,7 +525,7 @@ class AgentController extends Controller
 
             foreach ($channelIds as $channelId => $channelLink) {
                 Channels::updateAll([
-                    'subscribers_count' => (int) $result[ $channelLink ][ 'subscriberCount' ]
+                    'subscribers_count' => $subscribersData[ $channelLink ][ 'subscriberCount' ]
                 ], [
                     'id' => $channelId
                 ]);
@@ -817,7 +817,6 @@ class AgentController extends Controller
         /**
          * Генерация кэша для статистики
          */
-        // TODO: вернуть
         $cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
         if ($cacheHistory === false)
             $cacheHistory = [];
@@ -839,8 +838,6 @@ class AgentController extends Controller
             echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
             echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
             unset($statistics);
-
-            break;
         }
 
         /**

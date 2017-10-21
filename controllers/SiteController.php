@@ -93,21 +93,6 @@ class SiteController extends Controller
             'findCached' => true,
         ]);
 
-        /*if (!is_null($category_id))
-            $statisticsQueryData = Statistics::getStatistics($page, [
-                'category_id' => $category_id,
-                'channel_id' => $channel_id,
-                'query' => $query,
-                'noCache' => true,
-            ]);
-        else
-            $statisticsQueryData = Statistics::getStatistics($page, [
-                'category_id' => $category_id,
-                'channel_id' => $channel_id,
-                'query' => $query,
-                'findCached' => true,
-            ]);*/
-
         Yii::endProfile('Загрузка статистики');
 
         Yii::beginProfile('Загрузка позиций видео');

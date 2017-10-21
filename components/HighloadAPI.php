@@ -208,7 +208,7 @@ class HighloadAPI
 
                         echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (" . count($value[ 'result' ]) .
                             " значений, объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ, #" .
-                            $id . "/" . count($postData) . "память - " .
+                            $id . "/" . count($postData) . ", память - " .
                             round(memory_get_usage() / 1024 / 1024, 2) . " МБ)\n";;
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
