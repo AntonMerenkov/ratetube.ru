@@ -106,6 +106,7 @@ class SiteController extends Controller
                 'category_id' => $category_id,
                 'channel_id' => $channel_id,
                 'query' => $query,
+                'findCached' => true,
             ]);
         }, 3600 * 3);
 

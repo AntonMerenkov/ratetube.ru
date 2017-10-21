@@ -103,6 +103,7 @@ class Statistics
     const TIME_SESSION_KEY = 'time-type';
     const SORT_SESSION_KEY = 'sort-type';
     const PAGINATION_ROW_COUNT = 50;
+    const CACHE_HISTORY_KEY = 'cache-history';
 
     /**
      * Получение статистики по видео с постраничной разбивкой
@@ -151,23 +152,16 @@ class Statistics
         ]);
 
         // если указано "Выбрать из кэша"
-        if ($filter[ 'findCached' ] && !Yii::$app->cache->exists($cacheId)) {
-            $dates = Yii::$app->db->createCommand('select DISTINCT(datetime) from ' . $tableName . ' ORDER BY datetime desc LIMIT 10')->queryColumn();
+        if ($filter[ 'findCached' ]/* && !Yii::$app->cache->exists($cacheId)*/) {
+            $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
 
-            foreach ($dates as $date) {
-                $newCacheId = 'statistics-' . implode('-', [
-                    date('Y-m-d-H-i-s', strtotime($date)),
-                    (int) $filter[ 'category_id' ],
-                    (int) $filter[ 'channel_id' ],
-                    $sortType,
-                    $timeType
-                ]);
-
-                if (Yii::$app->cache->exists($newCacheId)) {
-                    $cacheId = $newCacheId;
-                    break;
-                }
-            }
+            if (is_array($cacheHistory) && isset($cacheHistory[ $timeType ]) && !empty($cacheHistory[ $timeType ]))
+                foreach ($cacheHistory[ $timeType ] as $newCacheId)
+                    if (Yii::$app->cache->exists($newCacheId)) {
+                        $cacheId = $newCacheId;
+                        //echo "Найден кэш " . $newCacheId . "\n";
+                        break;
+                    }
         }
 
         // 5 отдельных запросов получаются быстрее единого
@@ -394,7 +388,18 @@ class Statistics
             Yii::endProfile('Генерация статистики [' . $cacheId . ']');
 
             return $videoData;
-        }, 600);
+        }, 86400);
+
+        // добавляем ID кэша в массив последних кешей
+        $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
+        if ($cacheHistory === false)
+            $cacheHistory = [];
+        if (!isset($cacheHistory[ $timeType ]))
+            $cacheHistory[ $timeType ] = [];
+        if (!in_array($cacheId, $cacheHistory[ $timeType ])) {
+            array_unshift($cacheHistory[ $timeType ], $cacheId);
+            Yii::$app->cache->set(self::CACHE_HISTORY_KEY, $cacheHistory);
+        }
 
         // если включен поиск, то фильтруем данные
         if (isset($filter[ 'query' ])) {

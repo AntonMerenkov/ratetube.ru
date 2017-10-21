@@ -27,12 +27,54 @@ use yii\helpers\ArrayHelper;
 class AgentController extends Controller
 {
     /**
+     * @var float
+     */
+    protected $time;
+    /**
+     * @var Profiling|null
+     */
+    protected $profiling;
+
+    /**
      * Действия при инициализации контроллера.
      */
     public function init()
     {
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
+    }
+
+    /**
+     * Инициализация профайлинга.
+     *
+     * @param \yii\base\Action $action
+     * @return bool
+     */
+    public function beforeAction($action)
+    {
+        $this->time = microtime(true);
+
+        $this->profiling = new Profiling();
+        $this->profiling->code = 'agent-' . $action->id;
+        $this->profiling->datetime = date('d.m.Y H:i:s', round($this->time / 10) * 10);
+
+        return true;
+    }
+
+    /**
+     * Сохранение данных профайлинга.
+     *
+     * @param \yii\base\Action $action
+     * @param mixed $result
+     * @return bool
+     */
+    public function afterAction($action, $result)
+    {
+        $this->profiling->duration = round(microtime(true) - $this->time, 2);
+        $this->profiling->memory = memory_get_usage() / 1024 / 1024;
+        $this->profiling->save();
+
+        return true;
     }
 
     /**
@@ -43,12 +85,6 @@ class AgentController extends Controller
      */
     public function actionUpdateVideos($channel_id = null)
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-update-videos';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         if (!is_null($channel_id))
             $channelModels = Channels::find()->where(['id' => $channel_id])->all();
         else
@@ -83,7 +119,7 @@ class AgentController extends Controller
 
         if (empty($cachedData)) {
             // загрузку новых видео проводим только раз в час, в 15 минут
-            if (date('i', strtotime($profiling->datetime)) != 15)
+            if (date('i', strtotime($this->profiling->datetime)) != 15)
                 return true;
 
             $cachedData = HighloadAPI::query('search', [
@@ -94,7 +130,7 @@ class AgentController extends Controller
                 'snippet'
             ], YoutubeAPI::QUERY_PAGES);
 
-            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
 
             if (!file_exists($cachedDir))
                 mkdir($cachedDir, 0777, true);
@@ -107,6 +143,8 @@ class AgentController extends Controller
         $addedCount = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
+            if (!is_array($result))
+                $result = [];
 
             $newVideoIds = [];
             foreach ($result as $item)
@@ -166,12 +204,8 @@ class AgentController extends Controller
             }
         }
 
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
-
         Yii::info("Получено новых видео: " . $addedCount .
-            ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
@@ -183,12 +217,6 @@ class AgentController extends Controller
      */
     public function actionUpdateStatistics($force = 0)
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-update-statistics';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
 
         // пытаемся загрузить данные из кэша
@@ -206,7 +234,7 @@ class AgentController extends Controller
 
         if (empty($cachedData)) {
             // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
-            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //if (date('i', strtotime($this->profiling->datetime)) % 5 != 0)
             //    return true;
 
             $cachedData = HighloadAPI::query('videos', [
@@ -216,7 +244,7 @@ class AgentController extends Controller
                 'liveStreamingDetails'
             ], YoutubeAPI::QUERY_MULTIPLE);
 
-            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
 
             if (!file_exists($cachedDir))
                 mkdir($cachedDir, 0777, true);
@@ -242,9 +270,10 @@ class AgentController extends Controller
         }
 
         $videoIds = array_flip($videoIds);
-
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
+            if (!is_array($result))
+                $result = [];
 
             $videoStatistics = [];
             foreach ($result as $item) {
@@ -296,36 +325,17 @@ class AgentController extends Controller
                 if (count(glob($cachedDir . '/*')) == 0)
                     rmdir($cachedDir);
 
-                echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+                //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 throw $e;
             }
         }
 
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
-
         $addedIntervals = array_unique($addedIntervals);
         Yii::info("Получена статистика для " . $addedCount . " видео, интервалы: " .
-            implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
-
-        // обновляем кешированную статистику
-        if (!empty($addedIntervals)) {
-            foreach (Statistics::$timeTypes as $type => $name) {
-                echo "Обновляем статистику для интервала " . $name . "\n";
-
-                $statistics = Statistics::getStatistics(1, [
-                    'timeType' => $type,
-                    'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
-                ]);
-
-                echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
-                unset($statistics);
-            }
-        }
     }
 
     /**
@@ -333,12 +343,6 @@ class AgentController extends Controller
      */
     public function actionFlushStatistics()
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-flush-statistics';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         $minQueryDate = array_map(function ($item) {
             return 0;
         }, Statistics::$tableModels);
@@ -385,14 +389,10 @@ class AgentController extends Controller
             return in_array($item[ 'TABLE_NAME' ], $statisticTables);
         })));
 
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
-
         $transaction->commit();
 
         Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " .
-            Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
@@ -401,12 +401,6 @@ class AgentController extends Controller
      */
     public function actionFlushVideos()
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-flush-videos';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         // загружаем критерии удаления для всех каналов
         $channelCriteria = ArrayHelper::map(Channels::find()->with('category')->all(), 'id', function ($item) {
             return $item->flush_timeframe != '' ? [
@@ -469,12 +463,8 @@ class AgentController extends Controller
 
         Videos::updateAll(['active' => 0], 'id IN (' . implode(',', $videoIds) . ')');
 
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
-
         Yii::info(Yii::t('app', '{n, plural, one{# видео помечено как неактуальное} other{# видео помечены как неактуальные}}', ['n' => count($videoIds)]) . ", время: " .
-            Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
@@ -483,12 +473,6 @@ class AgentController extends Controller
      */
     public function actionUpdateSubscribers()
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-update-subscribers';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         $channelIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
 
         // пытаемся загрузить данные из кэша
@@ -506,7 +490,7 @@ class AgentController extends Controller
 
         if (empty($cachedData)) {
             // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
-            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //if (date('i', strtotime($this->profiling->datetime)) % 5 != 0)
             //    return true;
 
             $cachedData = HighloadAPI::query('channels', [
@@ -515,7 +499,7 @@ class AgentController extends Controller
                 'statistics'
             ], YoutubeAPI::QUERY_MULTIPLE);
 
-            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
 
             if (!file_exists($cachedDir))
                 mkdir($cachedDir, 0777, true);
@@ -528,6 +512,8 @@ class AgentController extends Controller
         $addedChannels = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
+            if (!is_array($result))
+                $result = [];
 
             $subscribersData = [];
             foreach ($result as $item)
@@ -553,15 +539,11 @@ class AgentController extends Controller
             if (count(glob($cachedDir . '/*')) == 0)
                 rmdir($cachedDir);
 
-            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         }
 
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
-
         Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => $addedChannels]) .
-            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
@@ -638,12 +620,6 @@ class AgentController extends Controller
      */
     public function actionUpdateTags()
     {
-        $time = microtime(true);
-
-        $profiling = new Profiling();
-        $profiling->code = 'agent-update-tags';
-        $profiling->datetime = date('d.m.Y H:i:s', round($time / 10) * 10);
-
         // загружаем текущие данные из БД
         $videos = ArrayHelper::map(Videos::find()->all(), 'id', function ($item) {
             return $item;
@@ -673,7 +649,7 @@ class AgentController extends Controller
 
         if (empty($cachedData)) {
             // загрузку новых видео проводим каждые 5 минут - каждый шаг crontab, доп проверка не нужна
-            //if (date('i', strtotime($profiling->datetime)) % 5 != 0)
+            //if (date('i', strtotime($this->profiling->datetime)) % 5 != 0)
             //    return true;
 
             $cachedData = HighloadAPI::query('videos', [
@@ -682,7 +658,7 @@ class AgentController extends Controller
                 'snippet'
             ], YoutubeAPI::QUERY_MULTIPLE);
 
-            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($profiling->datetime));
+            $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
 
             if (!file_exists($cachedDir))
                 mkdir($cachedDir, 0777, true);
@@ -699,14 +675,16 @@ class AgentController extends Controller
 
         $videoIds = array_flip($videoIds);
 
-        echo "Начинаем обработку [" . round(microtime(true) - $time, 2) . "]\n";
+        //echo "Начинаем обработку [" . round(microtime(true) - $this->time, 2) . "]\n";
 
         $addedTags = 0;
         $deletedTags = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
+            if (!is_array($result))
+                $result = [];
 
-            echo "Данные готовы [" . round(microtime(true) - $time, 2) . "]\n";
+            //echo "Данные готовы [" . round(microtime(true) - $this->time, 2) . "]\n";
 
             $newTags = [];
             foreach ($result as $item)
@@ -720,7 +698,7 @@ class AgentController extends Controller
                     ],
                 ];
 
-            echo "Данные отсортированы [" . round(microtime(true) - $time, 2) . "]\n";
+            //echo "Данные отсортированы [" . round(microtime(true) - $this->time, 2) . "]\n";
 
             $transaction = Yii::$app->db->beginTransaction();
 
@@ -749,7 +727,7 @@ class AgentController extends Controller
                 }
             }
 
-            echo "Данные разбиты на части [" . round(microtime(true) - $time, 2) . "]\n";
+            //echo "Данные разбиты на части [" . round(microtime(true) - $this->time, 2) . "]\n";
 
             if (!empty($addData))
                 Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[ 0 ]), $addData)->execute();
@@ -768,19 +746,15 @@ class AgentController extends Controller
             if (count(glob($cachedDir . '/*')) == 0)
                 rmdir($cachedDir);
 
-            echo "Данные добавлены в БД [" . round(microtime(true) - $time, 2) . "]\n";
-            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            //echo "Данные добавлены в БД [" . round(microtime(true) - $this->time, 2) . "]\n";
+            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         }
-
-        $profiling->duration = round(microtime(true) - $time, 2);
-        $profiling->memory = memory_get_usage() / 1024 / 1024;
-        $profiling->save();
 
         Yii::$app->cache->delete(PopularTags::TAGS_CACHE_KEY);
 
         Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $addedTags]) .
             ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $deletedTags]) .
-            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+            ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
@@ -789,8 +763,6 @@ class AgentController extends Controller
      */
     public function actionUpdateQuota()
     {
-        $time = microtime(true);
-
         $apiKeys = array_filter(ApiKeys::find()->all(), function($item) {
             return !is_null($item->lastStatistics) && $item->lastStatistics->quota < YoutubeAPI::MAX_QUOTA_VALUE;
         });
@@ -830,9 +802,84 @@ class AgentController extends Controller
 
             Yii::error("Квота исчерпана для " . Yii::t('app', '{n, plural, one{# ключа} other{# ключей}}', ['n' => count($ids)]) .
                 ", " . Yii::t('app', '{n, plural, one{остался # ключ} few{осталось # ключа} other{осталось # ключей}}', ['n' => count($apiKeys) - count($ids)]) .
-                ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $time, 2) .
+                ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
                 " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
         }
+    }
+
+    /**
+     * Построение кэша статистики.
+     */
+    public function actionGenerateCache()
+    {
+        $cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
+        if ($cacheHistory === false)
+            $cacheHistory = [];
+
+        $addedIntervals = [];
+        foreach (Statistics::$timeTypes as $type => $name) {
+            //echo "Обновляем статистику для интервала " . $name . "\n";
+
+            $statistics = Statistics::getStatistics(1, [
+                'timeType' => $type,
+                'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
+            ]);
+
+            if (!isset($cacheHistory[ $type ]) || !in_array($statistics[ 'db' ][ 'cache_id' ], $cacheHistory[ $type ]))
+                $addedIntervals[] = substr(str_replace('Statistics', '', Statistics::$tableModels[ $type ]), 0, 1);
+
+            echo $statistics[ 'db' ][ 'cache_id' ] . "\n";
+
+            //echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
+            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            unset($statistics);
+        }
+
+        if (!empty($addedIntervals))
+            Yii::info("Сгенерирован кэш для интервалов " .
+                implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
+                " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
+        else
+            Yii::info("Кэш сгенерирован и существует, время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
+                " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
+
+        print_r(Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY));
+    }
+
+    /**
+     * Очистка устаревшего кеша статистики.
+     */
+    public function actionFlushCache()
+    {
+        $cacheHistory = Yii::$app->cache->get(Statistics::CACHE_HISTORY_KEY);
+        if ($cacheHistory === false)
+            $cacheHistory = [];
+
+        $elementCount = 0;
+        foreach ($cacheHistory as $type => $values) {
+            $cacheExists = false;
+
+            foreach ($values as $id => $item) {
+                if (!$cacheExists) {
+                    if (Yii::$app->cache->exists($item))
+                        $cacheExists = true;
+                    else
+                        unset($cacheHistory[ $type ][ $id ]);
+                } else {
+                    $elementCount++;
+                    Yii::$app->cache->delete($item);
+                    unset($cacheHistory[ $type ][ $id ]);
+                }
+            }
+
+            $cacheHistory[ $type ] = array_values($cacheHistory[ $type ]);
+        }
+
+        Yii::$app->cache->set(Statistics::CACHE_HISTORY_KEY, $cacheHistory);
+
+        Yii::info("Очищен кэш, удалено элементов: " .
+            $elementCount . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
+            " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
     /**
@@ -916,12 +963,10 @@ class AgentController extends Controller
 
     public function actionTestStatistics()
     {
-        $time = microtime(true);
-
         $statistics = Statistics::getStatistics(1, [
-            'timeType' => Statistics::QUERY_TIME_WEEK,
+            'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'noCache' => true,
+            'findCached' => true,
         ]);
 
         echo "--- Время подробно ---\n";
@@ -931,8 +976,6 @@ class AgentController extends Controller
         echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
         echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
         echo round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        ?><pre><?print_r($statistics[ 'data' ][ 0 ])?></pre><?
+        echo round(microtime(true) - $this->time, 2) . " сек.\n";
     }
 }
