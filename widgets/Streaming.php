@@ -19,7 +19,7 @@ class Streaming extends Widget
 {
     public static $count = 3;
 
-    public static $cacheTime = 3600 * 4;
+    public static $cacheTime = 3600;
 
     const CACHE_KEY = 'widget-videos-cache';
     const CACHE_DATE_KEY = 'widget-videos-cache-date';

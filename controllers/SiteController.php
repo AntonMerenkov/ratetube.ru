@@ -11,6 +11,7 @@ use app\models\Positions;
 use app\models\PositionStatistics;
 use app\models\StatisticsMinute;
 use app\models\Videos;
+use app\widgets\Streaming;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
@@ -238,8 +239,8 @@ class SiteController extends Controller
             }
         }*/
 
-        $streamingData = Statistics::getStreaming();
-        //$streamingData = [];
+        $streamingData = Yii::$app->cache->get(Streaming::CACHE_KEY);
+        $streamingData = array_slice($streamingData, 0, Streaming::$count);
 
         return Json::encode([
             'data' => $statisticsQueryData[ 'data' ],

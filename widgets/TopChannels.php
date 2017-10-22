@@ -25,8 +25,8 @@ class TopChannels extends Widget
     public static $interval = Statistics::QUERY_TIME_WEEK;
     public static $cacheTime = 3600 * 4;
 
-    const CACHE_KEY = 'widget-top-channel-cache';
-    const CACHE_DATE_KEY = 'widget-top-channel-cache-date';
+    const CACHE_KEY = 'widget-top-channels-cache';
+    const CACHE_DATE_KEY = 'widget-top-channels-cache-date';
 
     /**
      * Получение данных для отображения виджета.
@@ -50,7 +50,7 @@ class TopChannels extends Widget
         // строим статистику
         $viewCount = [];
         foreach ($statistics[ 'data' ] as $item)
-            $viewCount[ $item[ 'channel' ][ 'id' ] ] += $item[ 'views_diff' ];
+            $viewCount[ $item[ 'channel_id' ] ] += $item[ 'views_diff' ];
 
         arsort($viewCount);
 
