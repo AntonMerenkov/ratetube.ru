@@ -192,37 +192,41 @@ class Statistics
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($videoSql, $channelSql, $lastTimeSql, $prevTimeSql, $prevTimeSql2, $positionsSql, $sortType, $filter, $cacheId) {
             Yii::beginProfile('Генерация статистики [' . $cacheId . ']');
 
+            Yii::beginProfile('Получение данных о видео');
             $videoData = Yii::$app->db->createCommand($videoSql)->queryAll();
-            $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
-            $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
-            $prevTimeData = Yii::$app->db->createCommand($prevTimeSql)->queryAll();
-            $positionsData = Yii::$app->db->createCommand($positionsSql)->queryAll();
-
             $videoData = array_combine(array_map(function($item) {
                 return $item[ 'id' ];
             }, $videoData), $videoData);
+            Yii::endProfile('Получение данных о видео');
+
+            Yii::beginProfile('Получение данных о каналах');
+            $channelData = Yii::$app->db->createCommand($channelSql)->queryAll();
             $channelData = array_combine(array_map(function($item) {
                 return $item[ 'id' ];
             }, $channelData), $channelData);
+
+            foreach ($videoData as $id => $value) {
+                $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
+                unset($videoData[ $id ][ 'channel_id' ]);
+            }
+
+            unset($channelData);
+            Yii::endProfile('Получение данных о каналах');
+
+            Yii::beginProfile('Получение данных о последнем времени');
+            $lastTimeData = Yii::$app->db->createCommand($lastTimeSql)->queryAll();
             $lastTimeData = array_combine(array_map(function($item) {
                 return $item[ 'video_id' ];
             }, $lastTimeData), $lastTimeData);
+            Yii::endProfile('Получение данных о последнем времени');
+
+            Yii::beginProfile('Получение данных о предпоследнем времени');
+            $prevTimeData = Yii::$app->db->createCommand($prevTimeSql)->queryAll();
             $prevTimeData = array_combine(array_map(function($item) {
                 return $item[ 'video_id' ];
             }, $prevTimeData), $prevTimeData);
 
-            if (!$filter[ 'fullData' ]) {
-                $prevTimeData2 = Yii::$app->db->createCommand($prevTimeSql2)->queryAll();
-                $prevTimeData2 = array_combine(array_map(function($item) {
-                    return $item[ 'video_id' ];
-                }, $prevTimeData2), $prevTimeData2);
-            }
-
-            Yii::beginProfile('Составление массива videoData');
             foreach ($videoData as $id => $value) {
-                $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
-                unset($videoData[ $id ][ 'channel_id' ]);
-
                 $videoData[ $id ][ 'views' ] = $lastTimeData[ $id ][ 'views' ];
                 $videoData[ $id ][ 'views_old' ] = $prevTimeData[ $id ][ 'views' ];
                 $videoData[ $id ][ 'views_diff' ] = ($lastTimeData[ $id ][ 'views' ] > 0 && $prevTimeData[ $id ][ 'views' ] > 0 ?
@@ -231,33 +235,29 @@ class Statistics
                     $lastTimeData[ $id ][ 'likes' ] - $prevTimeData[ $id ][ 'likes' ] : 0);
                 $videoData[ $id ][ 'dislikes_diff' ] = ($lastTimeData[ $id ][ 'dislikes' ] > 0 && $prevTimeData[ $id ][ 'dislikes' ] > 0 ?
                     $lastTimeData[ $id ][ 'dislikes' ] - $prevTimeData[ $id ][ 'dislikes' ] : 0);
+            }
 
-                // для вычисления позиции
-                if (!$filter[ 'fullData' ]) {
+            unset($lastTimeData);
+            Yii::endProfile('Получение данных о предпоследнем времени');
+
+            if (!$filter[ 'fullData' ]) {
+                Yii::beginProfile('Получение данных о предпредпоследнем времени');
+                $prevTimeData2 = Yii::$app->db->createCommand($prevTimeSql2)->queryAll();
+                $prevTimeData2 = array_combine(array_map(function($item) {
+                    return $item[ 'video_id' ];
+                }, $prevTimeData2), $prevTimeData2);
+
+                foreach ($videoData as $id => $value) {
                     $videoData[ $id ][ 'views2' ] = $prevTimeData[ $id ][ 'views' ];
                     $videoData[ $id ][ 'views_diff2' ] = ($prevTimeData[ $id ][ 'views' ] > 0 && $prevTimeData2[ $id ][ 'views' ] > 0 ?
                         $prevTimeData[ $id ][ 'views' ] - $prevTimeData2[ $id ][ 'views' ] : 0);
                 }
+
+                unset($prevTimeData2);
+                Yii::endProfile('Получение данных о предпредпоследнем времени');
             }
-            Yii::endProfile('Составление массива videoData');
 
-            if (!empty($positionsData)) {
-                $positionsData = array_filter($positionsData, function($item) use ($videoData) {
-                    return isset($videoData[ $item[ 'video_id' ] ]);
-                });
-
-                // позиции видео (по 1 видео выбирать случайно)
-                $positionsData = array_reduce($positionsData, function($carry, $item) {
-                    $carry[ $item[ 'position' ] - 1 ][] = $item[ 'video_id' ];
-
-                    return $carry;
-                }, []);
-
-                foreach ($positionsData as $position => $items) {
-                    $positionsData[ $position ] = $videoData[ $items[ array_rand($items) ] ];
-                    $positionsData[ $position ][ 'ad' ] = 1;
-                }
-            }
+            unset($prevTimeData);
 
             Yii::beginProfile('Сортировка');
 
@@ -341,7 +341,26 @@ class Statistics
 
             Yii::endProfile('Сортировка');
 
+            Yii::beginProfile('Получение данных о позициях');
+            $positionsData = Yii::$app->db->createCommand($positionsSql)->queryAll();
+
             if (!empty($positionsData)) {
+                $positionsData = array_filter($positionsData, function($item) use ($videoData) {
+                    return isset($videoData[ $item[ 'video_id' ] ]);
+                });
+
+                // позиции видео (по 1 видео выбирать случайно)
+                $positionsData = array_reduce($positionsData, function($carry, $item) {
+                    $carry[ $item[ 'position' ] - 1 ][] = $item[ 'video_id' ];
+
+                    return $carry;
+                }, []);
+
+                foreach ($positionsData as $position => $items) {
+                    $positionsData[ $position ] = $videoData[ $items[ array_rand($items) ] ];
+                    $positionsData[ $position ][ 'ad' ] = 1;
+                }
+
                 Yii::beginProfile('Вставка позиций');
 
                 // удаляем видео с позициями из общего списка
@@ -357,8 +376,11 @@ class Statistics
                 foreach ($positionsData as $position => $value)
                     $videoData = array_merge(array_slice($videoData, 0, $position), [$value], array_slice($videoData, $position));
 
+                unset($positionsData);
+
                 Yii::endProfile('Вставка позиций');
             }
+            Yii::endProfile('Получение данных о позициях');
 
             Yii::endProfile('Генерация статистики [' . $cacheId . ']');
 
@@ -379,19 +401,16 @@ class Statistics
         Yii::beginProfile('Фильтрация результатов по запросу');
         // если установлена категория - фильтруем данные
         if ($filter[ 'category_id' ] > 0) {
-            if (Yii::$app->cache->exists($cacheId . '-cat' . $filter[ 'category_id' ])) {
-                $data = Yii::$app->cache->get($cacheId . '-cat' . $filter[ 'category_id' ]);
-            } else {
-                $data = array_values(array_filter($data, function($item) use ($filter) {
+            $data = Yii::$app->cache->getOrSet($cacheId . '-cat=' . $filter[ 'category_id' ], function() use ($data, $filter) {
+                return array_values(array_filter($data, function($item) use ($filter) {
                     return $item[ 'channel' ][ 'category_id' ] == $filter[ 'category_id' ];
                 }));
-                Yii::$app->cache->set($cacheId . '-cat' . $filter[ 'category_id' ], $data, 86400);
-            }
+            }, 86400);
         }
 
         // если установлен канал - фильтруем данные
         if ($filter[ 'channel_id' ] > 0) {
-            $data = Yii::$app->cache->getOrSet($cacheId . '-ch' . $filter[ 'channel_id' ], function() use ($data, $filter) {
+            $data = Yii::$app->cache->getOrSet($cacheId . '-ch=' . $filter[ 'channel_id' ], function() use ($data, $filter) {
                 return array_values(array_filter($data, function($item) use ($filter) {
                     return $item[ 'channel' ][ 'id' ] == $filter[ 'channel_id' ];
                 }));

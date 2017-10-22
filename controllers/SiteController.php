@@ -87,6 +87,7 @@ class SiteController extends Controller
 
         $cacheId = 'index-statistics-' . implode('-', $idArray);
 
+        Yii::$app->cache->delete($cacheId);
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($category_id, $channel_id, $query, $page) {
             Yii::beginProfile('Вычисление статистики');
             if (!is_null($category_id))
@@ -100,6 +101,7 @@ class SiteController extends Controller
                 'channel_id' => $channel_id,
                 'query' => $query,
                 'findCached' => true,
+                //'noCache' => true,
             ]);
 
             Yii::endProfile('Вычисление статистики');

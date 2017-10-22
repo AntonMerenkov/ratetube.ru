@@ -993,9 +993,11 @@ class AgentController extends Controller
     public function actionTestStatistics()
     {
         $statistics = Statistics::getStatistics(1, [
+            'category_id' => 3,
             'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'findCached' => true,
+            //'findCached' => true,
+            'noCache' => true,
         ]);
 
         echo "--- Время подробно ---\n";
@@ -1004,7 +1006,7 @@ class AgentController extends Controller
 
         echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
         echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
-        echo round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+        echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
         echo round(microtime(true) - $this->time, 2) . " сек.\n";
     }
 }
