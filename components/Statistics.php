@@ -114,9 +114,10 @@ class Statistics
      * @param array $filter
      *      'category_id' - Фильтр по категории
      *      'channel_id' - Фильтр по каналу
+     *      'query' - Фильтр по тэгу
      *      'timeType' - Принудительная установка таймфрейма
      *      'sortType' - Принудительная установка сортировки
-     *      'fullData' - Выдача без постраничной разбивки (boolean)
+     *      'fullData' - Выдача без постраничной разбивки (boolean) (не может быть использован с category_id, channel_id, query)
      *      'noCache' - Не использовать кэш
      *      'findCached' - Выбрать предыдущие данные из кэша
      * @return array
@@ -167,12 +168,16 @@ class Statistics
         }
 
         // 5 отдельных запросов получаются быстрее единого
-        $videoSql = "SELECT v.id, v.channel_id
+        /*$videoSql = "SELECT v.id, v.channel_id
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id" : "") . "
                       WHERE v.active = 1
                       " . ($filter[ 'category_id' ] > 0 ? "AND c.category_id = " . $filter[ 'category_id' ] : "") . "
-                      " . ($filter[ 'channel_id' ] > 0 ? "AND v.channel_id = " . $filter[ 'channel_id' ] : "");
+                      " . ($filter[ 'channel_id' ] > 0 ? "AND v.channel_id = " . $filter[ 'channel_id' ] : "");*/
+        // отфильтровываем category_id и channel_id после обработки статистики
+        $videoSql = "SELECT v.id, v.channel_id
+                      FROM videos v
+                      WHERE v.active = 1";
         $channelSql = "SELECT c.id, c.name, c.url, c.image_url, c.category_id FROM channels c";
         $lastTimeSql = "SELECT s.video_id, s.views, s.likes, s.dislikes
                         FROM " . $tableName . " s
@@ -206,11 +211,6 @@ class Statistics
             $channelData = array_combine(array_map(function($item) {
                 return $item[ 'id' ];
             }, $channelData), $channelData);
-
-            /*foreach ($videoData as $id => $value) {
-                $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
-                unset($videoData[ $id ][ 'channel_id' ]);
-            }*/
 
             Yii::endProfile('Получение данных о каналах');
 
@@ -411,69 +411,80 @@ class Statistics
         }
         Yii::endProfile('Установка последнего кеша');
 
-        Yii::beginProfile('Фильтрация результатов по запросу');
-        // если установлена категория - фильтруем данные
-        if ($filter[ 'category_id' ] > 0) {
-            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-cat=' . $filter[ 'category_id' ], function() use ($data, $filter) {
-                // TODO: переписать
-                return array_values(array_filter($data[ 'videoData' ], function($item) use ($filter) {
-                    return $item[ 'channel' ][ 'category_id' ] == $filter[ 'category_id' ];
-                }));
-            }, 86400);
-        }
-
-        // если установлен канал - фильтруем данные
-        if ($filter[ 'channel_id' ] > 0) {
-            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-ch=' . $filter[ 'channel_id' ], function() use ($data, $filter) {
-                return array_values(array_filter($data[ 'videoData' ], function($item) use ($filter) {
-                    return $item[ 'channel_id' ] == $filter[ 'channel_id' ];
-                }));
-            }, 86400);
-        }
-
-        // если включен поиск, то фильтруем данные
-        if (isset($filter[ 'query' ])) {
-            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
-                $videoIds = Videos::searchByQuery($filter[ 'query' ]);
-                return array_values(array_filter($data[ 'videoData' ], function($item) use ($videoIds) {
-                    return in_array($item[ 'id' ], $videoIds);
-                }));
-            }, 86400);
-        }
-
-        Yii::endProfile('Фильтрация результатов по запросу');
-
-        $time = microtime(true) - $time;
-
         $count = count($data[ 'videoData' ]);
+
         if (!$filter[ 'fullData' ]) {
-            Yii::beginProfile('Усечение результатов');
-            $data[ 'videoData' ] = array_chunk($data[ 'videoData' ], Statistics::PAGINATION_ROW_COUNT);
-            $data[ 'videoData' ] = $data[ 'videoData' ][ $page - 1 ];
-            Yii::endProfile('Усечение результатов');
-        }
+            Yii::beginProfile('Фильтрация результатов по запросу');
+            if ($filter[ 'category_id' ] > 0) {
+                // если установлен канал - фильтруем данные
+                if ($filter[ 'noCache' ])
+                    Yii::$app->cache->delete($cacheId . '-cat=' . $filter[ 'category_id' ]);
 
-        if (!$filter[ 'fullData']) {
-            Yii::beginProfile('Подстановка связанных данных');
-            $videoInfo = Yii::$app->cache->getOrSet(self::CACHE_VIDEO_INFO_KEY, function() {
-                $data = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v")->queryAll();
-                $data = array_combine(array_map(function($item) {
-                    return $item[ 'id' ];
-                }, $data), array_map(function($item) {
-                    unset($item[ 'id' ]);
-                    return $item;
-                }, $data));
+                $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-cat=' . $filter[ 'category_id' ], function() use ($data, $filter) {
+                    $channelIds = array_filter($data[ 'channelData' ], function($item) use ($filter) {
+                        return $item[ 'category_id' ] == $filter[ 'category_id' ];
+                    });
 
-                return $data;
-            }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
+                    return array_values(array_filter($data[ 'videoData' ], function($item) use ($channelIds) {
+                        return isset($channelIds[ $item[ 'channel_id' ] ]);
+                    }));
+                }, 86400);
+            } else if ($filter[ 'channel_id' ] > 0) {
+                // если установлен канал - фильтруем данные
+                if ($filter[ 'noCache' ])
+                    Yii::$app->cache->delete($cacheId . '-ch=' . $filter[ 'channel_id' ]);
 
-            foreach ($data[ 'videoData' ] as $id => $value) {
-                $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
-                $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
+                $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-ch=' . $filter[ 'channel_id' ], function() use ($data, $filter) {
+                    return array_values(array_filter($data[ 'videoData' ], function($item) use ($filter) {
+                        return $item[ 'channel_id' ] == $filter[ 'channel_id' ];
+                    }));
+                }, 86400);
+            } else if (isset($filter[ 'query' ])) {
+                // если включен поиск, то фильтруем данные
+                if ($filter[ 'noCache' ])
+                    Yii::$app->cache->delete($cacheId . '-q=' . $filter[ 'query' ]);
+
+                $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
+                    $videoIds = Videos::searchByQuery($filter[ 'query' ]);
+                    return array_values(array_filter($data[ 'videoData' ], function($item) use ($videoIds) {
+                        return in_array($item[ 'id' ], $videoIds);
+                    }));
+                }, 86400);
             }
 
-            Yii::endProfile('Подстановка связанных данных');
+            Yii::endProfile('Фильтрация результатов по запросу');
+
+            Yii::beginProfile('Усечение результатов');
+            $count = count($data[ 'videoData' ]);
+            $data[ 'videoData' ] = array_slice($data[ 'videoData' ], ($page - 1) * Statistics::PAGINATION_ROW_COUNT, Statistics::PAGINATION_ROW_COUNT);
+            Yii::endProfile('Усечение результатов');
+
+            if (!$filter[ 'fullData']) {
+                Yii::beginProfile('Подстановка связанных данных');
+                $videoInfo = Yii::$app->cache->getOrSet(self::CACHE_VIDEO_INFO_KEY, function() {
+                    $data = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v")->queryAll();
+                    $data = array_combine(array_map(function($item) {
+                        return $item[ 'id' ];
+                    }, $data), array_map(function($item) {
+                        unset($item[ 'id' ]);
+                        return $item;
+                    }, $data));
+
+                    return $data;
+                }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
+
+                foreach ($data[ 'videoData' ] as $id => $value) {
+                    $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
+                    $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
+                }
+
+                Yii::endProfile('Подстановка связанных данных');
+            }
+        } else {
+            // полные данные без фильтрации и без подстановки videoInfo
         }
+
+        $time = microtime(true) - $time;
 
         return [
             'data' => is_array($data[ 'videoData' ]) ? $data[ 'videoData' ] : [],
@@ -488,7 +499,12 @@ class Statistics
             ],
             'db' => [
                 'query_time' => Yii::$app->formatter->asDecimal($time, 2),
-                'sql' => self::formatSql($videoSql) . "\n\n" . self::formatSql($channelSql) . "\n\n" . self::formatSql($lastTimeSql) . "\n\n" . self::formatSql($prevTimeSql),
+                'sql' => self::formatSql($videoSql) . "\n\n" .
+                    self::formatSql($channelSql) . "\n\n" .
+                    self::formatSql($lastTimeSql) . "\n\n" .
+                    self::formatSql($prevTimeSql) . "\n\n" .
+                    self::formatSql($prevTimeSql2) . "\n\n" .
+                    self::formatSql($positionsSql),
                 'cache_id' => $cacheId,
                 'sort_type' => $sortType,
             ]

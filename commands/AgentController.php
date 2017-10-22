@@ -993,11 +993,11 @@ class AgentController extends Controller
     public function actionTestStatistics()
     {
         $statistics = Statistics::getStatistics(1, [
-            //'category_id' => 3,
+            'category_id' => 3,
             'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            //'findCached' => true,
-            'noCache' => true,
+            'findCached' => true,
+            //'noCache' => true,
         ]);
 
         echo "--- Время подробно ---\n";
