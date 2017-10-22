@@ -375,14 +375,18 @@ class AgentController extends Controller
             return in_array($item[ 'TABLE_NAME' ], $statisticTables);
         })));
 
-        $transaction = Yii::$app->db->beginTransaction();
+        //$transaction = Yii::$app->db->beginTransaction();
 
         foreach ($minQueryDate as $key => $date) {
             if (is_null($date))
                 continue;
 
             $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
-            Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() . ' where datetime < "' . $date . '"')->execute();
+
+            $count = Yii::$app->db->createCommand('select count(*) from ' . $tableModel::tableName() . ' where datetime < "' . $date . '"')->queryScalar();
+            if ($count > 0)
+                for ($i = 1; $i <= ceil($count / 10000); $i++)
+                    Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() . ' where datetime < "' . $date . '" LIMIT 10000')->execute();
         }
 
         $newTableSize = array_sum(array_map(function ($item) {
@@ -391,7 +395,7 @@ class AgentController extends Controller
             return in_array($item[ 'TABLE_NAME' ], $statisticTables);
         })));
 
-        $transaction->commit();
+        //$transaction->commit();
 
         Yii::info("Таблицы статистики очищены, " . Yii::$app->formatter->asShortSize($oldTableSize - $newTableSize, 1) . " удалено, время: " .
             Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
