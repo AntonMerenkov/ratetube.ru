@@ -57,20 +57,16 @@ class PopularTags extends Widget
 
         $videoIds = array_map(function($item) {
             return $item[ 'id' ];
-        }, $statisticsQueryData[ 'data' ]);
-        $videoIds = array_combine($videoIds, $videoIds);
-
-        // загружаем все тэги по данными видео
-        $tags = Yii::$app->cache->getOrSet(self::CACHE_ARRAY_KEY, function() {
-            return Yii::$app->db->createCommand('SELECT id, video_id, text from `' . Tags::tableName() . '`')->queryAll();
-        }, self::$cacheTime * 3);
+        }, array_slice($statisticsQueryData[ 'data' ], 0, 1000));
 
         echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
 
-        // фильтруем тэги только по выбранным видео
-        $tags = array_filter($tags, function($item) use ($videoIds) {
-            return isset($videoIds[ $item[ 'video_id' ] ]);
-        });
+        // загружаем все тэги по данными видео
+        $tags = Yii::$app->cache->getOrSet(self::CACHE_ARRAY_KEY, function() use ($videoIds) {
+            return Yii::$app->db->createCommand('SELECT id, video_id, text from `' . Tags::tableName() . '` WHERE video_id in (' . implode(',', $videoIds) . ') LIMIT 10000')->queryAll();
+        }, self::$cacheTime * 3);
+
+        echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
 
         // по каждому тексту тэга собираем кол-во баллов (1 балл - 1 diff)
         $sortType = $statisticsQueryData[ 'db' ][ 'sort_type' ];

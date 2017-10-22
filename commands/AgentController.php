@@ -968,23 +968,20 @@ class AgentController extends Controller
 
     public function actionTestStatistics()
     {
-        ini_set('memory_limit', '4096M');
-        PopularTags::updateCache();
-
-        /*$statistics = Statistics::getStatistics(1, [
+        $statistics = Statistics::getStatistics(1, [
             'category_id' => 3,
             'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
             'findCached' => true,
             //'noCache' => true,
-        ]);*/
+        ]);
 
         echo "--- Время подробно ---\n";
         foreach (Yii::getLogger()->getProfiling() as $item)
             echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
 
-        //echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
-        //echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
+        echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
+        echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
         echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
         echo round(microtime(true) - $this->time, 2) . " сек.\n";
     }
