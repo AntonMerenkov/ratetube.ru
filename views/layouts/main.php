@@ -139,8 +139,8 @@ $categories = Categories::getDb()->cache(function ($db) {
                     <div class="widget-header">Поиск</div>
                     <form action="<?=Url::to([
                         'site/index',
-                        "category_id" => Yii::$app->request->get('category_id', null),
-                        "channel_id" => Yii::$app->request->get('channel_id', null),
+                        //"category_id" => Yii::$app->request->get('category_id', null),
+                        //"channel_id" => Yii::$app->request->get('channel_id', null),
                     ]) ?>" method="get">
                         <input type="text" name="query" class="form-control">
                         <a href="#"><i class="glyphicon glyphicon-search"></i></a>

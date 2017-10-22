@@ -48,8 +48,8 @@ $query = Yii::$app->request->get('query', null);
         </div>
         <form action="<?=Url::to([
             'site/index',
-            "category_id" => Yii::$app->request->get('category_id', null),
-            "channel_id" => Yii::$app->request->get('channel_id', null),
+            //"category_id" => Yii::$app->request->get('category_id', null),
+            //"channel_id" => Yii::$app->request->get('channel_id', null),
         ]) ?>" method="get">
             <div class="input-group">
                 <input type="text" name="query" class="form-control" placeholder="Что вы хотите найти?" value="<?=$query ?>">

@@ -6,6 +6,7 @@ use app\models\StatisticsMinute;
 use app\models\Videos;
 use SplPriorityQueue;
 use Yii;
+use yii\caching\DbDependency;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -104,6 +105,7 @@ class Statistics
     const SORT_SESSION_KEY = 'sort-type';
     const PAGINATION_ROW_COUNT = 50;
     const CACHE_HISTORY_KEY = 'cache-history';
+    const CACHE_VIDEO_INFO_KEY = 'video-info';
 
     /**
      * Получение статистики по видео с постраничной разбивкой
@@ -165,7 +167,7 @@ class Statistics
         }
 
         // 5 отдельных запросов получаются быстрее единого
-        $videoSql = "SELECT v.id, v.name, v.video_link, v.image_url, v.channel_id
+        $videoSql = "SELECT v.id, v.channel_id
                       FROM videos v
                       " . ($filter[ 'category_id' ] > 0 ? "LEFT JOIN channels c ON c.id = v.channel_id" : "") . "
                       WHERE v.active = 1
@@ -205,12 +207,11 @@ class Statistics
                 return $item[ 'id' ];
             }, $channelData), $channelData);
 
-            foreach ($videoData as $id => $value) {
+            /*foreach ($videoData as $id => $value) {
                 $videoData[ $id ][ 'channel' ] = $channelData[ $videoData[ $id ][ 'channel_id' ] ];
                 unset($videoData[ $id ][ 'channel_id' ]);
-            }
+            }*/
 
-            unset($channelData);
             Yii::endProfile('Получение данных о каналах');
 
             Yii::beginProfile('Получение данных о последнем времени');
@@ -283,6 +284,8 @@ class Statistics
                     return $videoData[ $item ][ 'id' ];
                 }, $videoIds);
 
+                unset($videoIds);
+
                 $videoIds = array_map(function($item) {
                     return [
                         $item[ 'views_diff2' ],
@@ -303,6 +306,8 @@ class Statistics
                     return $videoData[ $item ][ 'id' ];
                 }, $videoIds);
 
+                unset($videoIds);
+
                 Yii::beginProfile('Сопоставление позиций');
                 $lastPositions = array_flip($lastPositions);
                 $prevPositions = array_flip($prevPositions);
@@ -315,6 +320,9 @@ class Statistics
                     unset($videoData[ $id ][ 'views2' ]);
                     unset($videoData[ $id ][ 'views_diff2' ]);
                 }
+
+                unset($lastPositions);
+                unset($prevPositions);
                 Yii::endProfile('Сопоставление позиций');
             }
 
@@ -384,10 +392,14 @@ class Statistics
 
             Yii::endProfile('Генерация статистики [' . $cacheId . ']');
 
-            return $videoData;
+            return [
+                'videoData' => $videoData,
+                'channelData' => $channelData,
+            ];
         }, 86400);
 
         // добавляем ID кэша в массив последних кешей
+        Yii::beginProfile('Установка последнего кеша');
         $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
         if ($cacheHistory === false)
             $cacheHistory = [];
@@ -397,12 +409,14 @@ class Statistics
             array_unshift($cacheHistory[ $timeType ], $cacheId);
             Yii::$app->cache->set(self::CACHE_HISTORY_KEY, $cacheHistory);
         }
+        Yii::endProfile('Установка последнего кеша');
 
         Yii::beginProfile('Фильтрация результатов по запросу');
         // если установлена категория - фильтруем данные
         if ($filter[ 'category_id' ] > 0) {
-            $data = Yii::$app->cache->getOrSet($cacheId . '-cat=' . $filter[ 'category_id' ], function() use ($data, $filter) {
-                return array_values(array_filter($data, function($item) use ($filter) {
+            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-cat=' . $filter[ 'category_id' ], function() use ($data, $filter) {
+                // TODO: переписать
+                return array_values(array_filter($data[ 'videoData' ], function($item) use ($filter) {
                     return $item[ 'channel' ][ 'category_id' ] == $filter[ 'category_id' ];
                 }));
             }, 86400);
@@ -410,18 +424,18 @@ class Statistics
 
         // если установлен канал - фильтруем данные
         if ($filter[ 'channel_id' ] > 0) {
-            $data = Yii::$app->cache->getOrSet($cacheId . '-ch=' . $filter[ 'channel_id' ], function() use ($data, $filter) {
-                return array_values(array_filter($data, function($item) use ($filter) {
-                    return $item[ 'channel' ][ 'id' ] == $filter[ 'channel_id' ];
+            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-ch=' . $filter[ 'channel_id' ], function() use ($data, $filter) {
+                return array_values(array_filter($data[ 'videoData' ], function($item) use ($filter) {
+                    return $item[ 'channel_id' ] == $filter[ 'channel_id' ];
                 }));
             }, 86400);
         }
 
         // если включен поиск, то фильтруем данные
         if (isset($filter[ 'query' ])) {
-            $data = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
+            $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
                 $videoIds = Videos::searchByQuery($filter[ 'query' ]);
-                return array_values(array_filter($data, function($item) use ($videoIds) {
+                return array_values(array_filter($data[ 'videoData' ], function($item) use ($videoIds) {
                     return in_array($item[ 'id' ], $videoIds);
                 }));
             }, 86400);
@@ -431,14 +445,38 @@ class Statistics
 
         $time = microtime(true) - $time;
 
-        $count = count($data);
+        $count = count($data[ 'videoData' ]);
         if (!$filter[ 'fullData' ]) {
-            $data = array_chunk($data, Statistics::PAGINATION_ROW_COUNT);
-            $data = $data[ $page - 1 ];
+            Yii::beginProfile('Усечение результатов');
+            $data[ 'videoData' ] = array_chunk($data[ 'videoData' ], Statistics::PAGINATION_ROW_COUNT);
+            $data[ 'videoData' ] = $data[ 'videoData' ][ $page - 1 ];
+            Yii::endProfile('Усечение результатов');
+        }
+
+        if (!$filter[ 'fullData']) {
+            Yii::beginProfile('Подстановка связанных данных');
+            $videoInfo = Yii::$app->cache->getOrSet(self::CACHE_VIDEO_INFO_KEY, function() {
+                $data = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v")->queryAll();
+                $data = array_combine(array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $data), array_map(function($item) {
+                    unset($item[ 'id' ]);
+                    return $item;
+                }, $data));
+
+                return $data;
+            }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
+
+            foreach ($data[ 'videoData' ] as $id => $value) {
+                $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
+                $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
+            }
+
+            Yii::endProfile('Подстановка связанных данных');
         }
 
         return [
-            'data' => is_array($data) ? $data : [],
+            'data' => is_array($data[ 'videoData' ]) ? $data[ 'videoData' ] : [],
             'pagination' => [
                 'count' => $count,
                 'page' => $page,
