@@ -65,6 +65,8 @@ class PopularTags extends Widget
             return Yii::$app->db->createCommand('SELECT id, video_id, text from `' . Tags::tableName() . '`')->queryAll();
         }, self::$cacheTime * 3);
 
+        echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
+
         // фильтруем тэги только по выбранным видео
         $tags = array_filter($tags, function($item) use ($videoIds) {
             return isset($videoIds[ $item[ 'video_id' ] ]);

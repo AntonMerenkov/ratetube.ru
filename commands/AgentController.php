@@ -623,18 +623,16 @@ class AgentController extends Controller
     public function actionUpdateTags()
     {
         // загружаем текущие данные из БД
-        $videos = ArrayHelper::map(Videos::find()->all(), 'id', function ($item) {
-            return $item;
-        });
-        $tags = ArrayHelper::map(Tags::find()->all(), 'id', function ($item) {
-            return $item;
-        });
+        $videoIds = ArrayHelper::map(Yii::$app->db->createCommand('SELECT id, video_link FROM ' . Videos::tableName())->queryAll(), 'id', 'video_link');
 
-        $videoIds = ArrayHelper::map($videos, 'id', 'video_link');
+        // находим ID видео, у которых нет тэгов
+        $existingIds = Yii::$app->db->createCommand('SELECT DISTINCT (video_id) FROM ' . Tags::tableName())->queryColumn();
+        $existingIds = array_fill_keys($existingIds, true);
 
-        // загрузить все тэги добавленных видео множественным запросом
-        $newTags = [];
-        $urlArray = [];
+        $videoIds = array_diff_key($videoIds, $existingIds);
+
+        if (empty($videoIds))
+            return true;
 
         // пытаемся загрузить данные из кэша
         $cachedData = [];
@@ -670,17 +668,11 @@ class AgentController extends Controller
             }
         }
 
-        // формируем массив старых тэгов
-        $oldTags = [];
-        foreach ($tags as $tag)
-            $oldTags[ $tag->video_id ][ (int)$tag->type ][ $tag->id ] = $tag->text;
-
         $videoIds = array_flip($videoIds);
 
         //echo "Начинаем обработку [" . round(microtime(true) - $this->time, 2) . "]\n";
 
         $addedTags = 0;
-        $deletedTags = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
             if (!is_array($result))
@@ -691,7 +683,7 @@ class AgentController extends Controller
             $newTags = [];
             foreach ($result as $item)
                 $newTags[ $videoIds[ $item[ 'id' ] ] ] = [
-                    Tags::TYPE_TAG => $this->processUnicode($item[ 'snippet' ][ 'tags' ]),
+                    Tags::TYPE_TAG => is_array($item[ 'snippet' ][ 'tags' ]) ? array_slice($this->processUnicode($item[ 'snippet' ][ 'tags' ]), 0, 3) : null,
                     Tags::TYPE_CHANNEL => [
                         $this->processUnicode($item[ 'snippet' ][ 'channelTitle' ])
                     ],
@@ -705,22 +697,13 @@ class AgentController extends Controller
             $transaction = Yii::$app->db->beginTransaction();
 
             // проанализировать тэги, добавить отсутствующие и удалить ненужные
-            $delIds = [];
             $addData = [];
             foreach ($videoIds as $videoLink => $videoId) {
-                if (!isset($oldTags[ $videoId ]) && !isset($newTags[ $videoId ]))
-                    continue;
-
                 foreach (Tags::$weights as $type => $weight) {
-                    if (!isset($oldTags[ $videoId ][ $type ]) && !isset($newTags[ $videoId ][ $type ]))
+                    if (!isset($newTags[ $videoId ][ $type ]))
                         continue;
 
-                    $addValues = array_diff((array)$newTags[ $videoId ][ $type ], (array)$oldTags[ $videoId ][ $type ]);
-                    $delValues = array_diff((array)$oldTags[ $videoId ][ $type ], (array)$newTags[ $videoId ][ $type ]);
-
-                    $delIds = array_merge($delIds, array_keys($delValues));
-
-                    foreach ($addValues as $value)
+                    foreach ($newTags[ $videoId ][ $type ] as $value)
                         $addData[] = [
                             'video_id' => $videoId,
                             'type' => $type,
@@ -734,11 +717,7 @@ class AgentController extends Controller
             if (!empty($addData))
                 Yii::$app->db->createCommand()->batchInsert(Tags::tableName(), array_keys($addData[ 0 ]), $addData)->execute();
 
-            if (!empty($delIds))
-                Tags::deleteAll(['id' => $delIds]);
-
             $addedTags += count($addData);
-            $deletedTags += count($delIds);
 
             $transaction->commit();
 
@@ -752,10 +731,7 @@ class AgentController extends Controller
             //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
         }
 
-        Yii::$app->cache->delete(PopularTags::TAGS_CACHE_KEY);
-
         Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $addedTags]) .
-            ", удалено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $deletedTags]) .
             ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
@@ -992,20 +968,23 @@ class AgentController extends Controller
 
     public function actionTestStatistics()
     {
-        $statistics = Statistics::getStatistics(1, [
+        ini_set('memory_limit', '4096M');
+        PopularTags::updateCache();
+
+        /*$statistics = Statistics::getStatistics(1, [
             'category_id' => 3,
             'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
             'findCached' => true,
             //'noCache' => true,
-        ]);
+        ]);*/
 
         echo "--- Время подробно ---\n";
         foreach (Yii::getLogger()->getProfiling() as $item)
             echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
 
-        echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
-        echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
+        //echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
+        //echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
         echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
         echo round(microtime(true) - $this->time, 2) . " сек.\n";
     }
