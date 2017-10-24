@@ -841,11 +841,6 @@ class AgentController extends Controller
                 round(microtime(true) - $this->time, 2) . " сек, память: " .
                 round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
 
-        // профайлинг
-        echo "--- Время подробно ---\n";
-        foreach (Yii::getLogger()->getProfiling() as $item)
-            echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
-
         if (!empty($addedIntervals))
             Yii::info("Сгенерирован кэш для интервалов и виджетов " .
                 implode("", $addedIntervals) . ", время: " . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
