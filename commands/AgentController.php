@@ -121,8 +121,8 @@ class AgentController extends Controller
 
         if (empty($cachedData)) {
             // загрузку новых видео проводим только раз в час, в 15 минут
-            if (date('i', strtotime($this->profiling->datetime)) != 15)
-                return true;
+            /*if (date('i', strtotime($this->profiling->datetime)) != 15)
+                return true;*/
 
             $cachedData = HighloadAPI::query('search', [
                 'channelId' => $channelsIds,
