@@ -474,7 +474,13 @@ class Statistics
                 }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
 
                 foreach ($data[ 'videoData' ] as $id => $value) {
-                    $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
+                    if (isset($videoInfo[ $value[ 'id' ] ]))
+                        $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
+                    else
+                        unset($data[ 'videoData' ][ $id ]);
+
+                    // TODO: удалять статистику для неактивных видео
+
                     $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
                 }
 
