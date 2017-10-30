@@ -172,6 +172,36 @@ foreach ($statisticsQueryData['data'] as $item)
                                 'class' => 'text-center',
                             ],
                         ],
+                        [
+                            'attribute' => 'cache',
+                            'header' => 'Кеш',
+                            'format' => 'raw',
+                            'value' => function($item) {
+                                $folder = Yii::getAlias('@app/runtime/highload_cache/' . preg_replace('/^agent\-/', '', $item[ 'code' ]));
+
+                                if (!file_exists($folder))
+                                    return '<span class="text-muted">(нет)</span>';
+
+                                $subfolders = glob($folder . '/*');
+
+                                if (empty($subfolders))
+                                    return '<span class="text-muted">(нет)</span>';
+
+                                $duration = time() - end(explode('/', $subfolders[ 0 ]));
+                                $durationString = reset(explode(', ', Yii::$app->formatter->asDuration($duration)));
+
+                                if ($duration > 86400)
+                                    return '<span class="text-danger"><i class="glyphicon glyphicon-exclamation-sign"></i> ' . $durationString . '</span>';
+                                else
+                                    return '<span class="text-warning">' . $durationString . '</span>';
+                            },
+                            'contentOptions' => [
+                                'class' => 'text-center',
+                            ],
+                            'headerOptions' => [
+                                'class' => 'text-center',
+                            ],
+                        ],
                     ],
                 ]); ?>
             </div>
@@ -195,8 +225,8 @@ foreach ($statisticsQueryData['data'] as $item)
                                     return [
                                         'timeframe' => Statistics::$timeTypes[ $key ],
                                         'name' => '',
-                                        'start_date' => date('Y-m-d', strtotime($item[ 0 ])) . 'T' . date('H:i:s', strtotime($item[ 0 ])) . '+07:00',
-                                        'end_date' => date('Y-m-d', strtotime($item[ 1 ])) . 'T' . date('H:i:s', strtotime($item[ 1 ])) . '+07:00',
+                                        'start_date' => date('Y-m-d', strtotime($item[ 0 ])) . 'T' . date('H:i:s', strtotime($item[ 0 ])) . '+04:00',
+                                        'end_date' => date('Y-m-d', strtotime($item[ 1 ])) . 'T' . date('H:i:s', strtotime($item[ 1 ])) . '+04:00',
                                         //'start_date' => $item[ 0 ],
                                         //'end_date' => $item[ 1 ]
                                     ];
