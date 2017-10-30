@@ -65,6 +65,37 @@ class SiteController extends Controller
     }
 
     /**
+     * Накрутка статистики.
+     *
+     * @param $data
+     */
+    private function cheatData($data)
+    {
+        // рандомизация данных для анимации
+        $lastTime = strtotime($data[ 'time' ][ 'from' ]);
+        $prevTime = strtotime($data[ 'time' ][ 'to' ]);
+        if ($lastTime > $prevTime) {
+            $timeDiff = time() - $lastTime;
+            $timeDiffPercent = $timeDiff / ($lastTime - $prevTime);
+
+            // 30% от максимально возможного прироста
+            foreach ($data[ 'data' ] as $id => $value) {
+                $data[ 'data' ][ $id ][ 'views' ] += round($data[ 'data' ][ $id ][ 'views_diff' ] * 0.3 * $timeDiffPercent);
+
+                $viewsRand = floor($data[ 'data' ][ $id ][ 'views_diff' ] * 0.1 * $timeDiffPercent);
+                $data[ 'data' ][ $id ][ 'views_diff' ] += $viewsRand;
+                $data[ 'data' ][ $id ][ 'views' ] += $viewsRand;
+
+                $data[ 'data' ][ $id ][ 'likes_diff' ] += floor($data[ 'data' ][ $id ][ 'likes_diff' ] * 0.1 * $timeDiffPercent);
+                $data[ 'data' ][ $id ][ 'dislikes_diff' ] += floor($data[ 'data' ][ $id ][ 'dislikes_diff' ] * 0.1 * $timeDiffPercent);
+                //$data[ 'data' ][ $id ][ 'position_diff' ] += floor($data[ 'data' ][ $id ][ 'position_diff' ] * 0.1 * $timeDiffPercent);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Кеширование для экономии памяти - сохраняем 1 страницу.
      *
      * @param null $category_id
@@ -92,7 +123,7 @@ class SiteController extends Controller
 
         $cacheId = 'index-statistics-' . implode('-', $idArray);
 
-        Yii::$app->cache->delete($cacheId);
+        //Yii::$app->cache->delete($cacheId);
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($category_id, $channel_id, $query, $page) {
             Yii::beginProfile('Вычисление статистики');
             if (!is_null($category_id))
@@ -113,6 +144,10 @@ class SiteController extends Controller
 
             return $data;
         }, 300);
+
+        $data = Yii::$app->cache->getOrSet($cacheId . '-cheat', function() use ($data) {
+            return $this->cheatData($data);
+        }, 10);
 
         return $data;
     }
@@ -201,31 +236,6 @@ class SiteController extends Controller
     public function actionAjaxGetStatistics($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
         $statisticsQueryData = $this->getCachedStatistics($category_id, $channel_id, $query, $page);
-
-        // рандомизация данных для анимации
-        $lastTime = strtotime($statisticsQueryData[ 'time' ][ 'from' ]);
-        $prevTime = strtotime($statisticsQueryData[ 'time' ][ 'to' ]);
-        if ($lastTime > $prevTime) {
-            $timeDiff = time() - $lastTime;
-
-            // 30% от максимально возможного прироста
-            foreach ($statisticsQueryData[ 'data' ] as $id => $value) {
-                $statisticsQueryData[ 'data' ][ $id ][ 'views' ] += round($statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] * $timeDiff / ($lastTime - $prevTime) * 0.3);
-
-                if (mt_rand(0, 1) == 1) {
-                    $viewsRand = mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] * 0.1)));
-                    $statisticsQueryData[ 'data' ][ $id ][ 'views_diff' ] += $viewsRand;
-                    $statisticsQueryData[ 'data' ][ $id ][ 'views' ] += $viewsRand;
-                }
-                if (mt_rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] += mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'likes_diff' ] * 0.1)));
-                if (mt_rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] += mt_rand(0, abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'dislikes_diff' ] * 0.1)));
-                if (mt_rand(0, 1) == 1)
-                    $statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] += mt_rand(-abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] * 0.1)),
-                        abs(floor($statisticsQueryData[ 'data' ][ $id ][ 'position_diff' ] * 0.1)));
-            }
-        }
 
         // для демо
         /*for ($i = 1; $i <= rand(2, 4); $i++) {
