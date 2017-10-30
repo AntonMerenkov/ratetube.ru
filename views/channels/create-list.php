@@ -35,6 +35,7 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
 
     <br>
     <a href="#" id="validate" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Проверить и добавить</a>
+    <span id="status" style="display: inline-block; padding: 6px 12px;" class="text-muted hidden"></span>
     <br>
     <br>
 
@@ -86,6 +87,8 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
             });
 
             if (urls.length > 0) {
+                $('#status').text('0 / ' + urls.length + ' обработано').removeClass('hidden').attr('data-count', 0);
+
                 var promises = $.map(urls, function(url){
                     return $.post('/admin/channels/query-data', {url: url}).then(function(data) {
                         data = $.parseJSON(data);
@@ -109,12 +112,17 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
                                 '<td>' + numberWithCommas(data.subscribers_count) + '</td>' +
                                 '</tr>'))
                         }
+
+                        $('#status').attr('data-count', parseInt($('#status').attr('data-count')) + 1);
+                        $('#status').text($('#status').attr('data-count') + ' / ' + urls.length + ' обработано');
                     });
                 });
+
                 $.when.apply(this, promises)
                     .then(function(){
                         $('textarea[name="urls"]').val('');
                         controls.removeAttr('disabled').removeClass('disabled');
+                        $('#status').addClass('hidden');
                     });
             }
         });
