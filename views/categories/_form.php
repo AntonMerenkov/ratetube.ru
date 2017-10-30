@@ -42,6 +42,17 @@ use yii\widgets\ActiveForm;
     </fieldset>
     <br>
 
+    <fieldset>
+        <legend>Загрузка видео</legend>
+
+        <?= $form->field($model, 'load_last_days')->textInput([
+            'type' => 'load_last_days',
+            'min' => 0
+        ]) ?>
+        <p class="help-block">Если вы хотите загрузить все видео с канала, укажите 0 или оставьте поле пустым.</p>
+    </fieldset>
+    <br>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Добавить' : 'Сохранить', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

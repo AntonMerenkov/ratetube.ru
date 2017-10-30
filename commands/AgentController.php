@@ -95,6 +95,12 @@ class AgentController extends Controller
         $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
         $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
 
+        $loadLastDaysCat = ArrayHelper::map(Categories::find()->all(), 'id', 'load_last_days');
+
+        foreach ($channelModels as $channelModel)
+            if (isset($loadLastDaysCat[ $channelModel->category_id ]) && $loadLastDaysCat[ $channelModel->category_id ] > 0)
+                $loadLastDays[ $channelModel->id ] = $loadLastDaysCat[ $channelModel->category_id ];
+
         if (!is_null($channel_id))
             $videoModels = Videos::find()->where(['channel_id' => $channel_id])->all();
         else
@@ -141,6 +147,8 @@ class AgentController extends Controller
                 file_put_contents($cachedDir . '/' . $id, serialize($data));
             }
         }
+
+        ksort($cachedData, SORT_NUMERIC);
 
         $addedCount = 0;
         foreach ($cachedData as $id => $result) {
@@ -199,7 +207,9 @@ class AgentController extends Controller
                 if (count(glob($cachedDir . '/*')) == 0)
                     rmdir($cachedDir);
 
-                //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+                echo str_pad("[" . (count($cachedData) + 1) .
+                    "] Обработка данных, добавлено " . $addedCount . ", память " .
+                    round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 throw $e;
@@ -255,6 +265,8 @@ class AgentController extends Controller
                 file_put_contents($cachedDir . '/' . $id, serialize($data));
             }
         }
+
+        ksort($cachedData, SORT_NUMERIC);
 
         $cachedTimestamp = end(explode('/', $cachedDir));
         $addedIntervals = [];
@@ -327,7 +339,9 @@ class AgentController extends Controller
                 if (count(glob($cachedDir . '/*')) == 0)
                     rmdir($cachedDir);
 
-                //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+                echo str_pad("[" . (count($cachedData) + 1) .
+                        "] Обработка данных, добавлено " . $addedCount . ", память " .
+                        round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 throw $e;
@@ -515,6 +529,8 @@ class AgentController extends Controller
             }
         }
 
+        ksort($cachedData, SORT_NUMERIC);
+
         $addedChannels = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
@@ -545,7 +561,9 @@ class AgentController extends Controller
             if (count(glob($cachedDir . '/*')) == 0)
                 rmdir($cachedDir);
 
-            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+            echo str_pad("[" . (count($cachedData) + 1) .
+                "] Обработка данных, добавлено " . $addedChannels . ", память " .
+                round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
         }
 
         Yii::info("Количество подписчиков обновлено для " . Yii::t('app', '{n, plural, one{# канала} other{# каналов}}', ['n' => $addedChannels]) .
@@ -672,6 +690,8 @@ class AgentController extends Controller
             }
         }
 
+        ksort($cachedData, SORT_NUMERIC);
+
         $videoIds = array_flip($videoIds);
 
         //echo "Начинаем обработку [" . round(microtime(true) - $this->time, 2) . "]\n";
@@ -732,7 +752,10 @@ class AgentController extends Controller
                 rmdir($cachedDir);
 
             //echo "Данные добавлены в БД [" . round(microtime(true) - $this->time, 2) . "]\n";
-            //echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+
+            echo str_pad("[" . (count($cachedData) + 1) .
+                "] Обработка данных, добавлено " . $addedTags . ", память " .
+                round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
         }
 
         Yii::info("Тэги обновлены, добавлено " . Yii::t('app', '{n, plural, one{# тэг} other{# тэгов}}', ['n' => $addedTags]) .

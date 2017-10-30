@@ -12,6 +12,7 @@ use Yii;
  * @property string $code
  * @property string $flush_timeframe
  * @property integer $flush_count
+ * @property integer $load_last_days
  *
  * @property Channels[] $channels
  */
@@ -54,6 +55,7 @@ class Categories extends \yii\db\ActiveRecord
             [['flush_timeframe'], 'string', 'max' => 20],
             [['timeframeExist'], 'boolean'],
             [['timeframeExist'], 'timeframeCheck'],
+            [['load_last_days'], 'integer'],
         ];
     }
 
@@ -69,6 +71,7 @@ class Categories extends \yii\db\ActiveRecord
             'flush_timeframe' => 'Период очистки',
             'flush_count' => 'Минимальное количество просмотров',
             'timeframeExist' => 'Удалять видео по критерию',
+            'load_last_days' => 'Загружать видео за период (дней)',
         ];
     }
 

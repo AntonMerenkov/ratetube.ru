@@ -479,8 +479,6 @@ class Statistics
                     else
                         unset($data[ 'videoData' ][ $id ]);
 
-                    // TODO: удалять статистику для неактивных видео
-
                     $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
                 }
 

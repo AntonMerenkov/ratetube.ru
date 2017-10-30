@@ -1,5 +1,6 @@
 <?php
 
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\Url;
@@ -10,12 +11,17 @@ use app\models\Videos;
 /* @var $channelModel app\models\Channels */
 /* @var $searchModel app\models\VideosSearch */
 /* @var $videosDataProvider yii\data\ActiveDataProvider */
+/* @var $statisticsData array */
 
 $this->title = 'Список видео канала «' . $channelModel->name . '»';
 $this->params['breadcrumbs'][] = ['label' => 'Каналы', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $channelModel->category->name, 'url' => ['index', 'id' => $channelModel->category_id]];
 $this->params['breadcrumbs'][] = ['label' => $channelModel->name, 'url' => ['update', 'id' => $channelModel->id]];
 $this->params['breadcrumbs'][] = 'Список видео';
+
+$statisticsData = ArrayHelper::map($statisticsData[ 'data' ], 'id', function($item) {
+    return $item;
+});
 
 ?>
 <div class="channels-index">
@@ -78,8 +84,13 @@ $this->params['breadcrumbs'][] = 'Список видео';
                 'attribute' => 'views',
                 'header' => '<i class="glyphicon glyphicon-eye-open"></i>',
                 'format' => 'raw',
-                'value' => function($data){
-                    return end($data->statistics)->views;
+                'value' => function($data) use ($statisticsData) {
+                    return end($data->statistics)->views . '<br>' .
+                        (isset($statisticsData[ $data->id ][ 'views_diff' ]) ?
+                            ($statisticsData[ $data->id ][ 'views_diff' ] > 0 ?
+                                '<span class="text-success">+' . $statisticsData[ $data->id ][ 'views_diff' ] . '</span>' :
+                                '<span class="text-muted">+' . $statisticsData[ $data->id ][ 'views_diff' ] . '</span>') :
+                            '(нет)');
                 },
                 'headerOptions' => [
                     'class' => 'text-center'
@@ -93,8 +104,13 @@ $this->params['breadcrumbs'][] = 'Список видео';
                 'attribute' => 'likes',
                 'header' => '<i class="glyphicon glyphicon-hand-up"></i>',
                 'format' => 'raw',
-                'value' => function($data){
-                    return end($data->statistics)->likes;
+                'value' => function($data) use ($statisticsData) {
+                    return end($data->statistics)->likes . '<br>' .
+                        (isset($statisticsData[ $data->id ][ 'likes_diff' ]) ?
+                            ($statisticsData[ $data->id ][ 'likes_diff' ] > 0 ?
+                                '<span class="text-success">+' . $statisticsData[ $data->id ][ 'likes_diff' ] . '</span>' :
+                                '<span class="text-muted">+' . $statisticsData[ $data->id ][ 'likes_diff' ] . '</span>') :
+                            '(нет)');
                 },
                 'headerOptions' => [
                     'class' => 'text-center'
@@ -108,8 +124,13 @@ $this->params['breadcrumbs'][] = 'Список видео';
                 'attribute' => 'dislikes',
                 'header' => '<i class="glyphicon glyphicon-hand-down"></i>',
                 'format' => 'raw',
-                'value' => function($data){
-                    return end($data->statistics)->dislikes;
+                'value' => function($data) use ($statisticsData) {
+                    return end($data->statistics)->dislikes . '<br>' .
+                        (isset($statisticsData[ $data->id ][ 'dislikes_diff' ]) ?
+                            ($statisticsData[ $data->id ][ 'dislikes_diff' ] > 0 ?
+                                '<span class="text-success">+' . $statisticsData[ $data->id ][ 'dislikes_diff' ] . '</span>' :
+                                '<span class="text-muted">+' . $statisticsData[ $data->id ][ 'dislikes_diff' ] . '</span>') :
+                            '(нет)');
                 },
                 'headerOptions' => [
                     'class' => 'text-center'

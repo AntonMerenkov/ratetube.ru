@@ -157,10 +157,12 @@ class HighloadAPI
                         if (isset($response[ $id ]))
                             continue;
 
-                        $response[ $id ] = [
+                        /*$response[ $id ] = [
                             'result' => gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]))),
                             'keys' => []
-                        ];
+                        ];*/
+
+                        $response[ $id ] = gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ])));
                     }
 
                     break;
@@ -274,10 +276,12 @@ class HighloadAPI
                         if (isset($response[ $id ]))
                             continue;
 
-                        $response[ $id ] = [
+                        /*$response[ $id ] = [
                             'result' => gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ]))),
                             'keys' => []
-                        ];
+                        ];*/
+
+                        $response[ $id ] = gzcompress(serialize(YoutubeAPI::query($data[ 'method' ], $data[ 'params' ], $data[ 'parts' ], $data[ 'type' ])));
                     }
 
                     break;
