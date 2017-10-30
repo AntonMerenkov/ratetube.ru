@@ -106,7 +106,7 @@ class SiteController extends Controller
                 'channel_id' => $channel_id,
                 'query' => $query,
                 'findCached' => true,
-                //'noCache' => true,
+                //'noCache' => true, // for debug
             ]);
 
             Yii::endProfile('Вычисление статистики');

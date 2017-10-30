@@ -364,10 +364,19 @@ class Statistics
                     return $carry;
                 }, []);
 
+                Yii::beginProfile('Поиск позиций в общем списке');
+
+                $videoIds = array_flip(array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $videoData));
+
                 foreach ($positionsData as $position => $items) {
-                    $positionsData[ $position ] = $videoData[ $items[ array_rand($items) ] ];
+                    // поиск в списке
+                    $positionsData[ $position ] = $videoData[ $videoIds[ $items[ array_rand($items) ] ] ];
                     $positionsData[ $position ][ 'ad' ] = 1;
                 }
+
+                Yii::endProfile('Поиск позиций в общем списке');
 
                 Yii::beginProfile('Вставка позиций');
 

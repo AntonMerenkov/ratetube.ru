@@ -82,29 +82,21 @@ class AgentController extends Controller
     /**
      * Обновление списка видео.
      *
-     * @param null $channel_id
      * @throws \Exception
      */
-    public function actionUpdateVideos($channel_id = null)
+    public function actionUpdateVideos()
     {
-        if (!is_null($channel_id))
-            $channelModels = Channels::find()->where(['id' => $channel_id])->all();
-        else
-            $channelModels = Channels::find()->all();
+        $channelModels = Channels::find()->all();
 
         $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
         $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
-
         $loadLastDaysCat = ArrayHelper::map(Categories::find()->all(), 'id', 'load_last_days');
 
         foreach ($channelModels as $channelModel)
             if (isset($loadLastDaysCat[ $channelModel->category_id ]) && $loadLastDaysCat[ $channelModel->category_id ] > 0)
                 $loadLastDays[ $channelModel->id ] = $loadLastDaysCat[ $channelModel->category_id ];
 
-        if (!is_null($channel_id))
-            $videoModels = Videos::find()->where(['channel_id' => $channel_id])->all();
-        else
-            $videoModels = Videos::find()->all();
+        $videoModels = Videos::find()->all();
 
         $videoModels = ArrayHelper::map($videoModels, 'id', function($item) {
             return $item;
@@ -150,7 +142,12 @@ class AgentController extends Controller
 
         ksort($cachedData, SORT_NUMERIC);
 
+        $channelsLinks = array_flip($channelsIds);
+        $oldVideosLinks = array_flip($oldVideos);
+        $oldVideosActive = ArrayHelper::map($videoModels, 'id', 'active');
+
         $addedCount = 0;
+        $unactiveCount = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
             if (!is_array($result))
@@ -170,18 +167,30 @@ class AgentController extends Controller
 
             try {
                 $values = [];
+                $unactiveIds = [];
 
                 foreach ($newVideoIds as $videoData) {
                     // обновление картинок видео
-                    if (isset($videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]) && $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url == '') {
-                        $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->image_url = $videoData[ 'image_url' ];
-                        $videoModels[ array_search($videoData[ 'id' ], $oldVideos) ]->save();
+                    if (isset($videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) && $videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ]->image_url == '' && $oldVideosActive[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) {
+                        $videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ]->image_url = $videoData[ 'image_url' ];
+                        $videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ]->save();
                     }
 
-                    if (in_array($videoData[ 'id' ], $oldVideos))
+                    // установка статуса Неактивно
+                    if (isset($videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ])) {
+                        $channelId = $channelsLinks[ $videoData[ 'channel_id' ] ];
+                        if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400)) {
+                            if ($oldVideosActive[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) {
+                                $unactiveIds[] = $oldVideosLinks[ $videoData[ 'id' ] ];
+                                $unactiveCount++;
+                            }
+                        }
+                    }
+
+                    if (!isset($oldVideosLinks[ $videoData[ 'id' ] ]))
                         continue;
 
-                    $channelId = array_search($videoData[ 'channel_id' ], $channelsIds);
+                    $channelId = $channelsLinks[ $videoData[ 'channel_id' ] ];
 
                     if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400))
                         continue;
@@ -197,6 +206,13 @@ class AgentController extends Controller
                 if (!empty($values))
                     Yii::$app->db->createCommand()->batchInsert(Videos::tableName(), array_keys($values[ 0 ]), $values)->execute();
 
+                if (!empty($unactiveIds))
+                    Videos::updateAll([
+                        'active' => 0
+                    ], [
+                        'id' => $unactiveIds,
+                    ]);
+
                 $transaction->commit();
 
                 $addedCount += count($values);
@@ -208,8 +224,9 @@ class AgentController extends Controller
                     rmdir($cachedDir);
 
                 echo str_pad("[" . (count($cachedData) + 1) .
-                    "] Обработка данных, добавлено " . $addedCount . ", память " .
-                    round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
+                    "] Обработка данных, добавлено " . $addedCount .
+                    ', помечено неактивными: ' . $unactiveCount .
+                    ", память " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
             } catch (\Exception $e) {
                 $transaction->rollBack();
                 throw $e;
@@ -217,6 +234,7 @@ class AgentController extends Controller
         }
 
         Yii::info("Получено новых видео: " . $addedCount .
+            ', помечено неактивными: ' . $unactiveCount .
             ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
@@ -383,6 +401,7 @@ class AgentController extends Controller
             })) == 0)
             return true;
 
+        // старый объем таблиц статистики
         $oldTableSize = array_sum(array_map(function ($item) {
             return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
         }, array_filter(Statistics::getTableSizeData(), function ($item) use ($statisticTables) {
@@ -391,6 +410,7 @@ class AgentController extends Controller
 
         //$transaction = Yii::$app->db->beginTransaction();
 
+        // Очистка данных за пределами двойного временного интервала
         foreach ($minQueryDate as $key => $date) {
             if (is_null($date))
                 continue;
@@ -399,10 +419,35 @@ class AgentController extends Controller
 
             $count = Yii::$app->db->createCommand('select count(*) from ' . $tableModel::tableName() . ' where datetime < "' . $date . '"')->queryScalar();
             if ($count > 0)
-                for ($i = 1; $i <= ceil($count / 10000); $i++)
+                for ($i = 1; $i <= ceil($count / 10000); $i++) {
                     Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() . ' where datetime < "' . $date . '" LIMIT 10000')->execute();
+                    echo "Удаление двойного интервала из "  . $tableModel::tableName() . ", " . $i . "/" . ceil($count / 10000) . "\n";
+                }
         }
 
+        // Очистка данных для неактивных видео
+        $activeVideosIds = ArrayHelper::map(Videos::find()->where(['active' => 1])->asArray()->all(), 'id', 'id');
+
+        if (!empty($activeVideosIds))
+            foreach ($minQueryDate as $key => $date) {
+                $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+
+                $count = Yii::$app->db->createCommand('select count(*) from ' . $tableModel::tableName() . ' where video_id NOT IN (' . implode(',', $activeVideosIds) . ')')->queryScalar();
+                if ($count > 0)
+                    for ($i = 1; $i <= ceil($count / 10000); $i++) {
+                        Yii::$app->db->createCommand('delete from ' . $tableModel::tableName() .' where video_id NOT IN (' . implode(',', $activeVideosIds) . ') LIMIT 10000')->execute();
+                        echo "Удаление неактивных видео из "  . $tableModel::tableName() . ", " . $i . "/" . ceil($count / 10000) . "\n";
+                    }
+            }
+
+        foreach ($minQueryDate as $key => $date) {
+            $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $key ];
+
+            Yii::$app->db->createCommand('OPTIMIZE TABLE ' . $tableModel::tableName())->execute();
+            echo "Оптимизация таблицы "  . $tableModel::tableName() . "\n";
+        }
+
+        // новый объем таблиц статистики
         $newTableSize = array_sum(array_map(function ($item) {
             return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
         }, array_filter(Statistics::getTableSizeData(), function ($item) use ($statisticTables) {
@@ -991,11 +1036,11 @@ class AgentController extends Controller
     public function actionTestStatistics()
     {
         $statistics = Statistics::getStatistics(1, [
-            'category_id' => 3,
+            //'category_id' => 3,
             'timeType' => Statistics::QUERY_TIME_HOUR,
             'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            'findCached' => true,
-            //'noCache' => true,
+            //'findCached' => true,
+            'noCache' => true,
         ]);
 
         echo "--- Время подробно ---\n";

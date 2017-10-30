@@ -1349,6 +1349,10 @@ article p {
         margin-top: 0;
         font-size: 20px;
     }
+
+    #yii-debug-toolbar {
+        display: none !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1363,6 +1367,14 @@ article p {
 
     #mobile-menu .categories li {
         width: 50%;
+    }
+
+    #mobile-menu .categories li:nth-child(3n+1) {
+        clear: none;
+    }
+
+    #mobile-menu .categories li:nth-child(2n+1) {
+        clear: left;
     }
 
     #news-table {
