@@ -445,9 +445,10 @@ class Statistics
                     Yii::$app->cache->delete($cacheId . '-q=' . $filter[ 'query' ]);
 
                 $data[ 'videoData' ] = Yii::$app->cache->getOrSet($cacheId . '-q=' . $filter[ 'query' ], function() use ($data, $filter) {
-                    $videoIds = Videos::searchByQuery($filter[ 'query' ]);
+                    $videoIds = array_fill_keys(Videos::searchByQuery($filter[ 'query' ]), 1);
+
                     return array_values(array_filter($data[ 'videoData' ], function($item) use ($videoIds) {
-                        return in_array($item[ 'id' ], $videoIds);
+                        return isset($videoIds[ $item[ 'id' ] ]);
                     }));
                 }, 86400);
             }

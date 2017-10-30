@@ -329,8 +329,8 @@ class ChannelsController extends Controller
         $videosDataProvider = $searchModel->search(Yii::$app->request->get());
 
         $statisticsData = Statistics::getStatistics(1, [
-            'timeType' => Statistics::QUERY_TIME_DAY,
-            'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
+            //'timeType' => Statistics::QUERY_TIME_DAY,
+            //'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
             'channel_id' => $id,
             'fullData' => true,
             'findCached' => true,
