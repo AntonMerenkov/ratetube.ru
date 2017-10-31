@@ -131,7 +131,7 @@ class AgentController extends Controller
             $cachedData = HighloadAPI::query('search', [
                 'channelId' => $channelsIds,
                 'type' => 'video',
-                'order' => 'viewCount',
+                'order' => 'date',
             ], [
                 'snippet'
             ], YoutubeAPI::QUERY_PAGES);
@@ -160,7 +160,7 @@ class AgentController extends Controller
                 $result = [];
 
             $newVideoIds = [];
-            foreach ($result as $item)
+            foreach ($result as $item) {
                 $newVideoIds[ $item[ 'id' ][ 'videoId' ] ] = [
                     'id' => $item[ 'id' ][ 'videoId' ],
                     'title' => $item[ 'snippet' ][ 'title' ],
@@ -168,6 +168,7 @@ class AgentController extends Controller
                     'channel_id' => $item[ 'snippet' ][ 'channelId' ],
                     'image_url' => $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ]
                 ];
+            }
 
             $transaction = Videos::getDb()->beginTransaction();
 
@@ -1058,7 +1059,7 @@ class AgentController extends Controller
         $response = HighloadAPI::query('search', [
             'channelId' => $channelsIds,
             'type' => 'video',
-            'order' => 'viewCount',
+            'order' => 'date',
         ], [
             'snippet'
         ], YoutubeAPI::QUERY_PAGES);
