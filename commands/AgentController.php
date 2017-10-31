@@ -106,6 +106,7 @@ class AgentController extends Controller
 
         // пытаемся загрузить данные из кэша
         $cachedData = [];
+        $addedVideos = [];
         $cachedDir = false;
         if (file_exists(Yii::getAlias('@runtime/highload_cache/' . $this->action->id))) {
             $directories = glob(Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/*'));
@@ -114,6 +115,11 @@ class AgentController extends Controller
                 $cachedDir = $directories[ 0 ];
                 foreach (glob($cachedDir . '/*') as $file)
                     $cachedData[ basename($file) ] = unserialize(file_get_contents($file));
+            }
+
+            if (isset($cachedData[ 'added' ])) {
+                $addedVideos = $cachedData[ 'added' ];
+                unset($cachedData[ 'added' ]);
             }
         }
 
@@ -176,9 +182,12 @@ class AgentController extends Controller
                         $videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ]->save();
                     }
 
+                    $addedVideos[ $videoData[ 'id' ] ] = 1;
+
                     // установка статуса Неактивно
                     if (isset($videoModels[ $oldVideosLinks[ $videoData[ 'id' ] ] ])) {
                         $channelId = $channelsLinks[ $videoData[ 'channel_id' ] ];
+
                         if (($loadLastDays[ $channelId ] > 0) && (time() - strtotime($videoData[ 'date' ]) > $loadLastDays[ $channelId ] * 86400)) {
                             if ($oldVideosActive[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) {
                                 $unactiveIds[] = $oldVideosLinks[ $videoData[ 'id' ] ];
@@ -187,7 +196,7 @@ class AgentController extends Controller
                         }
                     }
 
-                    if (!isset($oldVideosLinks[ $videoData[ 'id' ] ]))
+                    if (isset($oldVideosLinks[ $videoData[ 'id' ] ]))
                         continue;
 
                     $channelId = $channelsLinks[ $videoData[ 'channel_id' ] ];
@@ -220,8 +229,14 @@ class AgentController extends Controller
                 unset($cachedData[ $id ]);
                 unlink($cachedDir . '/' . $id);
 
-                if (count(glob($cachedDir . '/*')) == 0)
+                file_put_contents($cachedDir . '/' . 'added', serialize($addedVideos));
+
+                if (count(array_filter(glob($cachedDir . '/*'), function($item) {
+                    return basename($item) != 'added';
+                })) == 0) {
+                    unlink($cachedDir . '/' . 'added');
                     rmdir($cachedDir);
+                }
 
                 echo str_pad("[" . (count($cachedData) + 1) .
                     "] Обработка данных, добавлено " . $addedCount .
@@ -231,6 +246,23 @@ class AgentController extends Controller
                 $transaction->rollBack();
                 throw $e;
             }
+        }
+
+        // установка неактивности для тех видео, которых нет в списке
+        $activeVideosIds = array_values(array_map(function($item) {
+            return $item[ 'id' ];
+        }, array_filter(Videos::find()->active()->asArray()->all(), function($item) use ($addedVideos) {
+            return !isset($addedVideos[ $item[ 'video_link' ] ]);
+        })));
+
+        if (!empty($activeVideosIds)) {
+            Videos::updateAll([
+                'active' => 0
+            ], [
+                'id' => $activeVideosIds
+            ]);
+
+            $unactiveCount += count($activeVideosIds);
         }
 
         Yii::info("Получено новых видео: " . $addedCount .

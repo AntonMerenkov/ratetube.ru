@@ -36,7 +36,7 @@ $query = Yii::$app->request->get('query', null);
         <div class="image" style="background-image: url('<?=$channel->image_url ?>')"></div>
         <div class="info">
             <div class="name"><?=$channel->name ?></div>
-            <div class="description"><?=number_format(Videos::find()->where(['channel_id' => $channelId])->count(), 0, ',', ' ') ?> видео | <?=number_format($channel->subscribers_count, 0, ',', ' ') ?> подписчиков</div>
+            <div class="description"><?=number_format(Videos::find()->where(['channel_id' => $channelId])->active()->count(), 0, ',', ' ') ?> видео | <?=number_format($channel->subscribers_count, 0, ',', ' ') ?> подписчиков</div>
         </div>
     </div>
 <? endif; ?>

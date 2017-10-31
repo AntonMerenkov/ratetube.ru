@@ -353,9 +353,9 @@ class Statistics
             $positionsData = Yii::$app->db->createCommand($positionsSql)->queryAll();
 
             if (!empty($positionsData)) {
-                $positionsData = array_filter($positionsData, function($item) use ($videoData) {
+                /*$positionsData = array_filter($positionsData, function($item) use ($videoData) {
                     return isset($videoData[ $item[ 'video_id' ] ]);
-                });
+                });*/
 
                 // позиции видео (по 1 видео выбирать случайно)
                 $positionsData = array_reduce($positionsData, function($carry, $item) {
@@ -372,9 +372,28 @@ class Statistics
 
                 foreach ($positionsData as $position => $items) {
                     // поиск в списке
-                    $positionsData[ $position ] = $videoData[ $videoIds[ $items[ array_rand($items) ] ] ];
-                    $positionsData[ $position ][ 'ad' ] = 1;
+                    if (isset($videoData[ $videoIds[ $items[ array_rand($items) ] ] ])) {
+                        $positionsData[ $position ] = $videoData[ $videoIds[ $items[ array_rand($items) ] ] ];
+                        $positionsData[ $position ][ 'ad' ] = 1;
+                    } else {
+                        $positionsData[ $position ] = [
+                            'id' => $items[ array_rand($items) ],
+                            'ad' => 1
+                        ];
+                    }
                 }
+
+                $positionsVideoData = Yii::$app->db->createCommand("SELECT v.id, v.channel_id
+                      FROM videos v
+                      WHERE v.id IN (" . implode(',', array_map(function($item) {
+                        return $item[ 'id' ];
+                    }, $positionsData)) .  ")")->queryAll();
+                $positionsVideoData = array_combine(array_map(function($item) {
+                    return $item[ 'id' ];
+                }, $positionsVideoData), $positionsVideoData);
+
+                foreach ($positionsData as $position => $item)
+                    $positionsData[ $position ][ 'channel_id' ] = $positionsVideoData[ $item[ 'id' ] ][ 'channel_id' ];
 
                 Yii::endProfile('Поиск позиций в общем списке');
 
@@ -420,7 +439,17 @@ class Statistics
         }
         Yii::endProfile('Установка последнего кеша');
 
-        $count = count($data[ 'videoData' ]);
+        $videoInfo = Yii::$app->cache->getOrSet(self::CACHE_VIDEO_INFO_KEY, function() {
+            $data = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v WHERE v.active = 1")->queryAll();
+            $data = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $data), array_map(function($item) {
+                unset($item[ 'id' ]);
+                return $item;
+            }, $data));
+
+            return $data;
+        }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
 
         if (!$filter[ 'fullData' ]) {
             Yii::beginProfile('Фильтрация результатов по запросу');
@@ -463,39 +492,56 @@ class Statistics
             }
 
             Yii::endProfile('Фильтрация результатов по запросу');
+        } else {
+            // полные данные без фильтрации и без подстановки videoInfo
+        }
 
+        Yii::beginProfile('Подстановка данных по позициям при отсутствии');
+        $adIds = array_map(function($item) {
+            return $item[ 'id' ];
+        }, array_filter($data[ 'videoData' ], function($item) use ($videoInfo) {
+            return $item[ 'ad' ] == 1 && !isset($videoInfo[ $item[ 'id' ] ]);
+        }));
+
+        if (!empty($adIds)) {
+            $adData = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v WHERE v.id IN (" . implode(",", $adIds) . ")")->queryAll();
+            $adData = array_combine(array_map(function($item) {
+                return $item[ 'id' ];
+            }, $adData), array_map(function($item) {
+                unset($item[ 'id' ]);
+                return $item;
+            }, $adData));
+
+            foreach ($adIds as $id => $videoId)
+                $videoInfo[ $videoId ] = $adData[ $videoId ];
+        }
+        Yii::endProfile('Подстановка данных по позициям при отсутствии');
+
+        Yii::beginProfile('Фильтрация несуществующих данных');
+        $data[ 'videoData' ] = array_values(array_filter($data[ 'videoData' ], function($item) use ($videoInfo) {
+            return isset($videoInfo[ $item[ 'id' ] ]);
+        }));
+        Yii::endProfile('Фильтрация несуществующих данных');
+
+        $count = count($data[ 'videoData' ]);
+
+        if (!$filter[ 'fullData' ]) {
             Yii::beginProfile('Усечение результатов');
-            $count = count($data[ 'videoData' ]);
             $data[ 'videoData' ] = array_slice($data[ 'videoData' ], ($page - 1) * Statistics::PAGINATION_ROW_COUNT, Statistics::PAGINATION_ROW_COUNT);
             Yii::endProfile('Усечение результатов');
 
-            if (!$filter[ 'fullData']) {
-                Yii::beginProfile('Подстановка связанных данных');
-                $videoInfo = Yii::$app->cache->getOrSet(self::CACHE_VIDEO_INFO_KEY, function() {
-                    $data = Yii::$app->db->createCommand("SELECT v.id, v.name, v.video_link, v.image_url FROM videos v")->queryAll();
-                    $data = array_combine(array_map(function($item) {
-                        return $item[ 'id' ];
-                    }, $data), array_map(function($item) {
-                        unset($item[ 'id' ]);
-                        return $item;
-                    }, $data));
+            Yii::beginProfile('Подстановка связанных данных');
 
-                    return $data;
-                }, null, new DbDependency(['sql' => 'SELECT MAX(id) FROM videos']));
+            foreach ($data[ 'videoData' ] as $id => $value) {
+                if (isset($videoInfo[ $value[ 'id' ] ]))
+                    $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
+                else
+                    unset($data[ 'videoData' ][ $id ]);
 
-                foreach ($data[ 'videoData' ] as $id => $value) {
-                    if (isset($videoInfo[ $value[ 'id' ] ]))
-                        $data[ 'videoData' ][ $id ] = array_merge($value, $videoInfo[ $value[ 'id' ] ]);
-                    else
-                        unset($data[ 'videoData' ][ $id ]);
-
-                    $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
-                }
-
-                Yii::endProfile('Подстановка связанных данных');
+                $data[ 'videoData' ][ $id ][ 'channel' ] = $data[ 'channelData' ][ $value[ 'channel_id' ] ];
             }
-        } else {
-            // полные данные без фильтрации и без подстановки videoInfo
+
+            Yii::endProfile('Подстановка связанных данных');
         }
 
         $time = microtime(true) - $time;

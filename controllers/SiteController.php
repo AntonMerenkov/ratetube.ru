@@ -123,7 +123,7 @@ class SiteController extends Controller
 
         $cacheId = 'index-statistics-' . implode('-', $idArray);
 
-        //Yii::$app->cache->delete($cacheId);
+        Yii::$app->cache->delete($cacheId); // for debug
         $data = Yii::$app->cache->getOrSet($cacheId, function() use ($category_id, $channel_id, $query, $page) {
             Yii::beginProfile('Вычисление статистики');
             if (!is_null($category_id))
