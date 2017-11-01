@@ -507,6 +507,19 @@ class AgentController extends Controller
             echo "Оптимизация таблицы "  . $tableModel::tableName() . "\n";
         }
 
+        // Очистка лишних тэгов
+        if (!empty($activeVideosIds)) {
+            $count = Yii::$app->db->createCommand('select count(*) from tags where video_id NOT IN (' . implode(',', $activeVideosIds) . ')')->queryScalar();
+            if ($count > 0)
+                for ($i = 1; $i <= ceil($count / 10000); $i++) {
+                    Yii::$app->db->createCommand('delete from tags where video_id NOT IN (' . implode(',', $activeVideosIds) . ') LIMIT 10000')->execute();
+                    echo "Удаление неактивных тэгов, " . $i . "/" . ceil($count / 10000) . "\n";
+                }
+
+            Yii::$app->db->createCommand('OPTIMIZE TABLE tags')->execute();
+            echo "Оптимизация таблицы tags" . "\n";
+        }
+
         // новый объем таблиц статистики
         $newTableSize = array_sum(array_map(function ($item) {
             return $item[ 'DATA_LENGTH' ] + $item[ 'INDEX_LENGTH' ];
@@ -750,7 +763,7 @@ class AgentController extends Controller
     public function actionUpdateTags()
     {
         // загружаем текущие данные из БД
-        $videoIds = ArrayHelper::map(Yii::$app->db->createCommand('SELECT id, video_link FROM ' . Videos::tableName())->queryAll(), 'id', 'video_link');
+        $videoIds = ArrayHelper::map(Yii::$app->db->createCommand('SELECT id, video_link FROM ' . Videos::tableName() . ' WHERE active = 1')->queryAll(), 'id', 'video_link');
 
         // находим ID видео, у которых нет тэгов
         $existingIds = Yii::$app->db->createCommand('SELECT DISTINCT (video_id) FROM ' . Tags::tableName())->queryColumn();
