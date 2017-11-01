@@ -174,7 +174,7 @@ class SiteController extends Controller
         $data = Yii::$app->cache->getOrSet($cacheId . '-cheat', function() use ($data, $cacheId) {
             $data = Yii::$app->cache->getOrSet($cacheId . '-cheat-positions', function() use ($data) {
                 return $this->cheatDataPositions($data);
-            }, 60);
+            }, 10);
 
             return $this->cheatData($data);
         }, 10);
