@@ -90,6 +90,40 @@ $(function() {
         });
     }
 
+    function animateCellPosition(cell) {
+        var textColor = RGBvalues.color(cell.css('color'));
+
+        if (textColor.a == undefined)
+            textColor.a = 1;
+
+        cell.animate({
+            'background-color': '#264155',
+            color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 1)'
+        }, 1500, 'swing', function() {
+            $(this).delay(1000).animate({
+                'background-color': '#16202d',
+                color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
+            }, 1500, 'swing');
+        });
+    }
+
+    function animateCellPositionName(cell) {
+        var textColor = RGBvalues.color(cell.css('color'));
+
+        if (textColor.a == undefined)
+            textColor.a = 1;
+
+        cell.animate({
+            'background-color': '#264155',
+            color: 'rgba(255, 255, 255, 1)'
+        }, 1500, 'swing', function() {
+            $(this).delay(1000).animate({
+                'background-color': '#16202d',
+                color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
+            }, 1500, 'swing');
+        });
+    }
+
     function updateStatistics() {
         // ничего не обновляем, если вкладка не активна
         if (Visibility.state() != 'visible')
@@ -197,11 +231,13 @@ $(function() {
                         // если видео поднялось - подсвечиваем его
                         if (parseInt(element.attr('data-top')) > currentPosition) {
                             element.attr('data-no-animate', 1);
-                            element.find('td').animate({'background-color': '#264155'}, 1800, 'swing', function() {
-                                $(this).parent().addClass('active');
-                                $(this).delay(2000).animate({'background-color': '#16202d'}, 2000, 'swing', function() {
-                                    $(this).parent().removeClass('active');
-                                });
+
+                            element.find('td:eq(0)').each(function() {
+                                animateCellPositionName($(this));
+                            });
+
+                            element.find('td:not(:eq(0))').each(function() {
+                                animateCellPosition($(this));
                             });
                         }
 
@@ -272,11 +308,14 @@ $(function() {
 
                     for (var id in infoRows)
                         infoRows[ id ].insertAfter(rows.filter('[data-id="' + id + '"]'));
+                }, 2000);
 
+                // убираем стили позже, чтобы не мешать анимации
+                setTimeout(function() {
                     $('#news-table').find('tbody tr').removeAttr('style').removeClass('warning');
                     $('#news-table').find('tbody tr td').removeAttr('style');
                     $('#news-table').removeAttr('style');
-                }, 2000);
+                }, 5000);
             }
 
             // устанавливаем новые значения статистики для существующих элементов
