@@ -188,6 +188,16 @@ $categories = Categories::getDb()->cache(function ($db) {
                     <img src="/img/logo.png">
                 </a>
             </div>
+            <div class="col-md-2 col-xs-6">
+                <div class="contact-list">
+                    <div class="contact-item phone">
+                        <a href="callto:<?=preg_replace('/[^\d\+]/', '', Yii::$app->params[ 'phone' ]) ?>"><?=Yii::$app->params[ 'phone' ] ?></a>
+                    </div>
+                    <div class="contact-item email">
+                        <a href="mailto:<?=Yii::$app->params[ 'email' ] ?>"><?=Yii::$app->params[ 'email' ] ?></a>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-8">
                 <div class="row">
                     <div class="col-lg-3 col-md-4">
@@ -220,16 +230,6 @@ $categories = Categories::getDb()->cache(function ($db) {
                                 ],
                             ]); ?>
                         </nav>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-xs-6">
-                <div class="contact-list">
-                    <div class="contact-item phone">
-                        <a href="callto:<?=preg_replace('/[^\d\+]/', '', Yii::$app->params[ 'phone' ]) ?>"><?=Yii::$app->params[ 'phone' ] ?></a>
-                    </div>
-                    <div class="contact-item email">
-                        <a href="mailto:<?=Yii::$app->params[ 'email' ] ?>"><?=Yii::$app->params[ 'email' ] ?></a>
                     </div>
                 </div>
             </div>
