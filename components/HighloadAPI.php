@@ -98,7 +98,7 @@ class HighloadAPI
                             'parts' => implode(',', $parts),
                         ];
 
-                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
@@ -241,6 +241,8 @@ class HighloadAPI
 
             return $response;
         } else if ($type == YoutubeAPI::QUERY_PAGES) {
+            $paramId = isset($params[ 'playlistId' ]) ? 'playlistId' : 'channelId';
+
             // разделяем запросы на несколько серверов по channelId, но не более 10
             // иначе запрос не выполняется
             /*$idChunks = array_chunk($params[ 'channelId' ], count($slaveList));
@@ -250,13 +252,13 @@ class HighloadAPI
                 foreach ($idChunk as $id => $value)
                     $serverChunks[ $id ][] = $value;*/
 
-            $serverChunks = array_chunk($params[ 'channelId' ], 10);
+            $serverChunks = array_chunk($params[ $paramId ], 10);
 
             $postData = [];
             foreach ($serverChunks as $id => $data)
                 $postData[ $id ] = [
                     'method' => $method,
-                    'params' => ['channelId' => $data] + $params,
+                    'params' => [$paramId => $data] + $params,
                     'parts' => $parts,
                     'type' => $type,
                     'key' => $validationKey,
@@ -341,7 +343,7 @@ class HighloadAPI
                             }
                         }
                     } else {
-                        echo "Сервер " . $slaveList[ $slaveIds[ $id ] ] . "выключен.\n";
+                        echo "Сервер " . $slaveList[ $slaveIds[ $id ] ] . " выключен.\n";
                         unset($slaveList[ $slaveIds[ $id ] ]);
                     }
             }

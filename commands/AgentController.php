@@ -89,6 +89,8 @@ class AgentController extends Controller
         $channelModels = Channels::find()->all();
 
         $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
+        $channelsLinks = array_flip($channelsIds);
+
         $loadLastDays = ArrayHelper::map($channelModels, 'id', 'load_last_days');
         $loadLastDaysCat = ArrayHelper::map(Categories::find()->all(), 'id', 'load_last_days');
 
@@ -96,9 +98,7 @@ class AgentController extends Controller
             if (isset($loadLastDaysCat[ $channelModel->category_id ]) && $loadLastDaysCat[ $channelModel->category_id ] > 0)
                 $loadLastDays[ $channelModel->id ] = $loadLastDaysCat[ $channelModel->category_id ];
 
-        $videoModels = Videos::find()->all();
-
-        $videoModels = ArrayHelper::map($videoModels, 'id', function($item) {
+        $videoModels = ArrayHelper::map(Videos::find()->all(), 'id', function($item) {
             return $item;
         });
 
@@ -124,16 +124,28 @@ class AgentController extends Controller
         }
 
         if (empty($cachedData)) {
-            // загрузку новых видео проводим только раз в час, в 15 минут
-            /*if (date('i', strtotime($this->profiling->datetime)) != 15)
-                return true;*/
+            $playlistsIds = [];
 
-            $cachedData = HighloadAPI::query('search', [
-                'channelId' => $channelsIds,
-                'type' => 'video',
-                'order' => 'date',
+            $data = HighloadAPI::query('channels', [
+                'id' => $channelsIds,
             ], [
-                'snippet'
+                'contentDetails'
+            ], YoutubeAPI::QUERY_MULTIPLE);
+
+            foreach ($data as $item) {
+                $item = unserialize(gzuncompress($item));
+
+                foreach ($item as $value)
+                    $playlistsIds[ $channelsLinks[ $value[ 'id' ] ] ] = $value[ 'contentDetails' ][ 'relatedPlaylists' ][ 'uploads' ];
+            }
+
+            ksort($playlistsIds, SORT_NUMERIC);
+
+            $cachedData = HighloadAPI::query('playlistItems', [
+                'playlistId' => $playlistsIds,
+            ], [
+                'snippet',
+                'contentDetails'
             ], YoutubeAPI::QUERY_PAGES);
 
             $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
@@ -148,11 +160,11 @@ class AgentController extends Controller
 
         ksort($cachedData, SORT_NUMERIC);
 
-        $channelsLinks = array_flip($channelsIds);
         $oldVideosLinks = array_flip($oldVideos);
         $oldVideosActive = ArrayHelper::map($videoModels, 'id', 'active');
 
         $addedCount = 0;
+        $activeCount = 0;
         $unactiveCount = 0;
         foreach ($cachedData as $id => $result) {
             $result = unserialize(gzuncompress($result));
@@ -161,8 +173,8 @@ class AgentController extends Controller
 
             $newVideoIds = [];
             foreach ($result as $item) {
-                $newVideoIds[ $item[ 'id' ][ 'videoId' ] ] = [
-                    'id' => $item[ 'id' ][ 'videoId' ],
+                $newVideoIds[ $item[ 'contentDetails' ][ 'videoId' ] ] = [
+                    'id' => $item[ 'contentDetails' ][ 'videoId' ],
                     'title' => $item[ 'snippet' ][ 'title' ],
                     'date' => date('Y-m-d H:i:s', strtotime($item[ 'snippet' ][ 'publishedAt' ])),
                     'channel_id' => $item[ 'snippet' ][ 'channelId' ],
@@ -174,6 +186,7 @@ class AgentController extends Controller
 
             try {
                 $values = [];
+                $activeIds = [];
                 $unactiveIds = [];
 
                 foreach ($newVideoIds as $videoData) {
@@ -193,6 +206,11 @@ class AgentController extends Controller
                             if ($oldVideosActive[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) {
                                 $unactiveIds[] = $oldVideosLinks[ $videoData[ 'id' ] ];
                                 $unactiveCount++;
+                            }
+                        } else {
+                            if (!$oldVideosActive[ $oldVideosLinks[ $videoData[ 'id' ] ] ]) {
+                                $activeIds[] = $oldVideosLinks[ $videoData[ 'id' ] ];
+                                $activeCount++;
                             }
                         }
                     }
@@ -223,6 +241,13 @@ class AgentController extends Controller
                         'id' => $unactiveIds,
                     ]);
 
+                if (!empty($activeIds))
+                    Videos::updateAll([
+                        'active' => 1
+                    ], [
+                        'id' => $activeIds,
+                    ]);
+
                 $transaction->commit();
 
                 $addedCount += count($values);
@@ -233,14 +258,15 @@ class AgentController extends Controller
                 file_put_contents($cachedDir . '/' . 'added', serialize($addedVideos));
 
                 if (count(array_filter(glob($cachedDir . '/*'), function($item) {
-                    return basename($item) != 'added';
-                })) == 0) {
+                        return basename($item) != 'added';
+                    })) == 0) {
                     unlink($cachedDir . '/' . 'added');
                     rmdir($cachedDir);
                 }
 
                 echo str_pad("[" . (count($cachedData) + 1) .
                     "] Обработка данных, добавлено " . $addedCount .
+                    ', помечено активными: ' . $activeCount .
                     ', помечено неактивными: ' . $unactiveCount .
                     ", память " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n", 80);
             } catch (\Exception $e) {
@@ -267,6 +293,7 @@ class AgentController extends Controller
         }
 
         Yii::info("Получено новых видео: " . $addedCount .
+            ', помечено активными: ' . $activeCount .
             ', помечено неактивными: ' . $unactiveCount .
             ', время: ' . Yii::$app->formatter->asDecimal(microtime(true) - $this->time, 2) .
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');

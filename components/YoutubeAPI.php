@@ -68,6 +68,11 @@ class YoutubeAPI
             'status' => 3,
             'topicDetails' => 3,
         ],
+        'playlistItems' => [
+            'snippet' => 3,
+            'contentDetails' => 3,
+            'status' => 3,
+        ]
     ];
 
     /**
@@ -180,12 +185,15 @@ class YoutubeAPI
 
             return $result;
         } else if ($type == self::QUERY_PAGES) {
+            $paramId = isset($params[ 'playlistId' ]) ? 'playlistId' : 'channelId';
+
             // постраничный запрос
-            $ids = $params[ 'channelId' ];
+            $ids = $params[ $paramId ];
 
             $resultArray = [];
             $pageTokens = [];
 
+            $iteration = 0;
             do {
                 $urlArray = [];
                 $keysArray = [];
@@ -204,7 +212,7 @@ class YoutubeAPI
                     }
 
                     $urlArray[ $id ] = 'https://www.googleapis.com/youtube/v3/' . $method . '?' . http_build_query([
-                                'channelId' => $value,
+                                $paramId => $value,
                                 'part' => implode(',', $parts),
                                 'key' => $key,
                                 'maxResults' => self::MAX_RESULTS,
@@ -234,7 +242,9 @@ class YoutubeAPI
                         self::disableKey($keysArray[ $id ], $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'reason' ] == 'quotaExceeded');
                     }
                 }
-            } while (!empty($urlArray));
+
+                $iteration++;
+            } while (!empty($urlArray) && $iteration < 10);
 
             $result = [];
             foreach ($resultArray as $resultItem)
