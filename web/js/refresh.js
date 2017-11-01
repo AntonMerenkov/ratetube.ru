@@ -188,6 +188,7 @@ $(function() {
                             '</tr>').appendTo($('#news-table').find('tbody'));
 
                         newRow.attr('data-height', newRow.outerHeight());
+                        newRow.attr('data-no-animate', 1);
                         currentPosition += newRow.outerHeight();
                     } else {
                         // изменяем позицию элемента
@@ -195,6 +196,7 @@ $(function() {
 
                         // если видео поднялось - подсвечиваем его
                         if (parseInt(element.attr('data-top')) > currentPosition) {
+                            element.attr('data-no-animate', 1);
                             element.find('td').animate({'background-color': '#264155'}, 1800, 'swing', function() {
                                 $(this).parent().addClass('active');
                                 $(this).delay(2000).animate({'background-color': '#16202d'}, 2000, 'swing', function() {
@@ -250,6 +252,7 @@ $(function() {
 
                     rows.removeAttr('data-top');
                     rows.removeAttr('data-height');
+                    rows.removeAttr('data-no-animate');
 
                     var infoRows = {};
                     $('#news-table').find('tbody tr').filter('.info-row').each(function() {
@@ -281,11 +284,20 @@ $(function() {
             for (var i in newData) {
                 var row = rows.filter('[data-id="' + newData[ i ].id + '"]');
 
-                setTimeout(animateCell.bind(null, row.find('td:eq(1)'), newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff), (parseInt(i) + 1) * animationInterval);
-                setTimeout(animateCell.bind(null, row.find('td:eq(2)'), newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff), (parseInt(i) + 2) * animationInterval);
-                setTimeout(animateCell.bind(null, row.find('td:eq(3)'), newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff), (parseInt(i) + 3) * animationInterval);
-                setTimeout(animateCell.bind(null, row.find('td:eq(4)'), newData[ i ].views == 0 ? '' : newData[ i ].views), (parseInt(i) + 4) * animationInterval);
-                setTimeout(animateCell.bind(null, row.find('td:eq(5)'), newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)), (parseInt(i) + 5) * animationInterval);
+                // если ряд меняет позицию - он уже анимируется
+                if (row.attr('data-no-animate') == 1) {
+                    row.find('td:eq(1)').text(newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff);
+                    row.find('td:eq(2)').text(newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff);
+                    row.find('td:eq(3)').text(newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff);
+                    row.find('td:eq(4)').text(newData[ i ].views == 0 ? '' : newData[ i ].views);
+                    row.find('td:eq(5)').text(newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff));
+                } else {
+                    setTimeout(animateCell.bind(null, row.find('td:eq(1)'), newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff), (parseInt(i) + 1) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(2)'), newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff), (parseInt(i) + 2) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(3)'), newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff), (parseInt(i) + 3) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(4)'), newData[ i ].views == 0 ? '' : newData[ i ].views), (parseInt(i) + 4) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(5)'), newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)), (parseInt(i) + 5) * animationInterval);
+                }
             }
 
             // обновление виджета В эфире
