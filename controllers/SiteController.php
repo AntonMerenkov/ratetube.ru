@@ -96,6 +96,32 @@ class SiteController extends Controller
     }
 
     /**
+     * Накрутка позиций.
+     *
+     * @param $data
+     */
+    private function cheatDataPositions($data)
+    {
+        $count = 2;
+
+        if (count($data[ 'data' ]) < 5)
+            $count = 0;
+
+        if ($count > 0) {
+            $keys = array_rand($data[ 'data' ], $count * 2);
+            shuffle($keys);
+
+            for ($i = 0; $i < $count; $i++) {
+                $tmp = $data[ 'data' ][ $keys[ $i * 2 ] ];
+                $data[ 'data' ][ $keys[ $i * 2 ] ] = $data[ 'data' ][ $keys[ $i * 2 + 1 ] ];
+                $data[ 'data' ][ $keys[ $i * 2 + 1 ] ] = $tmp;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Кеширование для экономии памяти - сохраняем 1 страницу.
      *
      * @param null $category_id
@@ -145,7 +171,11 @@ class SiteController extends Controller
             return $data;
         }, 300);
 
-        $data = Yii::$app->cache->getOrSet($cacheId . '-cheat', function() use ($data) {
+        $data = Yii::$app->cache->getOrSet($cacheId . '-cheat', function() use ($data, $cacheId) {
+            $data = Yii::$app->cache->getOrSet($cacheId . '-cheat-positions', function() use ($data) {
+                return $this->cheatDataPositions($data);
+            }, 60);
+
             return $this->cheatData($data);
         }, 10);
 
