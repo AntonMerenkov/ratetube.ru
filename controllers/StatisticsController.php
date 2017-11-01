@@ -76,9 +76,9 @@ class StatisticsController extends Controller
             $keysError = 'Ни одного ключа не добавлено.';
         }
 
-        // агенты (за 30 дней)
+        // агенты (за 7 дней)
         $profilingData = Profiling::find()->where([
-            '>', 'datetime', date('Y-m-d H:i:s', time() - 86400 * 14)
+            '>', 'datetime', date('Y-m-d H:i:s', time() - 86400 * 7)
         ])->all();
 
         $profilingTableData = [];

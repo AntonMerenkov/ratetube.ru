@@ -204,6 +204,8 @@ foreach ($statisticsQueryData['data'] as $item)
                         ],
                     ],
                 ]); ?>
+
+                <p class="text-left text-muted">Данные рассчитаны за последние 7 дней.</p>
             </div>
         </div>
 
