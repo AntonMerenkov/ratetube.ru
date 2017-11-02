@@ -22,7 +22,7 @@ use yii\helpers\ArrayHelper;
 class TopChannels extends Widget
 {
     public static $count = 10;
-    public static $interval = Statistics::QUERY_TIME_WEEK;
+    public static $interval = Statistics::QUERY_TIME_DAY;
     public static $cacheTime = 3600 * 4;
 
     const CACHE_KEY = 'widget-top-channels-cache';
