@@ -99,11 +99,11 @@ $(function() {
         cell.animate({
             'background-color': '#264155',
             color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 1)'
-        }, 1500, 'swing', function() {
-            $(this).delay(1000).animate({
+        }, 1200, 'swing', function() {
+            $(this).delay(200).animate({
                 'background-color': '#16202d',
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
-            }, 1500, 'swing');
+            }, 1200, 'swing');
         });
     }
 
@@ -116,11 +116,11 @@ $(function() {
         cell.animate({
             'background-color': '#264155',
             color: 'rgba(255, 255, 255, 1)'
-        }, 1500, 'swing', function() {
-            $(this).delay(1000).animate({
+        }, 1200, 'swing', function() {
+            $(this).delay(200).animate({
                 'background-color': '#16202d',
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
-            }, 1500, 'swing');
+            }, 1200, 'swing');
         });
     }
 
@@ -229,7 +229,8 @@ $(function() {
                         var element = $('#news-table').find('tbody tr').eq(oldIds.indexOf(newIds[ i ]));
 
                         // если видео поднялось - подсвечиваем его
-                        if (parseInt(element.attr('data-top')) > currentPosition) {
+                        // if (parseInt(element.attr('data-top')) > currentPosition)
+                        if (oldIds.indexOf(newIds[ i ]) > i) {
                             element.attr('data-no-animate', 1);
 
                             element.find('td:eq(0)').each(function() {
