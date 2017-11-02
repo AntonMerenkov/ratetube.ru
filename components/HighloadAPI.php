@@ -98,7 +98,7 @@ class HighloadAPI
                             'parts' => implode(',', $parts),
                         ];
 
-                        echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
+                        //echo "Время обработки сервером " . $value[ 'ip' ] . ": " . $value[ 'time' ] . " сек. (объем данных - " . (round($value[ 'length' ] / 1024 / 1024, 2)) . " МБ)\n";
 
                         foreach ($value[ 'keys' ] as $keyId => $keyData) {
                             if (!$keyData[ 'enabled' ])
