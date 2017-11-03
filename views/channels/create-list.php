@@ -27,6 +27,7 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
 
     <p class="help-block">Для добавления списка каналов скопируйте ваш список и вставьте его в поле ввода, затем нажмите кнопку
         «Проверить и добавить». Дождитесь окончания проверки и нажмите кнопку «Сохранить».</p>
+    <p>Если в базе данных уже есть добавляемый канал, то дубликат добавлен не будет.</p>
 
     <?=Html::textarea('urls', '', [
         'class' => 'form-control',
@@ -76,30 +77,47 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
     }
 
     $(function() {
+        $.extend({
+            distinct : function(anArray) {
+                var result = [];
+                $.each(anArray, function(i,v){
+                    if ($.inArray(v, result) == -1) result.push(v);
+                });
+                return result;
+            }
+        });
+
         $('#validate').click(function(e) {
             e.preventDefault();
 
             var controls = $('textarea[name="urls"], #validate, button[type="submit"]');
-            controls.prop('disabled', true).addClass('disabled');
 
             var urls = $('textarea[name="urls"]').val().split("\n").filter(function(value) {
                 return $.trim(value) != '';
             });
 
+            // удаление дубликатов из списка
+            urls = $.distinct(urls);
+            $('textarea[name="urls"]').val(urls.join("\n"));
+            controls.prop('disabled', true).addClass('disabled');
+
             if (urls.length > 0) {
                 $('#status').text('0 / ' + urls.length + ' обработано').removeClass('hidden').attr('data-count', 0);
+                var errorUrls = [];
+                var duplicateCount = 0;
 
                 var promises = $.map(urls, function(url){
                     return $.post('/admin/channels/query-data', {url: url}).then(function(data) {
                         data = $.parseJSON(data);
 
                         var currentId = parseInt($('#inputs').attr('data-count'));
-                        if (data.id != undefined) {
+                        if (data.duplicate != undefined && data.duplicate) {
+                            duplicateCount++;
+                        } else if (data.id != undefined) {
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][url]" value="' + url + '">'));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][channel_link]" value="' + data.id + '">'));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][name]" value="' + data.name + '">'));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][image_url]" value="' + data.image + '">'));
-                            //$('#inputs').find('input[name="Channels[' + currentId + '][image]"]').val(data.image);
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][subscribers_count]" value="' + data.subscribers_count + '">'));
 
                             $('#inputs').attr('data-count', currentId + 1);
@@ -111,18 +129,25 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
                                 '<td><div style="background-image: url(\'' + data.image + '\'); width: 32px; height: 32px; background-size: contain; background-position: center"></div></td>' +
                                 '<td>' + numberWithCommas(data.subscribers_count) + '</td>' +
                                 '</tr>'))
+                        } else {
+                            errorUrls.push(url);
                         }
 
                         $('#status').attr('data-count', parseInt($('#status').attr('data-count')) + 1);
-                        $('#status').text($('#status').attr('data-count') + ' / ' + urls.length + ' обработано');
+
+                        $('#status').text($('#status').attr('data-count') + ' / ' + urls.length + ' обработано' +
+                            (errorUrls.length > 0 ? ', ' + errorUrls.length + ' не добавлены' : '') +
+                            (duplicateCount > 0 ? ', ' + duplicateCount + ' каналов уже есть в базе' : ''));
                     });
                 });
 
                 $.when.apply(this, promises)
                     .then(function(){
-                        $('textarea[name="urls"]').val('');
+                        $('textarea[name="urls"]').val(errorUrls.join("\n"));
                         controls.removeAttr('disabled').removeClass('disabled');
-                        $('#status').addClass('hidden');
+
+                        if (errorUrls.length == 0 && duplicateCount == 0)
+                            $('#status').addClass('hidden');
                     });
             }
         });

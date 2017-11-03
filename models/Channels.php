@@ -5,6 +5,7 @@ namespace app\models;
 use app\components\HighloadAPI;
 use app\components\YoutubeAPI;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "channels".
@@ -169,6 +170,7 @@ class Channels extends \yii\db\ActiveRecord
                     'name' => $item[ 'snippet' ][ 'title' ],
                     'image' => $item[ 'snippet' ][ 'thumbnails' ][ 'default' ][ 'url' ],
                     'subscribers_count' => $item[ 'statistics' ][ 'subscriberCount' ],
+                    'duplicate' => Channels::find()->where(['channel_link' => $item[ 'id' ]])->count() > 0
                 ];
             }, $result));
         else
