@@ -9,19 +9,22 @@ use yii\helpers\Html;
 
 $this->title = $name;
 ?>
-<div class="site-error">
+<article>
+    <div class="site-error">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+        <h1><?= Html::encode($this->title) ?></h1>
 
-    <div class="alert alert-danger">
-        <?= nl2br(Html::encode($message)) ?>
+        <div class="alert alert-danger">
+            <?= nl2br(Html::encode($message)) ?>
+        </div>
+
+        <p>
+            Произошла ошибка при обработке вашего запроса.
+        </p>
+        <p>
+            Если вы думаете, что это связано с неполадками на сайте - пожалуйста, свяжитесь с нами. Спасибо!
+        </p>
+
     </div>
 
-    <p>
-        The above error occurred while the Web server was processing your request.
-    </p>
-    <p>
-        Please contact us if you think this is a server error. Thank you.
-    </p>
-
-</div>
+</article>

@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
+use yii\validators\IpValidator;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use zhuravljov\yii\logreader\Log;
@@ -28,6 +29,21 @@ class LogsController extends \zhuravljov\yii\logreader\controllers\DefaultContro
                     [
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                ],
+            ],
+            'ip' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            $validator = new IpValidator([
+                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                            ]);
+
+                            return $validator->validate(Yii::$app->request->userIP);
+                        },
                     ],
                 ],
             ],

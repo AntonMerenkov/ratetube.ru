@@ -16,6 +16,7 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\validators\IpValidator;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -43,6 +44,22 @@ class SiteController extends Controller
                 'class' => VerbFilter::className(),
                 'actions' => [
                     'logout' => ['post'],
+                ],
+            ],
+            'ip' => [
+                'class' => AccessControl::className(),
+                'only' => ['login'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            $validator = new IpValidator([
+                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                            ]);
+
+                            return $validator->validate(Yii::$app->request->userIP);
+                        },
+                    ],
                 ],
             ],
         ];

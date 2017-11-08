@@ -100,6 +100,12 @@ $config = [
         'session' => [
             'class' => 'yii\web\DbSession',
         ],
+        'reCaptcha' => [
+            'name' => 'reCaptcha',
+            'class' => 'himiklab\yii2\recaptcha\ReCaptcha',
+            'siteKey' => '6LfLtzcUAAAAALHyXhNd-8zfHKe4-zuqjv_egsAj',
+            'secret' => '6LfLtzcUAAAAAP0IdMnnLQj9pwGdmQtA3mQjbnsE',
+        ],
     ],
     'modules' => [
         'logreader' => [

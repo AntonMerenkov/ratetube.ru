@@ -11,6 +11,7 @@ use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
+use yii\validators\IpValidator;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -39,6 +40,24 @@ class AdsController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                ],
+            ],
+            'ip' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            if ($action->id == 'file')
+                                return true;
+
+                            $validator = new IpValidator([
+                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                            ]);
+
+                            return $validator->validate(Yii::$app->request->userIP);
+                        },
                     ],
                 ],
             ],

@@ -16,6 +16,7 @@ use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
 use yii\helpers\Json;
+use yii\validators\IpValidator;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -39,6 +40,21 @@ class StatisticsController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                ],
+            ],
+            'ip' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            $validator = new IpValidator([
+                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                            ]);
+
+                            return $validator->validate(Yii::$app->request->userIP);
+                        },
                     ],
                 ],
             ],
