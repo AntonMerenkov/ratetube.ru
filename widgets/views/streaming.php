@@ -15,8 +15,8 @@ use yii\helpers\Url;
         <? foreach ($videos as $video) : ?>
             <div class="video-item" data-id="<?=$video[ 'id' ] ?>">
                 <a href="<?=Url::to(['site/index', 'channel_id' => $video[ 'channel' ][ 'id' ]]) ?>" class="channel-name"><?=$video[ 'channel' ][ 'name' ] ?></a>
-                <iframe width="204" height="121" src="https://www.youtube.com/embed/<?=$video[ 'video_link' ] ?>" frameborder="0" allowfullscreen></iframe>
-                <a href="https://www.youtube.com/watch?v=<?=$video[ 'video_link' ] ?>" class="link" target="_blank">
+                <a href="#" data-video-id="<?=$video[ 'video_link' ] ?>" class="link">
+                    <div class="image" style="background-image: url('<?=$video[ 'image_url' ] ?>')"></div>
                     <div class="name"><?=$video[ 'name' ] ?></div>
                 </a>
             </div>

@@ -15,7 +15,7 @@ use yii\helpers\Url;
         <div class="video-list" data-count="<?=$count ?>">
             <? foreach ($videos as $video) : ?>
                 <div class="video-item" data-id="<?=$video[ 'id' ] ?>">
-                    <a href="https://www.youtube.com/watch?v=<?=$video[ 'video_link' ] ?>" class="link" target="_blank">
+                    <a href="#" data-video-id="<?=$video[ 'video_link' ] ?>" class="link">
                         <img src="<?=$video[ 'image_url' ] ?>" class="image">
                     </a>
                 </div>

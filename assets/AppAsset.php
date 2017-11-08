@@ -21,6 +21,7 @@ class AppAsset extends AssetBundle
     public $css = [
         'lib/flexslider/flexslider.css',
         'lib/jqcloud/jqcloud.min.css',
+        'lib/modal-video/css/modal-video.min.css',
         'css/site.css',
     ];
     public $js = [
@@ -30,6 +31,7 @@ class AppAsset extends AssetBundle
         'lib/share42/share42.js',
         'lib/visibility/visibility.min.js',
         'lib/jqcloud/jqcloud.min.js',
+        'lib/modal-video/js/jquery-modal-video.js',
         'js/scripts.js'
     ];
     public $depends = [

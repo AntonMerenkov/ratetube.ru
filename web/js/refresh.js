@@ -210,7 +210,7 @@ $(function() {
                             '<td style="width: ' + firstColWidth + 'px;">' +
                             '<div class="cell-table">' +
                             '<div class="cell-table-cell"><a class="channel-link" href="/channel/' + newData[ i ].channel.id + '" title="' + newData[ i ].channel.name + '"' + (newData[ i ].channel.image_url ? ' style="background-image: url(\'' + newData[ i ].channel.image_url + '\')"' : '') + '></a></div>' +
-                            '<div class="cell-table-cell"><a ' + (newData[ i ].ad != undefined && newData[ i ].ad ? 'class="ad" ' : '') + 'href="https://www.youtube.com/watch?v=' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '" target="_blank">' + newData[ i ].name + '</a></div>' +
+                            '<div class="cell-table-cell"><a ' + (newData[ i ].ad != undefined && newData[ i ].ad ? 'class="ad" ' : '') + 'href="#" data-video-id="' + newData[ i ].video_link + '" data-image="' + newData[ i ].image_url + '">' + newData[ i ].name + '</a></div>' +
                             '<div class="cell-table-cell"><a href="#" class="info"></a></div>' +
                             '</div>' +
                             '</td>' +
@@ -317,6 +317,9 @@ $(function() {
                     $('#news-table').find('tbody tr td').removeAttr('style');
                     $('#news-table').removeAttr('style');
                 }, 5000);
+
+                // Просмотр видео в модальном окне
+                updateYoutubeLinks();
             }
 
             // устанавливаем новые значения статистики для существующих элементов
@@ -386,8 +389,8 @@ $(function() {
                             // добавляем новый элемент
                             var newRow = $('<div class="video-item" data-id="' + newStreaming[ i ].id + '">\n' +
                                 '<a href="/channel/' + newStreaming[ i ].channel.id + '" class="channel-name">' + newStreaming[ i ].channel.name + '</a>\n' +
-                                '<iframe width="204" height="121" src="https://www.youtube.com/embed/' + newStreaming[ i ].video_link + '" frameborder="0" allowfullscreen></iframe>\n' +
-                                '<a href="https://www.youtube.com/watch?v=' + newStreaming[ i ].video_link + '" class="link" target="_blank">\n' +
+                                '<a href="#" data-video-id="' + newStreaming[ i ].video_link + '" class="link">\n' +
+                                '<div class="image" style="background-image: url(' + newStreaming[ i ].image_url + ')"></div>\n' +
                                 '<div class="name">' + newStreaming[ i ].name + '</div>\n' +
                                 '</a>\n' +
                                 '</div>');
@@ -430,6 +433,9 @@ $(function() {
                     rowsStreaming.animate({opacity: 1}, 400, 'swing', function() {
                         $(this).removeAttr('style');
                     });
+
+                    // Просмотр видео в модальном окне
+                    updateYoutubeLinks();
                 }, 500);
             }
         });

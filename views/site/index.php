@@ -107,11 +107,11 @@ $statisticsDataProvider = new ArrayDataProvider([
                     
                     <div class="cell-table-cell">' . Html::a(
                         $data[ 'name' ],
-                        'https://www.youtube.com/watch?v=' . $data[ 'video_link' ],
+                        '#',
                         [
                             'data-image' => $data[ 'image_url' ],
-                            'target' => '_blank',
                             'class' => $data[ 'ad' ] ? 'ad' : '',
+                            'data-video-id' => $data[ 'video_link' ],
                         ]
                     ) . '</div>
                     
