@@ -213,7 +213,7 @@ $categories = Categories::getDb()->cache(function ($db) {
                             <?=Nav::widget([
                                 'options' => ['class' => ''],
                                 'items' => Yii::$app->user->isGuest ? [
-                                    ['label' => 'Войти', 'url' => ['/site/login']]
+                                    //['label' => 'Войти', 'url' => ['/site/login']]
                                 ] : [
                                     ['label' => 'Статистика', 'url' => ['/statistics/index']],
                                     ['label' => 'Каналы', 'url' => ['/channels/index']],
