@@ -162,7 +162,7 @@ class Statistics
                 foreach ($cacheHistory[ $sortType ][ $timeType ] as $newCacheId)
                     if (Yii::$app->cache->exists($newCacheId)) {
                         $cacheId = $newCacheId;
-                        echo "Найден кэш " . $newCacheId . "\n";
+                        //echo "Найден кэш " . $newCacheId . "\n";
                         break;
                     }
         }

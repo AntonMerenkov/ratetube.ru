@@ -1418,6 +1418,17 @@ article p {
         content: none;
     }
 
+    #news-table thead tr th:nth-child(3),
+    #news-table thead tr th:nth-child(4),
+    #news-table thead tr th:nth-child(5),
+    #news-table thead tr th:nth-child(6),
+    #news-table tbody tr td:nth-child(3),
+    #news-table tbody tr td:nth-child(4),
+    #news-table tbody tr td:nth-child(5),
+    #news-table tbody tr td:nth-child(6) {
+        display: none;
+    }
+
     .pagination {
         font-size: 16px;
     }
