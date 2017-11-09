@@ -943,22 +943,24 @@ class AgentController extends Controller
             $cacheHistory = [];
 
         $addedIntervals = [];
-        foreach (Statistics::$timeTypes as $type => $name) {
-            echo "Обновляем статистику для интервала " . $name . "\n";
+        foreach (Statistics::$sortingTypes as $sortType => $sortName) {
+            foreach (Statistics::$timeTypes as $timeType => $name) {
+                echo "Обновляем статистику «" . $sortName . "» для интервала " . $name . "\n";
 
-            $statistics = Statistics::getStatistics(1, [
-                'timeType' => $type,
-                'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF
-            ]);
+                $statistics = Statistics::getStatistics(1, [
+                    'timeType' => $timeType,
+                    'sortType' => $sortType
+                ]);
 
-            if (!isset($cacheHistory[ $type ]) || !in_array($statistics[ 'db' ][ 'cache_id' ], $cacheHistory[ $type ])) {
-                echo $statistics[ 'db' ][ 'cache_id' ] . "\n";
-                $addedIntervals[] = substr(str_replace('Statistics', '', Statistics::$tableModels[ $type ]), 0, 1);
+                if (!isset($cacheHistory[ $sortType ][ $timeType ]) || !in_array($statistics[ 'db' ][ 'cache_id' ], $cacheHistory[ $sortType ][ $timeType ])) {
+                    echo $statistics[ 'db' ][ 'cache_id' ] . "\n";
+                    $addedIntervals[] = substr(str_replace('Statistics', '', Statistics::$tableModels[ $timeType ]), 0, 1);
+                }
+
+                echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
+                echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
+                unset($statistics);
             }
-
-            echo "Время: " . round(microtime(true) - $this->time, 2) . " сек\n";
-            echo "Память: " . round(memory_get_usage() / 1024 / 1024, 2) . " МБ\n";
-            unset($statistics);
         }
 
         /**

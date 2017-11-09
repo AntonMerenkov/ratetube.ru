@@ -104,7 +104,7 @@ class Statistics
     const TIME_SESSION_KEY = 'time-type';
     const SORT_SESSION_KEY = 'sort-type';
     const PAGINATION_ROW_COUNT = 50;
-    const CACHE_HISTORY_KEY = 'cache-history';
+    const CACHE_HISTORY_KEY = 'cache-history'; // cacheHistory => [sortType][timeType] = [...]
     const CACHE_VIDEO_INFO_KEY = 'video-info';
 
     /**
@@ -158,11 +158,11 @@ class Statistics
         if ($filter[ 'findCached' ] && !Yii::$app->cache->exists($cacheId)) {
             $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
 
-            if (is_array($cacheHistory) && isset($cacheHistory[ $timeType ]) && !empty($cacheHistory[ $timeType ]))
-                foreach ($cacheHistory[ $timeType ] as $newCacheId)
+            if (is_array($cacheHistory) && isset($cacheHistory[ $sortType ][ $timeType ]) && !empty($cacheHistory[ $sortType ][ $timeType ]))
+                foreach ($cacheHistory[ $sortType ][ $timeType ] as $newCacheId)
                     if (Yii::$app->cache->exists($newCacheId)) {
                         $cacheId = $newCacheId;
-                        //echo "Найден кэш " . $newCacheId . "\n";
+                        echo "Найден кэш " . $newCacheId . "\n";
                         break;
                     }
         }
@@ -431,10 +431,10 @@ class Statistics
         $cacheHistory = Yii::$app->cache->get(self::CACHE_HISTORY_KEY);
         if ($cacheHistory === false)
             $cacheHistory = [];
-        if (!isset($cacheHistory[ $timeType ]))
-            $cacheHistory[ $timeType ] = [];
-        if (!in_array($cacheId, $cacheHistory[ $timeType ])) {
-            array_unshift($cacheHistory[ $timeType ], $cacheId);
+        if (!isset($cacheHistory[ $sortType ][ $timeType ]))
+            $cacheHistory[ $sortType ][ $timeType ] = [];
+        if (!in_array($cacheId, $cacheHistory[ $sortType ][ $timeType ])) {
+            array_unshift($cacheHistory[ $sortType ][ $timeType ], $cacheId);
             Yii::$app->cache->set(self::CACHE_HISTORY_KEY, $cacheHistory);
         }
         Yii::endProfile('Установка последнего кеша');

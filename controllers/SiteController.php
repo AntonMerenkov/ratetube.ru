@@ -212,8 +212,6 @@ class SiteController extends Controller
      */
     public function actionIndex($category_id = null, $channel_id = null, $query = null, $page = 1)
     {
-        $time = microtime(true);
-
         Yii::beginProfile('Загрузка статистики');
         $statisticsQueryData = $this->getCachedStatistics($category_id, $channel_id, $query, $page);
         Yii::endProfile('Загрузка статистики');
