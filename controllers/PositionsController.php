@@ -200,6 +200,8 @@ class PositionsController extends Controller
         if ($_POST[ 'url' ] != '')
             return Json::encode(Videos::queryData($_POST[ 'url' ]));
         else
-            return Json::encode([]);
+            return Json::encode([
+                'status' => 0
+            ]);
     }
 }

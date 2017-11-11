@@ -1,5 +1,19 @@
 function updateYoutubeLinks() {
+    $('a[data-video-id]').not('[data-video-modal]').click(function(e) {
+        if (e.ctrlKey || e.metaKey)
+            e.stopImmediatePropagation();
+    });
+
     $('a[data-video-id]').not('[data-video-modal]').attr('data-video-modal', 1).modalVideo();
+
+    $('a[data-video-id]').each(function() {
+        if ($(this).attr('href') == '#')
+            $(this).attr('href', getCurrentUrl() + '#' + $(this).attr('data-video-id'));
+    });
+}
+
+function getCurrentUrl() {
+    return window.location.protocol + '//' + window.location.hostname + window.location.pathname + window.location.search;
 }
 
 $(function() {
@@ -152,4 +166,21 @@ $(function() {
      * Просмотр видео в модальном окне
      */
     updateYoutubeLinks();
+
+    /**
+     * Ссылка на видео
+     */
+    if (window.location.hash != '') {
+        $.post('/site/check-video', {id: window.location.hash}).success(function(data) {
+            data = $.parseJSON(data);
+
+            if (data.status != undefined && data.status == 1) {
+                var link = $('<a href="#" data-video-id="' + data.id + '" id="anchor-link" style="display: none"></a>');
+                link.appendTo($('body'));
+                link.attr('data-video-modal', 1).modalVideo();
+                document.getElementById('anchor-link').dispatchEvent(new Event("click"));
+                link.remove();
+            }
+        });
+    }
 });

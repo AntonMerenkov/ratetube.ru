@@ -145,4 +145,22 @@ class Videos extends \yii\db\ActiveRecord
             'image' => $result[ 0 ][ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ],
         ];
     }
+
+    /**
+     * Проверка ID видео.
+     *
+     * @param $id
+     * @return array|mixed
+     */
+    public static function checkData($id)
+    {
+        $id = preg_replace('/^#/', '', $id);
+
+        $result = HighloadAPI::query('videos', ['id' => $id], ['snippet', 'statistics']);
+
+        return [
+            'status' => !empty($result) ? 1 : 0,
+            'id' => $id
+        ];
+    }
 }

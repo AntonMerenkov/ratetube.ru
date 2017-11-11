@@ -31,8 +31,6 @@ use yii\widgets\ActiveForm;
                 $.post('/admin/positions/query-data', {url: $(this).val()}).success(function(data) {
                     data = $.parseJSON(data);
 
-                    console.log(data);
-
                     $('#positions-url-success').addClass('hidden');
 
                     if (data.error != undefined) {

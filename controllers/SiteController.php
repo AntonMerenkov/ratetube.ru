@@ -332,6 +332,19 @@ class SiteController extends Controller
     }
 
     /**
+     * Проверка видео по ID.
+     *
+     * @return string
+     */
+    public function actionCheckVideo()
+    {
+        if ($_POST[ 'id' ] != '')
+            return Json::encode(Videos::checkData($_POST[ 'id' ]));
+        else
+            return Json::encode([]);
+    }
+
+    /**
      * Вход в административную панель.
      *
      * @return string
