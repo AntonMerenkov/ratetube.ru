@@ -224,7 +224,7 @@ class AgentController extends Controller
                         continue;
 
                     $values[] = [
-                        'name' => mb_substr($videoData[ 'title' ], 0, 255),
+                        'name' => mb_substr($this->processUnicode($videoData[ 'title' ]), 0, 255),
                         'video_link' => $videoData[ 'id' ],
                         'channel_id' => $channelId,
                         'image_url' => $videoData[ 'image_url' ],
