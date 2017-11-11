@@ -712,9 +712,13 @@ main > .container > .row > * > .block {
     top: -4px;
 }
 
-#news-table .info-row .name {
+#news-table .info-row .channel-info + .name {
     border-top: 2px solid #fff;
     padding-top: 5px;
+}
+
+#news-table .info-row .name {
+    padding-top: 10px;
     font-size: 16px;
 }
 
