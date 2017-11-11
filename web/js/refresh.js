@@ -129,6 +129,10 @@ $(function() {
         if (Visibility.state() != 'visible')
             return true;
 
+        // ничего не обновляем, если видно окно предпросмотра или детальная информация
+        if ($('.modal-video').length > 0 || $('#news-table .info-row').length > 0)
+            return true;
+
         /**
          * Обновление позиций
          */
