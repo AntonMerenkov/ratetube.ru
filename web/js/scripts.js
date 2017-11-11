@@ -183,4 +183,8 @@ $(function() {
             }
         });
     }
+
+    $('body').on('click', '.modal-video-close-btn', function(e) {
+        window.history.replaceState({}, "", getCurrentUrl());
+    });
 });
