@@ -1414,10 +1414,6 @@ article p {
         padding: 0 10px;
     }
 
-    #news-table td:nth-child(1) a.ad::before {
-        content: none;
-    }
-
     #news-table thead tr th:nth-child(3),
     #news-table thead tr th:nth-child(4),
     #news-table thead tr th:nth-child(5),
