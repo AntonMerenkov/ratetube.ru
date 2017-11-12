@@ -16,6 +16,10 @@ function getCurrentUrl() {
     return window.location.protocol + '//' + window.location.hostname + window.location.pathname + window.location.search;
 }
 
+function isMobile() {
+    return /Mobi/.test(navigator.userAgent);
+}
+
 $(function() {
     /**
      * Форма поиска
@@ -114,17 +118,19 @@ $(function() {
     });
 
     /**
-     * Обновление страницы при минутной неактивности
+     * Обновление страницы при минутной неактивности (только на ПК)
      */
-    var visibilityDate = (new Date()).getTime();
-    Visibility.change(function (e, state) {
-        if (state == 'hidden')
-            visibilityDate = (new Date()).getTime();
+    if (!isMobile()) {
+        var visibilityDate = (new Date()).getTime();
+        Visibility.change(function (e, state) {
+            if (state == 'hidden')
+                visibilityDate = (new Date()).getTime();
 
-        if (state == 'visible')
-            if ((new Date()).getTime() - visibilityDate > 60000)
-                window.location.reload();
-    });
+            if (state == 'visible')
+                if ((new Date()).getTime() - visibilityDate > 60000)
+                    window.location.reload();
+        });
+    }
 
     /**
      * Мобильное меню
