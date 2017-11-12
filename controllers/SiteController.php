@@ -132,6 +132,11 @@ class SiteController extends Controller
                 $tmp = $data[ 'data' ][ $keys[ $i * 2 ] ];
                 $data[ 'data' ][ $keys[ $i * 2 ] ] = $data[ 'data' ][ $keys[ $i * 2 + 1 ] ];
                 $data[ 'data' ][ $keys[ $i * 2 + 1 ] ] = $tmp;
+
+                if ($keys[ $i * 2 ] < $keys[ $i * 2 + 1 ])
+                    $data[ 'data' ][ $keys[ $i * 2 ] ][ 'special' ] = 1;
+                else
+                    $data[ 'data' ][ $keys[ $i * 2 + 1 ] ][ 'special' ] = 1;
             }
         }
 

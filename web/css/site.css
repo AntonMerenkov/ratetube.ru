@@ -627,6 +627,18 @@ main > .container > .row > * > .block {
     top: -1px;
 }
 
+#news-table tr[data-special] td:nth-child(1) .cell-table-cell:nth-child(2) a::after {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background:  url('../img/special.png') no-repeat center;
+    margin-left: 4px;
+    border-radius: 4px;
+    position: relative;
+    top: 4px;
+}
+
 #news-table .info {
     display: none;
     background: url('../img/youtube-icon.png') no-repeat center;

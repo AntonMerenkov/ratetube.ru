@@ -267,6 +267,19 @@ $(function() {
                     //console.log('Новая позиция ' + currentPosition + 'px');
                 }
 
+                // установка data-special
+                $('#news-table').find('tbody tr').each(function() {
+                    var dataItem = newData[ newIds.indexOf(parseInt($(this).attr('data-id'))) ];
+
+                    if (dataItem != undefined && dataItem.special != undefined && dataItem.special == 1) {
+                        if ($(this).attr('data-special') == undefined)
+                            $(this).attr('data-special', 1);
+                    } else {
+                        if ($(this).attr('data-special') == 1)
+                            $(this).removeAttr('data-special');
+                    }
+                });
+
                 // выравниваем элементы по верху с отступом 2px, т.к. у элементов может быть разная высота
                 var currentPosition = $('#news-table thead tr').outerHeight() - 2;
                 if (currentPosition > 100)

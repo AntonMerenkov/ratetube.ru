@@ -86,7 +86,9 @@ $statisticsDataProvider = new ArrayDataProvider([
     'rowOptions' => function ($model, $key, $index, $grid) {
         return [
             'data-id' => $model[ 'id' ]
-        ];
+        ] + ($model[ 'special' ] == 1 ? [
+            'data-special' => 1
+        ] : []);
     },
     'columns' => [
         [
