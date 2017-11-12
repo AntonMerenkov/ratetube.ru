@@ -349,5 +349,50 @@ foreach ($statisticsQueryData['data'] as $item)
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-lg-12">
+                <h3 class="text-center">Объем кэша</h3>
+                <br>
+
+                <?
+                function dirsize($d)
+                {
+                    $size = 0;
+                    $dh = opendir($d);
+                    while (($files = readdir($dh)) !== false) {
+                        if ($files != "." && $files != "..") {
+                            $path = $d . "/" . $files;
+                            if (is_dir($path)) {
+                                $size += dirsize($path);
+                            } elseif (is_file($path)) {
+                                $size += filesize($path);
+                            }
+                        }
+                    }
+                    closedir($dh);
+                    return $size;
+                }
+
+                $freeSize = disk_free_space(Yii::getAlias('@runtime'));
+                $cacheSize = dirsize(Yii::getAlias('@runtime'));
+
+                $percent = round($cacheSize / ($cacheSize + $freeSize) * 100);
+
+                if ($percent >= 85)
+                    $class = 'danger';
+                elseif ($percent >= 50)
+                    $class = 'warning';
+                else
+                    $class = 'success';
+                ?>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-<?=$class ?>" role="progressbar" aria-valuenow="<?=$percent ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?=$percent ?>%;">
+                        <?=$percent ?>%
+                    </div>
+                </div>
+                <p>Занято <?=Yii::$app->formatter->asShortSize($cacheSize, 1) ?> из <?=Yii::$app->formatter->asShortSize($cacheSize + $freeSize, 1) ?></p>
+            </div>
+        </div>
+
     </div>
 </div>
