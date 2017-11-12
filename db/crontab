@@ -1,10 +1,11 @@
 0 */3 * * * flock -n /tmp/agent-update-videos.lock -c "php /var/www/html/yii agent/update-videos"
 12 * * * * flock -n /tmp/agent-flush-statistics.lock -c "php /var/www/html/yii agent/flush-statistics"
-*/10 * * * * flock -n /tmp/agent-update-statistics.lock -c "php /var/www/html/yii agent/update-statistics"
-# 5,15,25,35,45,55 * * * * flock -n /tmp/agent-generate-cache.lock -c "php /var/www/html/yii agent/generate-cache"
+*/5 * * * * flock -n /tmp/agent-update-statistics.lock -c "php /var/www/html/yii agent/update-statistics"
+2,7,12,17,22,27,32,37,42,47,52,57 * * * * flock -n /tmp/agent-generate-cache.lock -c "php /var/www/html/yii agent/generate-cache"
 7 */3 * * * flock -n /tmp/agent-flush-videos.lock -c "php /var/www/html/yii agent/flush-videos"
-22 */2 * * * flock -n /tmp/agent-update-subscribers -c "php /var/www/html/yii agent/update-subscribers"
-17 */12 * * * flock -n /tmp/agent-update-tags -c "php /var/www/html/yii agent/update-tags"
+22 */2 * * * flock -n /tmp/agent-update-subscribers.lock -c "php /var/www/html/yii agent/update-subscribers"
+17 */12 * * * flock -n /tmp/agent-update-tags.lock -c "php /var/www/html/yii agent/update-tags"
+47 2 */2 * * flock -n /tmp/agent-flush-cache.lock -c "php /var/www/html/yii agent/flush-cache"
 7 * * * * flock -n /tmp/update-quota -c "php /var/www/html/yii agent/update-quota"
 @hourly /usr/bin/indexer --rotate --config /etc/sphinx/sphinx.conf --all
 * * * * * /root/mariadb_restart.sh > /dev/null

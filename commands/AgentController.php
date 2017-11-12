@@ -1003,23 +1003,26 @@ class AgentController extends Controller
             $cacheHistory = [];
 
         $elementCount = 0;
-        foreach ($cacheHistory as $type => $values) {
-            $cacheExists = false;
 
-            foreach ($values as $id => $item) {
-                if (!$cacheExists) {
-                    if (Yii::$app->cache->exists($item))
-                        $cacheExists = true;
-                    else
-                        unset($cacheHistory[ $type ][ $id ]);
-                } else {
-                    $elementCount++;
-                    Yii::$app->cache->delete($item);
-                    unset($cacheHistory[ $type ][ $id ]);
+        foreach (Statistics::$sortingTypes as $sortType => $sortName) {
+            foreach (Statistics::$timeTypes as $timeType => $name) {
+                $cacheExists = false;
+
+                foreach ($cacheHistory[ $sortType ][ $timeType ] as $id => $item) {
+                    if (!$cacheExists) {
+                        if (Yii::$app->cache->exists($item))
+                            $cacheExists = true;
+                        else
+                            unset($cacheHistory[ $sortType ][ $timeType ][ $id ]);
+                    } else {
+                        $elementCount++;
+                        Yii::$app->cache->delete($item);
+                        unset($cacheHistory[ $sortType ][ $timeType ][ $id ]);
+                    }
                 }
-            }
 
-            $cacheHistory[ $type ] = array_values($cacheHistory[ $type ]);
+                $cacheHistory[ $sortType ][ $timeType ] = array_values($cacheHistory[ $sortType ][ $timeType ]);
+            }
         }
 
         Yii::$app->cache->set(Statistics::CACHE_HISTORY_KEY, $cacheHistory);
