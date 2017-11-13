@@ -73,7 +73,7 @@ class Videos extends \yii\db\ActiveRecord
      */
     public function getStatistics()
     {
-        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $timeType = Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE);
         $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
 
         return $this->hasMany($tableModel::className(), ['video_id' => 'id']);

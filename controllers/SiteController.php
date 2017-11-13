@@ -157,7 +157,7 @@ class SiteController extends Controller
     {
         $idArray = [];
 
-        $idArray[] = 't' . Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $idArray[] = 't' . Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE);
         $idArray[] = 's' . Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
 
         if (!is_null($page))
