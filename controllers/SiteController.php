@@ -14,6 +14,7 @@ use app\models\Videos;
 use app\widgets\Streaming;
 use Yii;
 use yii\filters\AccessControl;
+use yii\filters\PageCache;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\validators\IpValidator;
@@ -29,6 +30,16 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
+            'caching' => [
+                'class' => PageCache::className(),
+                'only' => ['index'],
+                'duration' => 5,
+                'variations' => [
+                    Yii::$app->request->get(),
+                    Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE),
+                    Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF),
+                ],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'only' => ['logout'],

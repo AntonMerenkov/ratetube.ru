@@ -82,9 +82,10 @@ class AgentController extends Controller
     /**
      * Обновление списка видео.
      *
+     * @param bool $onlyLive
      * @throws \Exception
      */
-    public function actionUpdateVideos()
+    public function actionUpdateVideos($onlyLive = false)
     {
         $channelModels = Channels::find()->all();
 
@@ -141,12 +142,28 @@ class AgentController extends Controller
 
             ksort($playlistsIds, SORT_NUMERIC);
 
-            $cachedData = HighloadAPI::query('playlistItems', [
-                'playlistId' => $playlistsIds,
+            $date = new DateTime();
+            $date->sub(new DateInterval('P1W'));
+            $cachedData = HighloadAPI::query('search', [
+                'channelId' => $channelsIds,
+                'eventType' => 'live',
+                'order' => 'date',
+                'publishedAfter' => $date->format(DateTime::RFC3339),
+                'type' => 'video',
             ], [
-                'snippet',
-                'contentDetails'
+                'snippet'
             ], YoutubeAPI::QUERY_PAGES);
+
+            if (!$onlyLive)
+                $cachedData = array_merge(
+                    $cachedData,
+                    HighloadAPI::query('playlistItems', [
+                        'playlistId' => $playlistsIds,
+                    ], [
+                        'snippet',
+                        'contentDetails'
+                    ], YoutubeAPI::QUERY_PAGES)
+                );
 
             $cachedDir = Yii::getAlias('@runtime/highload_cache/' . $this->action->id . '/' . strtotime($this->profiling->datetime));
 
@@ -173,6 +190,9 @@ class AgentController extends Controller
 
             $newVideoIds = [];
             foreach ($result as $item) {
+                if (!isset($item[ 'contentDetails' ][ 'videoId' ]))
+                    $item[ 'contentDetails' ][ 'videoId' ] = $item[ 'id' ][ 'videoId' ];
+
                 $newVideoIds[ $item[ 'contentDetails' ][ 'videoId' ] ] = [
                     'id' => $item[ 'contentDetails' ][ 'videoId' ],
                     'title' => $item[ 'snippet' ][ 'title' ],
@@ -275,21 +295,23 @@ class AgentController extends Controller
             }
         }
 
-        // установка неактивности для тех видео, которых нет в списке
-        $activeVideosIds = array_values(array_map(function($item) {
-            return $item[ 'id' ];
-        }, array_filter(Videos::find()->active()->asArray()->all(), function($item) use ($addedVideos) {
-            return !isset($addedVideos[ $item[ 'video_link' ] ]);
-        })));
+        // установка неактивности для тех видео, которых нет в списке (только при загрузке полного списка)
+        if (!$onlyLive) {
+            $activeVideosIds = array_values(array_map(function($item) {
+                return $item[ 'id' ];
+            }, array_filter(Videos::find()->active()->asArray()->all(), function($item) use ($addedVideos) {
+                return !isset($addedVideos[ $item[ 'video_link' ] ]);
+            })));
 
-        if (!empty($activeVideosIds)) {
-            Videos::updateAll([
-                'active' => 0
-            ], [
-                'id' => $activeVideosIds
-            ]);
+            if (!empty($activeVideosIds)) {
+                Videos::updateAll([
+                    'active' => 0
+                ], [
+                    'id' => $activeVideosIds
+                ]);
 
-            $unactiveCount += count($activeVideosIds);
+                $unactiveCount += count($activeVideosIds);
+            }
         }
 
         Yii::info("Получено новых видео: " . $addedCount .

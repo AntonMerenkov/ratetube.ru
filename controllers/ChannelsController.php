@@ -361,22 +361,6 @@ class ChannelsController extends Controller
     }
 
     /**
-     * Загрузка списка видео канала вручную.
-     *
-     * @param $id
-     */
-    public function actionReload($id) {
-        set_time_limit(300);
-
-        $channelModel = $this->findModel($id);
-
-        $consoleController = new AgentController('agent', null);
-        $consoleController->actionUpdateVideos($id);
-
-        $this->redirect(['list-videos', 'id' => $id]);
-    }
-
-    /**
      * Удаление видео.
      *
      * @param $id
