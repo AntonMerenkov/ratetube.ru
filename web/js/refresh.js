@@ -84,7 +84,7 @@ $(function() {
                 })
             });
 
-            $(this).animate({'background-color': 'rgba(22, 32, 45, 1)'}, 500, function() {
+            $(this).animate({'background-color': $(this).closest('tr').attr('data-special') != undefined ? 'rgba(65, 84, 100, 1)' : 'rgba(22, 32, 45, 1)'}, 500, function() {
                 $(this).removeAttr('style').removeAttr('data-animation');
             });
         });
@@ -101,7 +101,7 @@ $(function() {
             color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', 1)'
         }, 1200, 'swing', function() {
             $(this).delay(200).animate({
-                'background-color': '#16202d',
+                'background-color': ($(this).closest('tr').is('[data-special]') ? '#415464' : '#16202d'),
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
             }, 1200, 'swing');
         });
@@ -118,7 +118,7 @@ $(function() {
             color: 'rgba(255, 255, 255, 1)'
         }, 1200, 'swing', function() {
             $(this).delay(200).animate({
-                'background-color': '#16202d',
+                'background-color': ($(this).closest('tr').is('[data-special]') ? '#415464' : '#16202d'),
                 color: 'rgba(' + textColor.r + ', ' + textColor.g + ', ' + textColor.b + ', ' + textColor.a + ')'
             }, 1200, 'swing');
         });

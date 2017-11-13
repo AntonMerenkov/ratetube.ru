@@ -639,6 +639,10 @@ main > .container > .row > * > .block {
     top: 4px;
 }
 
+#news-table tr[data-special] td {
+    background-color: #415464;
+}
+
 #news-table .info {
     display: none;
     background: url('../img/youtube-icon.png') no-repeat center;
