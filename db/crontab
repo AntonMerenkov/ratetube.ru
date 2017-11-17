@@ -1,4 +1,5 @@
 0 */3 * * * flock -n /tmp/agent-update-videos.lock -c "php /var/www/html/yii agent/update-videos"
+20,40 * * * * flock -n /tmp/agent-update-videos.lock -c "php /var/www/html/yii agent/update-videos 1"
 12 * * * * flock -n /tmp/agent-flush-statistics.lock -c "php /var/www/html/yii agent/flush-statistics"
 */5 * * * * flock -n /tmp/agent-update-statistics.lock -c "php /var/www/html/yii agent/update-statistics"
 2,7,12,17,22,27,32,37,42,47,52,57 * * * * flock -n /tmp/agent-generate-cache.lock -c "php /var/www/html/yii agent/generate-cache"

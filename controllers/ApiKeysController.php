@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\components\YoutubeAPI;
 use app\models\ApiKeyStatistics;
+use app\models\SecurityIp;
 use DateInterval;
 use DateTime;
 use Yii;
@@ -46,8 +47,13 @@ class ApiKeysController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);

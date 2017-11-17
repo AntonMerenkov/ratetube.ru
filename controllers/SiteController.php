@@ -9,6 +9,7 @@ use app\components\Statistics;
 use app\models\Channels;
 use app\models\Positions;
 use app\models\PositionStatistics;
+use app\models\SecurityIp;
 use app\models\StatisticsMinute;
 use app\models\Videos;
 use app\widgets\Streaming;
@@ -64,8 +65,13 @@ class SiteController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);

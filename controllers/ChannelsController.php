@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\commands\AgentController;
 use app\components\Statistics;
 use app\models\Categories;
+use app\models\SecurityIp;
 use app\models\Videos;
 use app\models\VideosSearch;
 use Yii;
@@ -47,8 +48,13 @@ class ChannelsController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);

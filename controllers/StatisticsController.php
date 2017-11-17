@@ -7,6 +7,7 @@ use app\models\ApiKeys;
 use app\models\Categories;
 use app\models\Profiling;
 use app\components\Statistics;
+use app\models\SecurityIp;
 use DateInterval;
 use DateTime;
 use Yii;
@@ -15,6 +16,7 @@ use app\models\ChannelsSearch;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\validators\IpValidator;
 use yii\web\Controller;
@@ -49,8 +51,13 @@ class StatisticsController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);
