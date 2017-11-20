@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\AdStatistics;
+use app\models\SecurityIp;
 use DateInterval;
 use DateTime;
 use Yii;
@@ -52,8 +53,13 @@ class AdsController extends Controller
                             if ($action->id == 'file')
                                 return true;
 
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);

@@ -9,11 +9,13 @@ use app\components\Statistics;
 use app\models\Channels;
 use app\models\Positions;
 use app\models\PositionStatistics;
+use app\models\SecurityIp;
 use app\models\StatisticsMinute;
 use app\models\Videos;
 use app\widgets\Streaming;
 use Yii;
 use yii\filters\AccessControl;
+use yii\filters\PageCache;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\validators\IpValidator;
@@ -29,6 +31,16 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
+            'caching' => [
+                'class' => PageCache::className(),
+                'only' => ['index'],
+                'duration' => 5,
+                'variations' => [
+                    Yii::$app->request->get(),
+                    Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE),
+                    Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF),
+                ],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'only' => ['logout'],
@@ -53,8 +65,13 @@ class SiteController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);
@@ -157,7 +174,7 @@ class SiteController extends Controller
     {
         $idArray = [];
 
-        $idArray[] = 't' . Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+        $idArray[] = 't' . Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE);
         $idArray[] = 's' . Yii::$app->session->get(Statistics::SORT_SESSION_KEY, Statistics::SORT_TYPE_VIEWS_DIFF);
 
         if (!is_null($page))

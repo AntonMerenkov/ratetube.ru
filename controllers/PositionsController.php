@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\PositionStatistics;
+use app\models\SecurityIp;
 use app\models\Videos;
 use DateInterval;
 use DateTime;
@@ -49,8 +50,13 @@ class PositionsController extends Controller
                             if ($action->id == 'file')
                                 return true;
 
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);

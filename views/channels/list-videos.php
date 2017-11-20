@@ -28,13 +28,6 @@ $statisticsData = ArrayHelper::map($statisticsData[ 'data' ], 'id', function($it
 
     <h3>
         <?= Html::encode($this->title) ?>
-        <?=Html::a(
-            '<i class="glyphicon glyphicon-refresh"></i> Обновить вручную',
-            \yii\helpers\Url::to(['channels/reload', 'id' => $channelModel->id]),
-            [
-                'class' => 'pull-right btn btn-warning',
-            ]
-        ); ?>
 
         <?
         $activeCount = Videos::find()->where(['channel_id' => $channelModel->id])->active()->count();

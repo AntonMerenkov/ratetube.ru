@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\commands\AgentController;
 use app\components\Statistics;
 use app\models\Categories;
+use app\models\SecurityIp;
 use app\models\Videos;
 use app\models\VideosSearch;
 use Yii;
@@ -47,8 +48,13 @@ class ChannelsController extends Controller
                     [
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
+                            $adminIP = ArrayHelper::map(SecurityIp::find()->all(), 'id', 'ip');
+
+                            if (empty($adminIP))
+                                return true;
+
                             $validator = new IpValidator([
-                                'ranges' => Yii::$app->params[ 'adminIP' ]
+                                'ranges' => $adminIP
                             ]);
 
                             return $validator->validate(Yii::$app->request->userIP);
@@ -358,22 +364,6 @@ class ChannelsController extends Controller
             'videosDataProvider' => $videosDataProvider,
             'statisticsData' => $statisticsData,
         ]);
-    }
-
-    /**
-     * Загрузка списка видео канала вручную.
-     *
-     * @param $id
-     */
-    public function actionReload($id) {
-        set_time_limit(300);
-
-        $channelModel = $this->findModel($id);
-
-        $consoleController = new AgentController('agent', null);
-        $consoleController->actionUpdateVideos($id);
-
-        $this->redirect(['list-videos', 'id' => $id]);
     }
 
     /**

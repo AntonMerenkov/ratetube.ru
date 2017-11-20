@@ -128,7 +128,7 @@ class Statistics
 
         // выбираем нужную таблицу
         $timeType = isset($filter[ 'timeType' ]) ? $filter[ 'timeType' ] :
-            Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR);
+            Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE);
         $tableModel = '\\app\\models\\' . Statistics::$tableModels[ $timeType ];
         $tableName = $tableModel::tableName();
         $sortType = isset($filter[ 'sortType' ]) ? $filter[ 'sortType' ] :

@@ -52,6 +52,7 @@ AdminAsset::register($this);
             ['label' => 'YouTube API', 'url' => ['/api-keys/index']],
             ['label' => 'Сервера', 'url' => ['/slaves/index']],
             ['label' => 'Журналы', 'url' => ['/logreader/default/index']],
+            ['label' => 'Защита', 'url' => ['/security/index']],
             '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(

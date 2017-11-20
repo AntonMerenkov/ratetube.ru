@@ -60,7 +60,7 @@ $categories = Categories::getDb()->cache(function ($db) {
                                     'options' => [
                                         'data-id' => $id
                                     ],
-                                    'active' => Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_HOUR) == $id
+                                    'active' => Yii::$app->session->get(Statistics::TIME_SESSION_KEY, Statistics::QUERY_TIME_MINUTE) == $id
                                 ];
 
                             echo Nav::widget([

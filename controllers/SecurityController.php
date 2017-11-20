@@ -2,22 +2,20 @@
 
 namespace app\controllers;
 
-use app\models\SecurityIp;
 use Yii;
-use app\models\Slaves;
+use app\models\SecurityIp;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
-use yii\helpers\Json;
 use yii\validators\IpValidator;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * SlavesController implements the CRUD actions for Slaves model.
+ * SecurityController implements the CRUD actions for SecurityIp model.
  */
-class SlavesController extends Controller
+class SecurityController extends Controller
 {
     public $layout = 'admin';
 
@@ -27,6 +25,12 @@ class SlavesController extends Controller
     public function behaviors()
     {
         return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
@@ -60,13 +64,13 @@ class SlavesController extends Controller
     }
 
     /**
-     * Lists all Slaves models.
+     * Lists all SecurityIp models.
      * @return mixed
      */
     public function actionIndex()
     {
         $dataProvider = new ActiveDataProvider([
-            'query' => Slaves::find(),
+            'query' => SecurityIp::find(),
         ]);
 
         return $this->render('index', [
@@ -75,13 +79,13 @@ class SlavesController extends Controller
     }
 
     /**
-     * Creates a new Slaves model.
+     * Creates a new SecurityIp model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Slaves();
+        $model = new SecurityIp();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['index']);
@@ -93,7 +97,7 @@ class SlavesController extends Controller
     }
 
     /**
-     * Updates an existing Slaves model.
+     * Updates an existing SecurityIp model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -112,7 +116,7 @@ class SlavesController extends Controller
     }
 
     /**
-     * Deletes an existing Slaves model.
+     * Deletes an existing SecurityIp model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -125,31 +129,18 @@ class SlavesController extends Controller
     }
 
     /**
-     * Finds the Slaves model based on its primary key value.
+     * Finds the SecurityIp model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Slaves the loaded model
+     * @return SecurityIp the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Slaves::findOne($id)) !== null) {
+        if (($model = SecurityIp::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
-    }
-
-    /**
-     * Валидация подчиненного сервера.
-     *
-     * @return string
-     */
-    public function actionQueryData()
-    {
-        return Json::encode(isset($_POST[ 'ip' ]) && $_POST[ 'ip' ] != '' ? Slaves::validateServer($_POST[ 'ip' ]) : [
-            'status' => 0,
-            'error' => 'Укажите IP-адрес.'
-        ]);
     }
 }
