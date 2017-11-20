@@ -50,7 +50,10 @@ class QueryController extends \yii\web\Controller
             throw new ForbiddenHttpException('Нет доступа.');
 
         // загрузка переданных API-ключей
-        YoutubeAPI::$keys = $_POST[ 'apiKeys' ];
+        YoutubeAPI::$keys = array_map(function($item) {
+            $item[ 'quota_diff' ] = 0;
+            return $item;
+        }, $_POST[ 'apiKeys' ]);
 
         // выполнение запроса
         $result = YoutubeAPI::query($_POST[ 'method' ], $_POST[ 'params' ], $_POST[ 'parts' ], $_POST[ 'type' ]);
