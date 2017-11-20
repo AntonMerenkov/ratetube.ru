@@ -107,7 +107,7 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
                 var duplicateCount = 0;
 
                 var promises = $.map(urls, function(url){
-                    return $.post('/admin/channels/query-data', {url: url}).then(function(data) {
+                    return $.post('/rt--admin/channels/query-data', {url: url}).then(function(data) {
                         data = $.parseJSON(data);
 
                         var currentId = parseInt($('#inputs').attr('data-count'));

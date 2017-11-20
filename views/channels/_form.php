@@ -90,7 +90,7 @@ use yii\widgets\ActiveForm;
 
 <script>
     $('#channels-url').keyup(function() {
-        $.post('/admin/channels/query-data', {url: $(this).val()}).success(function(data) {
+        $.post('/rt--admin/channels/query-data', {url: $(this).val()}).success(function(data) {
             data = $.parseJSON(data);
 
             if (data.error != undefined)
