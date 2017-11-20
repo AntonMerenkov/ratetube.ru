@@ -237,6 +237,14 @@ class YoutubeAPI
 
                         if ($pageTokens[ $id ] == '')
                             unset($urlArray[ $id ]);
+
+                        // если последний запрос отдал данные старше полугода - не делаем следующий запрос
+                        if (!empty($responseArray[ $id ][ 'items' ]) && isset(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ])) {
+                            if ($time - strtotime(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ]) > 86400 * 180) {
+                                unset($urlArray[ $id ]);
+                                unset($pageTokens[ $id ]);
+                            }
+                        }
                     } else {
                         Yii::error('Ошибка YouTube: ' . $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'message' ], 'api-keys');
                         self::disableKey($keysArray[ $id ], $responseArray[ $id ][ 'error' ][ 'errors' ][ 0 ][ 'reason' ] == 'quotaExceeded');

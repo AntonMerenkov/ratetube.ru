@@ -143,7 +143,7 @@ class AgentController extends Controller
             ksort($playlistsIds, SORT_NUMERIC);
 
             $date = new DateTime();
-            $date->sub(new DateInterval('P1W'));
+            $date->sub(new DateInterval('P1D'));
             $cachedData = HighloadAPI::query('search', [
                 'channelId' => $channelsIds,
                 'eventType' => 'live',
@@ -1054,102 +1054,41 @@ class AgentController extends Controller
             " сек, память: " . Yii::$app->formatter->asShortSize(memory_get_usage(), 1), 'agent');
     }
 
-    /**
-     * Тестирование HighloadAPI.
-     */
-    public function actionTestHighload()
+    public function actionTest()
     {
-        $videoIds = ArrayHelper::map(Videos::find()->active()->all(), 'id', 'video_link');
-        $channelsIds = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
+        $channelModels = Channels::find()->limit(1)->all();
+        $channelsIds = ArrayHelper::map($channelModels, 'id', 'channel_link');
+        $channelsLinks = array_flip($channelsIds);
 
-        // Запрос на получение статистики
-        /*echo "==== Запрос на получение статистики ====\n";
-
-        echo "Обычный\n";
-        $time = microtime(true);
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        echo "Highload\n";
-        $time = microtime(true);
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['statistics', 'liveStreamingDetails'], YoutubeAPI::QUERY_MULTIPLE);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        echo "\n";*/
-
-        /*// Одиночный запрос
-        echo "==== Одиночный запрос ====\n";
-
-        echo "Обычный\n";
-        $time = microtime(true);
-        $response = YoutubeAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        echo "Highload\n";
-        $time = microtime(true);
-        $response = HighloadAPI::query('channels', ['forUsername' => 'starmedia'], ['snippet', 'statistics']);
-        echo round(microtime(true) - $time, 2) . " сек.\n";*/
-
-        /*echo "\n";
-
-        // Множественный запрос
-        echo "==== Множественный запрос ====\n";
-
-        echo "Обычный\n";
-        $time = microtime(true);
-        $response = YoutubeAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        echo "Highload\n";
-        $time = microtime(true);
-        $response = HighloadAPI::query('videos', ['id' => $videoIds], ['snippet'], YoutubeAPI::QUERY_MULTIPLE);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
-
-        echo "\n";*/
-
-        // Постраничный запрос
-        /*echo "==== Постраничный запрос ====\n";
-
-        echo "Обычный\n";
-        $time = microtime(true);
-        $response = YoutubeAPI::query('search', [
-            'channelId' => $channelsIds,
-            'type' => 'video',
-            'order' => 'viewCount',
+        $data = HighloadAPI::query('channels', [
+            'id' => $channelsIds,
         ], [
-            'snippet'
-        ], YoutubeAPI::QUERY_PAGES);
-        echo round(microtime(true) - $time, 2) . " сек.\n";
+            'contentDetails'
+        ], YoutubeAPI::QUERY_MULTIPLE);
 
-        echo "Highload\n";
-        $time = microtime(true);
-        $response = HighloadAPI::query('search', [
-            'channelId' => $channelsIds,
-            'type' => 'video',
-            'order' => 'date',
+        foreach ($data as $item) {
+            $item = unserialize(gzuncompress($item));
+
+            foreach ($item as $value)
+                $playlistsIds[ $channelsLinks[ $value[ 'id' ] ] ] = $value[ 'contentDetails' ][ 'relatedPlaylists' ][ 'uploads' ];
+        }
+
+        ksort($playlistsIds, SORT_NUMERIC);
+
+        $data = HighloadAPI::query('playlistItems', [
+            'playlistId' => $playlistsIds,
         ], [
-            'snippet'
+            'snippet',
+            'contentDetails'
         ], YoutubeAPI::QUERY_PAGES);
-        echo round(microtime(true) - $time, 2) . " сек.\n";*/
-    }
 
-    public function actionTestStatistics()
-    {
-        $statistics = Statistics::getStatistics(1, [
-            //'category_id' => 3,
-            'timeType' => Statistics::QUERY_TIME_HOUR,
-            'sortType' => Statistics::SORT_TYPE_VIEWS_DIFF,
-            //'findCached' => true,
-            'noCache' => true,
-        ]);
+        foreach ($data as $item) {
+            $item = unserialize(gzuncompress($item));
 
-        echo "--- Время подробно ---\n";
-        foreach (Yii::getLogger()->getProfiling() as $item)
-            echo "[" . round($item[ 'duration' ], 2) . "] " . $item[ 'info' ] . "\n";
-
-        echo "Элементов: " . $statistics[ 'pagination' ][ 'count' ] . "\n";
-        echo "Объем данных: " . round(strlen(serialize($statistics)) / 1024 / 1024, 2) . " МБ\n";
-        echo round(memory_get_peak_usage() / 1024 / 1024, 2) . " МБ\n";
-        echo round(microtime(true) - $this->time, 2) . " сек.\n";
+            print_r(array_map(function($item2) {
+                return $item2[ 'snippet' ][ 'publishedAt' ];
+            }, $item));
+            print_r(count($item));
+        }
     }
 }
