@@ -142,7 +142,9 @@ class SiteController extends Controller
             $count = 0;
 
         if ($count > 0) {
-            $keys = array_rand($data[ 'data' ], $count * 2);
+            $keys = array_rand(array_filter($data[ 'data' ], function($item) {
+                return !isset($item[ 'ad' ]);
+            }), $count * 2);
             shuffle($keys);
 
             for ($i = 0; $i < $count; $i++) {
