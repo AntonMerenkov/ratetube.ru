@@ -1086,7 +1086,7 @@ class AgentController extends Controller
             $item = unserialize(gzuncompress($item));
 
             print_r(array_map(function($item2) {
-                return $item2[ 'snippet' ][ 'publishedAt' ];
+                return $item2[ 'snippet' ];
             }, $item));
             print_r(count($item));
         }

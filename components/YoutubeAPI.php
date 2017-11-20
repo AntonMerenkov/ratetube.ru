@@ -242,7 +242,7 @@ class YoutubeAPI
                         if (!empty($responseArray[ $id ][ 'items' ]) && isset(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ])) {
                             if ($time - strtotime(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ]) > 86400 * 180) {
                                 unset($urlArray[ $id ]);
-                                unset($pageTokens[ $id ]);
+                                $pageTokens[ $id ] = '';
                             }
                         }
                     } else {
