@@ -684,11 +684,12 @@ class AgentController extends Controller
             $transaction = Yii::$app->db->beginTransaction();
 
             foreach ($channelIds as $channelId => $channelLink) {
-                Channels::updateAll([
-                    'subscribers_count' => $subscribersData[ $channelLink ][ 'subscriberCount' ]
-                ], [
-                    'id' => $channelId
-                ]);
+                if (isset($subscribersData[ $channelLink ]) && $subscribersData[ $channelLink ][ 'subscriberCount' ] > 0)
+                    Channels::updateAll([
+                        'subscribers_count' => $subscribersData[ $channelLink ][ 'subscriberCount' ]
+                    ], [
+                        'id' => $channelId
+                    ]);
             }
 
             $addedChannels += count($channelIds);
