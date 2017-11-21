@@ -150,6 +150,9 @@ class ChannelsController extends Controller
         Channels::loadMultiple($channels, Yii::$app->request->post());
         array_walk($channels, function($item) use ($category_id) {
             $item->category_id = $category_id;
+
+            if ($item->name == '')
+                $item->name = end(explode('/', $item[ 'url' ]));
         });
 
         // проверка на уникальность среди данных

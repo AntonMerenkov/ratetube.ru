@@ -116,7 +116,7 @@ $this->params['breadcrumbs'][] = 'Добавление списка';
                         } else if (data.id != undefined) {
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][url]" value="' + url + '">'));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][channel_link]" value="' + data.id + '">'));
-                            $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][name]" value="' + data.name + '">'));
+                            $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][name]" value="">').val(data.name));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][image_url]" value="' + data.image + '">'));
                             $('#inputs').append($('<input type="hidden"  name="Channels[' + currentId + '][subscribers_count]" value="' + data.subscribers_count + '">'));
 
