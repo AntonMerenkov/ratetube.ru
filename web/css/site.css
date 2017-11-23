@@ -1033,6 +1033,30 @@ article p {
     margin-bottom: 20px;
 }
 
+.modal {
+    overflow: visible;
+}
+
+#help-modal h4 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 22px;
+}
+
+#help-modal .content {
+    text-align: center;
+}
+
+#help-modal .content i {
+    font-size: 32px;
+}
+
+#help-modal .content p {
+    line-height: 1.2;
+    opacity: 0.7;
+    margin: 10px 0 20px;
+}
+
 /**
  * Mobile CSS
  */
@@ -1376,6 +1400,10 @@ article p {
 
     #yii-debug-toolbar {
         display: none !important;
+    }
+
+    #help-modal .col-xs-6:nth-child(2n+1) {
+        clear: both;
     }
 }
 

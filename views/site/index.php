@@ -213,3 +213,89 @@ $statisticsDataProvider = new ArrayDataProvider([
         </a>
     </div>
 <? endif; ?>
+
+<? if (!isset($_COOKIE[ 'help_modal_showed' ])) : ?>
+    <div id="help-modal" class="modal">
+        <h4>Добро пожаловать на сайт самого хайпового видео с YouTUBE! У нас есть:</h4>
+
+        <div class="content">
+            <div class="row">
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-refresh" style="color: #ff4539"></i>
+                    <p>Живой ТОП видео Ютуба</p>
+                </div>
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-user" style="color: #ee7624"></i>
+                    <p>ТОП блоггеров Ютуба</p>
+                </div>
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-eye-open" style="color: #f4c400"></i>
+                    <p>Быстрый и удобный просмотр</p>
+                </div>
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-sort-by-attributes" style="color: #00833f"></i>
+                    <p>Возможность сортировки каналов и поиска</p>
+                </div>
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-exclamation-sign" style="color: #0099a9"></i>
+                    <p>Инфа о блоггерах, о которых даже не подозревал</p>
+                </div>
+                <div class="col-md-4 col-xs-6">
+                    <i class="glyphicon glyphicon-search" style="color: #86339a"></i>
+                    <p>Выбор категории и каналов по интересам</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            var matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        function setCookie(name, value, options) {
+            options = options || {};
+
+            var expires = options.expires;
+
+            if (typeof expires == "number" && expires) {
+                var d = new Date();
+                d.setTime(d.getTime() + expires * 1000);
+                expires = options.expires = d;
+            }
+            if (expires && expires.toUTCString) {
+                options.expires = expires.toUTCString();
+            }
+
+            value = encodeURIComponent(value);
+
+            var updatedCookie = name + "=" + value;
+
+            for (var propName in options) {
+                updatedCookie += "; " + propName;
+                var propValue = options[propName];
+                if (propValue !== true) {
+                    updatedCookie += "=" + propValue;
+                }
+            }
+
+            document.cookie = updatedCookie;
+        }
+
+        $(function() {
+            if (getCookie('help_modal_showed') == undefined) {
+                $('#help-modal').modal({
+                    fadeDuration: 500,
+                    fadeDelay: 0.50
+                });
+
+                setCookie('help_modal_showed', 1, {
+                    expires: 86400 * 365 * 10
+                })
+            }
+        });
+    </script>
+<? endif;
