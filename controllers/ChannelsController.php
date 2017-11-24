@@ -181,6 +181,61 @@ class ChannelsController extends Controller
     }
 
     /**
+     * Поиск каналов по ключевым словам.
+     *
+     * @param $category_id
+     * @return string
+     */
+    public function actionSearch($category_id)
+    {
+        $postData = array_values(Yii::$app->request->post('Channels', []));
+
+        // отфильтровываем невключенные элементы
+        $postData = array_filter($postData, function($item) {
+            return isset($item[ 'checked' ]) && $item[ 'checked' ];
+        });
+
+        $count = count($postData);
+        $channels = [ new Channels() ];
+        for ($i = 1; $i < $count; $i++) {
+            $channels[ $i ] = new Channels();
+            $channels[ $i ]->category_id = $category_id;
+        }
+
+        Channels::loadMultiple($channels, ['Channels' => $postData]);
+        array_walk($channels, function($item) use ($category_id) {
+            $item->category_id = $category_id;
+
+            if ($item->name == '')
+                $item->name = end(explode('/', $item[ 'url' ]));
+        });
+
+        // проверка на уникальность среди данных
+        $ids = ArrayHelper::map(Channels::find()->all(), 'id', 'channel_link');
+        foreach ($channels as $id => $channel)
+            if (in_array($channel->channel_link, $ids))
+                unset($channels[ $id ]);
+            else
+                $ids[] = $channel->channel_link;
+
+        $channels = array_values($channels);
+        if (empty($channels))
+            $channels = [ new Channels() ];
+
+        if (Channels::validateMultiple($channels)) {
+            foreach ($channels as $channel)
+                $channel->save();
+
+            return $this->redirect(['index', 'id' => $category_id]);
+        } else {
+            return $this->render('search', [
+                'channels' => $channels,
+                'category_id' => $category_id
+            ]);
+        }
+    }
+
+    /**
      * Updates an existing Channels model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -222,6 +277,19 @@ class ChannelsController extends Controller
     {
         if ($_POST[ 'url' ] != '')
             return Json::encode(Channels::queryData($_POST[ 'url' ]));
+        else
+            return Json::encode([]);
+    }
+
+    /**
+     * Поиск каналов по запросу.
+     *
+     * @return string
+     */
+    public function actionSearchData()
+    {
+        if ($_POST[ 'query' ] != '')
+            return Json::encode(Channels::searchData($_POST[ 'query' ], (int) $_POST[ 'count' ], (int) $_POST[ 'subscribers' ]));
         else
             return Json::encode([]);
     }

@@ -176,4 +176,81 @@ class Channels extends \yii\db\ActiveRecord
         else
             return ['error' => 'Канал не найден.'];
     }
+
+    /**
+     * Поиск каналов по запросу.
+     *
+     * @param $query
+     * @param $count
+     * @param $subscribers
+     * @return array|mixed
+     * @internal param $url
+     */
+    public static function searchData($query, $count, $subscribers)
+    {
+        ob_start();
+
+        $pageCount = ceil($count / 50);
+
+        if ($pageCount <= 0)
+            return [
+                'error' => 'Укажите количество пунктов поисковой выдачи не менее 1.'
+            ];
+
+        YoutubeAPI::$iterationsCount = $pageCount;
+        YoutubeAPI::$enableDateFilter = false;
+        $response = array_slice(YoutubeAPI::query('search', [
+            'q' => $query,
+            'relevanceLanguage' => Yii::$app->language,
+            'type' => 'video',
+        ], ['snippet'], YoutubeAPI::QUERY_PAGES), 0, $count);
+
+        // собираем channelId всех каналов
+        $newChannelsId = [];
+        foreach ($response as $item)
+            $newChannelsId[ $item[ 'snippet' ][ 'channelId' ] ] = [
+                'url' => 'https://youtube.com/channel/' . $item[ 'snippet' ][ 'channelId' ],
+                'id' => $item[ 'snippet' ][ 'channelId' ],
+                'exists' => 0,
+            ];
+
+        $responses = HighloadAPI::query('channels', ['id' => array_keys($newChannelsId)], ['snippet', 'statistics'], YoutubeAPI::QUERY_MULTIPLE);
+
+        ob_end_clean(); // для обхода отладки HighloadAPI
+
+        foreach ($responses as $response) {
+            $response = unserialize(gzuncompress($response));
+
+            foreach ($response as $item) {
+                if (!isset($newChannelsId[ $item[ 'id' ] ]))
+                    continue;
+
+                $newChannelsId[ $item[ 'id' ] ][ 'name' ] = $item[ 'snippet' ][ 'title' ];
+                $newChannelsId[ $item[ 'id' ] ][ 'image_url' ] = $item[ 'snippet' ][ 'thumbnails' ][ 'medium' ][ 'url' ];
+                $newChannelsId[ $item[ 'id' ] ][ 'subscribers_count' ] = $item[ 'statistics' ][ 'subscriberCount' ];
+            }
+        }
+
+        $newChannelsId = array_filter($newChannelsId, function($item) use ($subscribers) {
+            return $item[ 'subscribers_count' ] >= $subscribers;
+        });
+
+        // помечаем каналы, существующие в базе данных
+        $channels = Channels::find()->all();
+        foreach ($channels as $channel)
+            if (isset($newChannelsId[ $channel->channel_link ]))
+                $newChannelsId[ $channel->channel_link ][ 'exists' ] = 1;
+
+        // сортируем в порядке убывания количества подписчиков
+        usort($newChannelsId, function($a, $b) {
+            return $b[ 'subscribers_count' ] - $a[ 'subscribers_count' ];
+        });
+
+        if (empty($newChannelsId))
+            return ['error' => 'По вашему запросу не найдено ни одного канала.'];
+
+        return [
+            'items' => $newChannelsId
+        ];
+    }
 }

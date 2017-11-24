@@ -143,6 +143,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         'class' => 'btn btn-success',
                     ]
                 ); ?>
+
+                <?=Html::a(
+                    '<i class="glyphicon glyphicon-search"></i> Поиск по ключевым словам',
+                    \yii\helpers\Url::toRoute(['search', 'category_id' => $category->id]),
+                    [
+                        'class' => 'btn btn-info',
+                    ]
+                ); ?>
             <? endif; ?>
         </div>
     </div>

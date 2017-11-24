@@ -29,6 +29,15 @@ class YoutubeAPI
     const QUOTA_REFRESH_TIME = '10:10:00';
 
     /**
+     * @var int Количество итераций для поиска типа QUERY_PAGES.
+     */
+    public static $iterationsCount = 10;
+    /**
+     * @var bool Фильтр "данные за полгода" в QUERY_PAGES.
+     */
+    public static $enableDateFilter = true;
+
+    /**
      * @var array Ключи для доступа к API
      * [
      *  'id',
@@ -185,10 +194,18 @@ class YoutubeAPI
 
             return $result;
         } else if ($type == self::QUERY_PAGES) {
-            $paramId = isset($params[ 'playlistId' ]) ? 'playlistId' : 'channelId';
+            if (isset($params[ 'playlistId' ]))
+                $paramId = 'playlistId';
+            elseif (isset($params[ 'channelId' ]))
+                $paramId = 'channelId';
+            else
+                $paramId = 'q';
 
             // постраничный запрос
-            $ids = $params[ $paramId ];
+            if ($paramId != 'q')
+                $ids = $params[ $paramId ];
+            else
+                $ids = [ $params[ $paramId ] ];
 
             $resultArray = [];
             $pageTokens = [];
@@ -240,7 +257,7 @@ class YoutubeAPI
 
                         // если последний запрос отдал данные старше полугода - не делаем следующий запрос
                         if (!empty($responseArray[ $id ][ 'items' ]) && isset(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ])) {
-                            if ($time - strtotime(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ]) > 86400 * 180) {
+                            if (self::$enableDateFilter && ($time - strtotime(end($responseArray[ $id ][ 'items' ])[ 'snippet' ][ 'publishedAt' ]) > 86400 * 180)) {
                                 unset($urlArray[ $id ]);
                                 $pageTokens[ $id ] = '';
                             }
@@ -252,7 +269,7 @@ class YoutubeAPI
                 }
 
                 $iteration++;
-            } while (!empty($urlArray) && $iteration < 10);
+            } while (!empty($urlArray) && $iteration < self::$iterationsCount);
 
             $result = [];
             foreach ($resultArray as $resultItem)
