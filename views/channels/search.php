@@ -157,7 +157,7 @@ $this->params['breadcrumbs'][] = 'Поиск каналов';
 
                 controls.removeAttr('disabled').removeClass('disabled');
                 $('#status').addClass('hidden');
-                $('input[name="subscribers"]').val('');
+                $('input[name="query"]').val('');
             })
         });
     });
