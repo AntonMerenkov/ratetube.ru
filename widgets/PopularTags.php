@@ -98,9 +98,20 @@ class PopularTags extends Widget
 
         arsort($tagWeights);
 
+        $fixedTags = ArrayHelper::map(Categories::find()->all(), 'id', function($item) {
+            $tags = explode("\n", $item->tags);
+
+            return array_values(array_filter(array_map(function($item2) {
+                return trim($item2);
+            }, $tags), function($item2) {
+                return $item2 != '';
+            }));
+        });
+
         return [
             'weights' => $tagWeights,
             'names' => $tagNames,
+            'fixed' => $fixedTags
         ];
     }
 
@@ -166,7 +177,6 @@ class PopularTags extends Widget
         if ($tagsData === false)
             $tagsData = [];
 
-        //////
         $tagWeights = $tagsData[ 'weights' ];
         $tagNames = $tagsData[ 'names' ];
 
@@ -183,7 +193,37 @@ class PopularTags extends Widget
                     'weight' => $tagWeights[ $tag ],
                 ];
         }
-        //////
+
+        // добавляем жестко заданные тэги на половину мест случайным образом
+        $category_id = Yii::$app->request->get('category_id', null);
+        if (!is_null($category_id))
+            $category_id = Yii::$app->cache->getOrSet('category-name-' . $category_id, function() use ($category_id) {
+                return Categories::findOne(['code' => $category_id])->id;
+            }, 3600);
+
+        if (!is_null($category_id))
+            $fixedTags = $tagsData[ 'fixed' ][ $category_id ];
+        else
+            $fixedTags = array_reduce($tagsData[ 'fixed' ], function($carry, $item) {
+                foreach ($item as $value)
+                    $carry[] = $value;
+
+                return $carry;
+            }, []);
+
+        if (!empty($fixedTags)) {
+            $randomTags = array_keys($fixedTags);
+            $randomTags = array_intersect_key($randomTags, array_fill_keys(array_rand($randomTags, min(round($this->count / 2), count($randomTags))), 0));
+
+            $keys = array_map(function($item) {
+                return 1;
+            }, $resultTags);
+            foreach ($randomTags as $tag) {
+                $key = array_rand(array_keys($keys));
+                $resultTags[ $key ][ 'text' ] = $fixedTags[ $tag ];
+                unset($keys[ $key ]);
+            }
+        }
 
         $query = Yii::$app->request->get('query', null);
         foreach ($resultTags as $id => $tag)

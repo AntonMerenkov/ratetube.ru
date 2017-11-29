@@ -13,6 +13,7 @@ use Yii;
  * @property string $flush_timeframe
  * @property integer $flush_count
  * @property integer $load_last_days
+ * @property string $tags
  *
  * @property Channels[] $channels
  */
@@ -56,6 +57,7 @@ class Categories extends \yii\db\ActiveRecord
             [['timeframeExist'], 'boolean'],
             [['timeframeExist'], 'timeframeCheck'],
             [['load_last_days'], 'integer'],
+            [['tags'], 'string'],
         ];
     }
 
@@ -72,6 +74,7 @@ class Categories extends \yii\db\ActiveRecord
             'flush_count' => 'Минимальное количество просмотров',
             'timeframeExist' => 'Удалять видео по критерию',
             'load_last_days' => 'Загружать видео за период (дней)',
+            'tags' => 'Тэги поиска'
         ];
     }
 

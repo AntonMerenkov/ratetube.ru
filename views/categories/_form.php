@@ -53,6 +53,16 @@ use yii\widgets\ActiveForm;
     </fieldset>
     <br>
 
+    <fieldset>
+        <legend>Тэги</legend>
+
+        <?= $form->field($model, 'tags')->textarea([
+            'rows' => 6
+        ]) ?>
+        <p class="help-block">Укажите тэги поиска, которые будут появляться независимо от тэгов, полученных с YouTube, по одному на каждую строку.</p>
+    </fieldset>
+    <br>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Добавить' : 'Сохранить', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>
