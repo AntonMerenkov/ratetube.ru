@@ -190,12 +190,16 @@ $categories = Categories::getDb()->cache(function ($db) {
             </div>
             <div class="col-md-2 col-xs-6">
                 <div class="contact-list">
-                    <div class="contact-item phone">
-                        <a href="callto:<?=preg_replace('/[^\d\+]/', '', Yii::$app->params[ 'phone' ]) ?>"><?=Yii::$app->params[ 'phone' ] ?></a>
-                    </div>
-                    <div class="contact-item email">
-                        <a href="mailto:<?=Yii::$app->params[ 'email' ] ?>"><?=Yii::$app->params[ 'email' ] ?></a>
-                    </div>
+                    <? if (Yii::$app->params[ 'phone' ] != '') : ?>
+                        <div class="contact-item phone">
+                            <a href="callto:<?=preg_replace('/[^\d\+]/', '', Yii::$app->params[ 'phone' ]) ?>"><?=Yii::$app->params[ 'phone' ] ?></a>
+                        </div>
+                    <? endif; ?>
+                    <? if (Yii::$app->params[ 'email' ] != '') : ?>
+                        <div class="contact-item email">
+                            <a href="mailto:<?=Yii::$app->params[ 'email' ] ?>"><?=Yii::$app->params[ 'email' ] ?></a>
+                        </div>
+                    <? endif; ?>
                 </div>
             </div>
             <div class="col-md-8">
@@ -203,8 +207,8 @@ $categories = Categories::getDb()->cache(function ($db) {
                     <div class="col-lg-3 col-md-4">
                         <nav>
                             <ul>
-                                <li><a href="#">Статистика</a></li>
-                                <li><a href="#">Сотрудничество</a></li>
+                                <li><a href="/">Статистика</a></li>
+                                <li><a href="<?=Url::to(['page', 'id' => 'partnership']) ?>">Сотрудничество</a></li>
                             </ul>
                         </nav>
                     </div>

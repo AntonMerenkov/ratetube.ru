@@ -71,6 +71,7 @@ $config = [
             'rules' => [
                 'category/<category_id:[\d\w-_]+>' => 'site/index',
                 'channel/<channel_id:[\d\w-_]+>' => 'site/index',
+                '<id:(partnership)>' => 'site/page',
                 'rt--admin/logreader' => 'logreader/default/index',
                 'rt--admin/logreader/<action>' => 'logreader/default/<action>',
                 'ajax/get-statistics/category/<category_id:[\d\w-_]+>' => 'site/ajax-get-statistics',

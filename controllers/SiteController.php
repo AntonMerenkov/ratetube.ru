@@ -401,4 +401,15 @@ class SiteController extends Controller
 
         return $this->goHome();
     }
+
+    /**
+     * Вывод статической страницы.
+     *
+     * @param $id
+     * @return string
+     */
+    public function actionPage($id)
+    {
+        return $this->render('page/' . $id);
+    }
 }
