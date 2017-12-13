@@ -89,13 +89,13 @@ header .refresh-block {
 }
 
 header .contact-list {
-    margin-top: 12px;
+    margin-top: 16px;
     min-width: 200px;
 }
 
 header .contact-item {
     color: #63b9ec;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 300;
 }
 
@@ -303,13 +303,12 @@ footer nav .nav button:focus {
 }
 
 footer .contact-list {
-    margin-top: -6px;
     min-width: 200px;
 }
 
 footer .contact-item {
     color: #63b9ec;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 300;
 }
 

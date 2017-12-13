@@ -8,6 +8,10 @@ use app\models\Categories;
 use app\models\SecurityIp;
 use app\models\Videos;
 use app\models\VideosSearch;
+use PHPExcel_IOFactory;
+use PHPExcel_Style_Alignment;
+use PHPExcel_Style_Border;
+use PHPExcel_Worksheet_PageSetup;
 use Yii;
 use app\models\Channels;
 use app\models\ChannelsSearch;
@@ -448,5 +452,102 @@ class ChannelsController extends Controller
         $model->delete();
 
         $this->redirect(['list-videos', 'id' => $model->channel_id]);
+    }
+
+    /**
+     * Экспорт списка каналов в Excel.
+     *
+     * @param null $category_id
+     * @throws \PHPExcel_Exception
+     * @throws \PHPExcel_Reader_Exception
+     * @throws \PHPExcel_Writer_Exception
+     */
+    public function actionExportList($category_id = null)
+    {
+        $models = Channels::find()->where(is_null($category_id) ? [] : ['category_id' => $category_id])->orderBy(['subscribers_count' => SORT_DESC])->all();
+
+        $objPHPExcel = new \PHPExcel();
+
+        $objPHPExcel->getProperties()->setCreator(Yii::$app->name)->setTitle('Список каналов');
+
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        $sheet = $objPHPExcel->getActiveSheet();
+
+        $sheet->getDefaultRowDimension()->setRowHeight(20);
+
+        $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(100);
+        $sheet->getPageMargins()->setTop(1 / 2.54);
+        $sheet->getPageMargins()->setBottom(1 / 2.54);
+        $sheet->getPageMargins()->setLeft(1 / 2.54);
+        $sheet->getPageMargins()->setRight(1 / 2.54);
+
+        $sheet->setCellValue('A1', 'Название канала');
+        $sheet->setCellValue('B1', 'URL');
+        $sheet->setCellValue('C1', 'Подписчиков');
+
+        $sheet->getColumnDimension('A')->setWidth(40);
+        $sheet->getColumnDimension('B')->setWidth(70);
+        $sheet->getColumnDimension('C')->setWidth(20);
+
+        $index = 2;
+        foreach ($models as $model) {
+            $sheet->setCellValue('A' . $index, $model->name);
+            $sheet->setCellValue('B' . $index, $model->url);
+            $sheet->setCellValue('C' . $index, (int) $model->subscribers_count);
+
+            $index++;
+        }
+
+        $sheet->getStyle('A1:C1')->applyFromArray([
+            'alignment' => [
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                ],
+                'outline' => [
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM
+                ],
+            ],
+            'font' => [
+                'bold' => true
+            ]
+        ]);
+
+        $sheet->getStyle('A2:C' . ($index - 1))->applyFromArray([
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                ],
+                'outline' => [
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM
+                ],
+            ],
+        ]);
+
+        $sheet->getStyle('C2:C' . ($index - 1))->applyFromArray([
+            'alignment' => [
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            ],
+        ]);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="channels.xlsx"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
     }
 }

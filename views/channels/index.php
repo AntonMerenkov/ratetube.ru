@@ -35,6 +35,9 @@ $this->params['breadcrumbs'][] = $this->title;
                         'summary' => false,
                     ]); ?>
                 </ul>
+                <div class="panel-footer">
+                    <a href="<?=Url::to(['export-list', 'category_id' => Yii::$app->request->get('id')]) ?>" id="export-link"><i class="glyphicon glyphicon-cloud-download"></i> Экспорт списка</a>
+                </div>
             </div>
         </div>
         <div class="col-xs-9">
