@@ -34,6 +34,7 @@ class AppAsset extends AssetBundle
         'lib/jqcloud/jqcloud.min.js',
         'lib/modal-video/js/jquery-modal-video.js',
         'lib/jquery-modal/jquery.modal.min.js',
+        'lib/jquery-migrate/jquery-migrate-3.0.0.min.js',
         'js/scripts.js'
     ];
     public $depends = [
