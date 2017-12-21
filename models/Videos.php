@@ -156,7 +156,7 @@ class Videos extends \yii\db\ActiveRecord
     {
         $id = preg_replace('/^#/', '', $id);
 
-        $result = HighloadAPI::query('videos', ['id' => $id], ['snippet', 'statistics']);
+        $result = YoutubeAPI::query('videos', ['id' => $id], ['snippet', 'statistics']);
 
         return [
             'status' => !empty($result) ? 1 : 0,
