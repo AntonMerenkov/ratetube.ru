@@ -215,11 +215,11 @@ $statisticsDataProvider = new ArrayDataProvider([
 <? endif; ?>
 
 <? if (!isset($_COOKIE[ 'help_modal_showed' ])) : ?>
-    <div id="help-modal" class="modal">
+    <? /*<div id="help-modal" class="modal">
         <div class="content">
             <? require dirname(__FILE__) . '/banner.php' ?>
         </div>
-    </div>
+    </div> */ ?>
 
     <script>
         function getCookie(name) {
@@ -258,7 +258,7 @@ $statisticsDataProvider = new ArrayDataProvider([
             document.cookie = updatedCookie;
         }
 
-        $(function() {
+        <? /*$(function() {
             if (getCookie('help_modal_showed') == undefined) {
                 $('#help-modal').modal({
                     fadeDuration: 500,
@@ -269,6 +269,6 @@ $statisticsDataProvider = new ArrayDataProvider([
                     expires: 86400 * 365 * 10
                 })
             }
-        });
+        });*/ ?>
     </script>
 <? endif;
