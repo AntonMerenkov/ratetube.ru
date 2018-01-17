@@ -346,17 +346,17 @@ $(function() {
 
                 // если ряд меняет позицию - он уже анимируется
                 if (row.attr('data-no-animate') == 1) {
-                    row.find('td:eq(1)').text(newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff);
-                    row.find('td:eq(2)').text(newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff);
-                    row.find('td:eq(3)').text(newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff);
-                    row.find('td:eq(4)').text(newData[ i ].views == 0 ? '' : newData[ i ].views);
-                    row.find('td:eq(5)').text(newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff));
+                    row.find('td:eq(1)').text((newData[ i ].views_diff == 0 || newData[ i ].views_diff == undefined) ? '' : '+' + newData[ i ].views_diff);
+                    row.find('td:eq(2)').text((newData[ i ].likes_diff == 0 || newData[ i ].likes_diff == undefined) ? '' : '+' + newData[ i ].likes_diff);
+                    row.find('td:eq(3)').text((newData[ i ].dislikes_diff == 0 || newData[ i ].dislikes_diff == undefined) ? '' : '+' + newData[ i ].dislikes_diff);
+                    row.find('td:eq(4)').text((newData[ i ].views == 0 || newData[ i ].views == undefined) ? '' : newData[ i ].views);
+                    row.find('td:eq(5)').text((newData[ i ].position_diff == 0 || newData[ i ].position_diff == undefined) ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff));
                 } else {
-                    setTimeout(animateCell.bind(null, row.find('td:eq(1)'), newData[ i ].views_diff == 0 ? '' : '+' + newData[ i ].views_diff), (parseInt(i) + 1) * animationInterval);
-                    setTimeout(animateCell.bind(null, row.find('td:eq(2)'), newData[ i ].likes_diff == 0 ? '' : '+' + newData[ i ].likes_diff), (parseInt(i) + 2) * animationInterval);
-                    setTimeout(animateCell.bind(null, row.find('td:eq(3)'), newData[ i ].dislikes_diff == 0 ? '' : '+' + newData[ i ].dislikes_diff), (parseInt(i) + 3) * animationInterval);
-                    setTimeout(animateCell.bind(null, row.find('td:eq(4)'), newData[ i ].views == 0 ? '' : newData[ i ].views), (parseInt(i) + 4) * animationInterval);
-                    setTimeout(animateCell.bind(null, row.find('td:eq(5)'), newData[ i ].position_diff == 0 ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)), (parseInt(i) + 5) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(1)'), (newData[ i ].views_diff == 0 || newData[ i ].views_diff == undefined) ? '' : '+' + newData[ i ].views_diff), (parseInt(i) + 1) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(2)'), (newData[ i ].likes_diff == 0 || newData[ i ].likes_diff == undefined) ? '' : '+' + newData[ i ].likes_diff), (parseInt(i) + 2) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(3)'), (newData[ i ].dislikes_diff == 0 || newData[ i ].dislikes_diff == undefined) ? '' : '+' + newData[ i ].dislikes_diff), (parseInt(i) + 3) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(4)'), (newData[ i ].views == 0 || newData[ i ].views == undefined) ? '' : newData[ i ].views), (parseInt(i) + 4) * animationInterval);
+                    setTimeout(animateCell.bind(null, row.find('td:eq(5)'), (newData[ i ].position_diff == 0 || newData[ i ].position_diff == undefined) ? '' : (newData[ i ].position_diff > 0 ? '+' + newData[ i ].position_diff : newData[ i ].position_diff)), (parseInt(i) + 5) * animationInterval);
                 }
             }
 
