@@ -23,6 +23,7 @@ class AppAsset extends AssetBundle
         'lib/jqcloud/jqcloud.min.css',
         'lib/modal-video/css/modal-video.min.css',
         'lib/jquery-modal/jquery.modal.min.css',
+        'lib/font-awesome/css/font-awesome.min.css',
         'css/site.css',
     ];
     public $js = [

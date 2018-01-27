@@ -38,6 +38,11 @@ $categories = Categories::getDb()->cache(function ($db) {
 <body>
 <?php $this->beginBody() ?>
 
+<div id="about-site-top">
+    <p>Узнай про все возможности ratetube.ru</p>
+    <a href="#">Узнать</a>
+</div>
+
 <header>
     <div class="container">
         <div class="row">
@@ -116,6 +121,52 @@ $categories = Categories::getDb()->cache(function ($db) {
 
 <main>
     <div class="container">
+        <div id="about-site">
+            <div class="row">
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-line-chart"></i>
+                    <p>
+                        Топ блогеров<br>
+                        YouTube
+                    </p>
+                </div>
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-eye"></i>
+                    <p>
+                        Быстрый и удобный<br>
+                        просмотр видео
+                    </p>
+                </div>
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-sort-amount-asc"></i>
+                    <p>
+                        Сортировка каналов,<br>
+                        поиск по тегам
+                    </p>
+                </div>
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-users"></i>
+                    <p>
+                        Информация о самых<br>
+                        интересных блогерах
+                    </p>
+                </div>
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-search"></i>
+                    <p>
+                        Выбор категорий<br>
+                        и каналов по интересам
+                    </p>
+                </div>
+                <div class="col-md-2 col-xs-4">
+                    <i class="fa fa-television"></i>
+                    <p>
+                        Стримы прямо<br>
+                        на сайте
+                    </p>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-2">
                 <div class="widget widget-categories">
