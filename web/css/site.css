@@ -1558,4 +1558,8 @@ article p {
         background-color: #ece819;
         color: #333;
     }
+
+    #about-site .row > div {
+        width: 50%;
+    }
 }

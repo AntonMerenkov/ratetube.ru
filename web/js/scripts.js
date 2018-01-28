@@ -193,4 +193,17 @@ $(function() {
     $('body').on('click', '.modal-video-close-btn', function(e) {
         window.history.replaceState({}, "", getCurrentUrl());
     });
+
+    /**
+     * Баннер
+     */
+    $('#about-site-top > a').click(function() {
+        if ($('#about-site-top #about-site').length == 0) {
+            $('#about-site').insertBefore($('#about-site-top > a'));
+        }
+
+        $('#about-site-top > a').text($('#about-site').is(':visible') ? 'Узнать' : 'Скрыть');
+
+        $('#about-site').slideToggle();
+    });
 });
