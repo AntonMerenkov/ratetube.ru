@@ -71,7 +71,19 @@
       <path value="$PROJECT_DIR$/vendor/symfony/event-dispatcher" />
       <path value="$PROJECT_DIR$/vendor/symfony/dom-crawler" />
       <path value="$PROJECT_DIR$/vendor/symfony/browser-kit" />
+      <path value="$PROJECT_DIR$/vendor/sebastian/object-reflector" />
+      <path value="$PROJECT_DIR$/vendor/phar-io/manifest" />
+      <path value="$PROJECT_DIR$/vendor/bower/bootstrap-datepicker" />
+      <path value="$PROJECT_DIR$/vendor/theseer/tokenizer" />
+      <path value="$PROJECT_DIR$/vendor/phar-io/version" />
+      <path value="$PROJECT_DIR$/vendor/bower/jquery.easing" />
+      <path value="$PROJECT_DIR$/vendor/bower/jquery-cookie" />
+      <path value="$PROJECT_DIR$/vendor/bower/jquery-form" />
+      <path value="$PROJECT_DIR$/vendor/zhuravljov/yii2-logreader" />
+      <path value="$PROJECT_DIR$/vendor/bower/jquery-mousewheel" />
+      <path value="$PROJECT_DIR$/vendor/bower/jquery.scrollTo" />
+      <path value="$PROJECT_DIR$/vendor/2amigos/yii2-date-picker-widget" />
     </include_path>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7" />
+  <component name="PhpProjectSharedConfiguration" php_language_level="5.4.0" />
 </project>

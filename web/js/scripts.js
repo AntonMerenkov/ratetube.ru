@@ -177,7 +177,7 @@ $(function() {
      * Ссылка на видео
      */
     if (window.location.hash != '') {
-        $.post('/site/check-video', {id: window.location.hash}).success(function(data) {
+        $.post('/site/check-video', {id: window.location.hash}).done(function(data) {
             data = $.parseJSON(data);
 
             if (data.status != undefined && data.status == 1) {

@@ -139,7 +139,7 @@ $(function() {
         $.ajax({
             url: $('#refreshButton').attr('href'),
             dataType: 'json'
-        }).success(function(data) {
+        }).done(function(data) {
             var newData = data[ 'data' ];
 
             // меняем структуру согласно новым данным
