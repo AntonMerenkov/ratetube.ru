@@ -1056,6 +1056,31 @@ article p {
     margin: 10px 0 20px;
 }
 
+#about-site {
+    padding: 15px 20px;
+    background-color: #248dc1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+#about-site i {
+    display: block;
+    color: #ece819;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#about-site p {
+    margin: 0;
+}
+
+#about-site-top {
+    display: none;
+}
+
 /**
  * Mobile CSS
  */
@@ -1404,6 +1429,26 @@ article p {
     #help-modal .col-xs-6:nth-child(2n+1) {
         clear: both;
     }
+
+    #about-site {
+        padding: 15px 20px 5px;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    #about-site .row > div {
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+
+    #about-site i {
+        float: left;
+        margin-top: 5px;
+    }
+
+    #about-site p {
+        margin-left: 50px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1478,5 +1523,43 @@ article p {
 
     footer > .container > .row > .col-md-8 {
         display: none;
+    }
+
+    #about-site {
+        display: none;
+    }
+
+    #about-site-top {
+        display: block;
+    }
+
+    #about-site-top {
+        background-color: #248dc1;
+        padding: 15px;
+        color: #fff;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    #about-site-top a {
+        display: block;
+        color: #ece819;
+        border: 2px solid #ece819;
+        border-radius: 5px;
+        text-transform: uppercase;
+        font-size: 18px;
+        padding: 2px 5px;
+    }
+
+    #about-site-top a:hover,
+    #about-site-top a:focus,
+    #about-site-top a:active {
+        text-decoration: none;
+        background-color: #ece819;
+        color: #333;
+    }
+
+    #about-site .row > div {
+        width: 50%;
     }
 }
