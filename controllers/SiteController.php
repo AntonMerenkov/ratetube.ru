@@ -287,6 +287,39 @@ class SiteController extends Controller
             Yii::endProfile('Сохранение позиций видео');
         }
 
+        $activeVideo = null;
+        $activeLink = Yii::$app->request->get('v');
+        if (!is_null($activeLink))
+            $activeVideo = Videos::findOne(['video_link' => $activeLink]);
+
+        if (!is_null($activeVideo)) {
+            \Yii::$app->view->registerMetaTag([
+                'property' => 'og:image',
+                'content' => $activeVideo->image_url,
+            ]);
+            \Yii::$app->view->registerMetaTag([
+                'property' => 'og:description',
+                'content' => $activeVideo->name,
+            ]);
+        } else {
+            \Yii::$app->view->registerMetaTag([
+                'property' => 'og:image',
+                'content' => '/img/logo.png',
+            ]);
+            \Yii::$app->view->registerMetaTag([
+                'property' => 'og:description',
+                'content' => 'RateTube - только новые и трендовые видео!',
+            ]);
+        }
+
+        /**
+         * <meta property="og:url" content="https://mail.ru">
+         * <meta property="og:type" content="website">
+         * <meta property="og:title" content="Mail.Ru: почта, поиск в интернете, новости, игры">
+         * <meta property="og:image" content="https://limg.imgsmail.ru/re/i/og-image-f00850a92c.png">
+         * <meta property="og:description" content="Mail.Ru — крупнейшая бесплатная почта, быстрый и удобный интерфейс, неограниченный объем ящика, надежная защита от спама и вирусов, мобильная версия и приложения для смартфонов. Также на Mail.Ru: новости, поиск в интернете, игры, авто, спорт, знакомства, погода, работа">
+         */
+
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData
         ]);

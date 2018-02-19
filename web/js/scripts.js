@@ -1,19 +1,50 @@
 function updateYoutubeLinks() {
     $('a[data-video-id]').not('[data-video-modal]').click(function(e) {
-        if (e.ctrlKey || e.metaKey)
+        if (e.ctrlKey || e.metaKey) {
             e.stopImmediatePropagation();
+        } else {
+            window.history.replaceState({}, "", $(this).attr('href'));
+
+            return false;
+        }
     });
 
     $('a[data-video-id]').not('[data-video-modal]').attr('data-video-modal', 1).modalVideo();
 
     $('a[data-video-id]').each(function() {
         if ($(this).attr('href') == '#')
-            $(this).attr('href', getCurrentUrl() + '#' + $(this).attr('data-video-id'));
+            $(this).attr('href', getCurrentUrl() + (getSearchParams() == '' ? '?v=' : '&v=') + $(this).attr('data-video-id'));
     });
 }
 
+function getActiveVideo() {
+    var windowParams = window.location.search.replace(new RegExp('^\\?'), '').split('&');
+    for (var i in windowParams) {
+        var values = windowParams[ i ].split('=', 2);
+
+        if (values[ 0 ] != undefined && values[ 1 ] != undefined && values[ 0 ] == 'v')
+            return values[ 1 ];
+    }
+
+    return '';
+}
+
+function getSearchParams() {
+    var params = [];
+
+    var windowParams = window.location.search.replace(new RegExp('^\\?'), '').split('&');
+    for (var i in windowParams) {
+        var values = windowParams[ i ].split('=', 2);
+
+        if (values[ 0 ] != undefined && values[ 1 ] != undefined && values[ 0 ] != 'v')
+            params.push(windowParams[ i ]);
+    }
+
+    return params.length == 0 ? '' : '?' + params.join('&');
+}
+
 function getCurrentUrl() {
-    return window.location.protocol + '//' + window.location.hostname + window.location.pathname + window.location.search;
+    return window.location.protocol + '//' + window.location.hostname + window.location.pathname + getSearchParams();
 }
 
 function isMobile() {
@@ -176,8 +207,9 @@ $(function() {
     /**
      * Ссылка на видео
      */
-    if (window.location.hash != '') {
-        $.post('/site/check-video', {id: window.location.hash}).success(function(data) {
+    var activeLink = getActiveVideo();
+    if (activeLink != '') {
+        $.post('/site/check-video', {id: activeLink}).done(function(data) {
             data = $.parseJSON(data);
 
             if (data.status != undefined && data.status == 1) {
@@ -190,7 +222,7 @@ $(function() {
         });
     }
 
-    $('body').on('click', '.modal-video-close-btn', function(e) {
+    $('body').on('click', '.modal-video-close-btn, .modal-video', function(e) {
         window.history.replaceState({}, "", getCurrentUrl());
     });
 });

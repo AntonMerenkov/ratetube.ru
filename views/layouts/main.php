@@ -24,10 +24,23 @@ $categories = Categories::getDb()->cache(function ($db) {
     return Categories::find()->all();
 });
 
+\Yii::$app->view->registerMetaTag([
+    'property' => 'og:title',
+    'content' => 'RateTube',
+]);
+\Yii::$app->view->registerMetaTag([
+    'property' => 'og:site_name',
+    'content' => 'RateTube',
+]);
+\Yii::$app->view->registerMetaTag([
+    'property' => 'og:type',
+    'content' => 'website',
+]);
+
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
-<html lang="<?= Yii::$app->language ?>">
+<html lang="<?= Yii::$app->language ?>" prefix="og: http://ogp.me/ns#">
 <head>
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width">
@@ -38,6 +51,9 @@ $categories = Categories::getDb()->cache(function ($db) {
 <body>
 <?php $this->beginBody() ?>
 
+<script>
+    $('meta[property="og:title"]').attr('content', 'JS');
+</script>
 <header>
     <div class="container">
         <div class="row">
