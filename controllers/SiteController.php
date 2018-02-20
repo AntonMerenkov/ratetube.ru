@@ -215,7 +215,7 @@ class SiteController extends Controller
         $data = Yii::$app->cache->getOrSet($cacheId . '-cheat', function() use ($data, $cacheId) {
             $data = Yii::$app->cache->getOrSet($cacheId . '-cheat-positions', function() use ($data) {
                 return $this->cheatDataPositions($data);
-            }, 20);
+            }, 30);
 
             return $this->cheatData($data);
         }, 10);
@@ -311,14 +311,6 @@ class SiteController extends Controller
                 'content' => 'RateTube - только новые и трендовые видео!',
             ]);
         }
-
-        /**
-         * <meta property="og:url" content="https://mail.ru">
-         * <meta property="og:type" content="website">
-         * <meta property="og:title" content="Mail.Ru: почта, поиск в интернете, новости, игры">
-         * <meta property="og:image" content="https://limg.imgsmail.ru/re/i/og-image-f00850a92c.png">
-         * <meta property="og:description" content="Mail.Ru — крупнейшая бесплатная почта, быстрый и удобный интерфейс, неограниченный объем ящика, надежная защита от спама и вирусов, мобильная версия и приложения для смартфонов. Также на Mail.Ru: новости, поиск в интернете, игры, авто, спорт, знакомства, погода, работа">
-         */
 
         return $this->render('index', [
             'statisticsQueryData' => $statisticsQueryData
