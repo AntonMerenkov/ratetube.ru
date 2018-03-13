@@ -28,7 +28,7 @@ use yii\widgets\ActiveForm;
     <script>
         $(function() {
             $('input[name="Positions[url]"]').keyup(function () {
-                $.post('/rt--admin/positions/query-data', {url: $(this).val()}).success(function(data) {
+                $.post('/rt--admin/positions/query-data', {url: $(this).val()}).done(function(data) {
                     data = $.parseJSON(data);
 
                     $('#positions-url-success').addClass('hidden');

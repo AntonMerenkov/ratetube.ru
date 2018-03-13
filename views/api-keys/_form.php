@@ -19,7 +19,7 @@ use yii\widgets\ActiveForm;
 
     <script>
         $('#apikeys-key').keyup(function() {
-            $.post('/rt--admin/api-keys/query-data', {key: $(this).val()}).success(function(data) {
+            $.post('/rt--admin/api-keys/query-data', {key: $(this).val()}).done(function(data) {
                 data = $.parseJSON(data);
 
                 if (data.status == 1) {

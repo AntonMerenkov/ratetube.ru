@@ -20,7 +20,7 @@ use yii\widgets\ActiveForm;
         $('#slaves-ip').keyup(function() {
             $('#message').addClass('hidden');
 
-            $.post('/rt--admin/slaves/query-data', {ip: $(this).val()}).success(function(data) {
+            $.post('/rt--admin/slaves/query-data', {ip: $(this).val()}).done(function(data) {
                 data = $.parseJSON(data);
 
                 if (data.status == 1) {
